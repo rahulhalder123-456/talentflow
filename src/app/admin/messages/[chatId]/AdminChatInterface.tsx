@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Paperclip, Send, File as FileIcon, LoaderCircle } from "lucide-react";
-import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "@/lib/firebase/client";
-import { sendMessage } from "@/app/dashboard/messages/actions";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from 'date-fns';
 
@@ -31,6 +30,13 @@ const BLOCKED_EXTENSIONS = [
 
 interface AdminChatInterfaceProps {
     chatId: string;
+}
+
+function getFirebaseErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.includes('PERMISSION_DENIED')) {
+    return 'Permission Denied. Your Firestore security rules are blocking this action.';
+  }
+  return 'Could not send message. Please try again.';
 }
 
 export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
@@ -61,9 +67,9 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
           ...data,
           createdAt: data.createdAt?.toDate(),
         } as Message;
-      }).sort((a, b) => a.createdAt?.getTime() - b.createdAt?.getTime());
+      });
       
-      setMessages(msgs);
+      setMessages(msgs.sort((a, b) => a.createdAt?.getTime() - b.createdAt?.getTime()));
       setIsLoadingMessages(false);
     }, (error) => {
       console.error("Error fetching messages:", error);
@@ -78,18 +84,41 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user || !chatId) return;
-    
+  const sendMessageWithContent = async (content: { text?: string; fileUrl?: string; fileName?: string }) => {
+    if (!user || !chatId) return;
+
     setIsSending(true);
-    const result = await sendMessage({ chatId, userId: ADMIN_USER_ID, text: newMessage });
-    
-    if (!result.success) {
-        toast({ variant: "destructive", title: "Send Failed", description: result.error });
-    } else {
-        setNewMessage("");
+    try {
+        const messagesRef = collection(db, 'chats', chatId, 'messages');
+        await addDoc(messagesRef, {
+            senderId: ADMIN_USER_ID,
+            text: content.text || null,
+            fileUrl: content.fileUrl || null,
+            fileName: content.fileName || null,
+            createdAt: serverTimestamp(),
+        });
+
+        const chatRef = doc(db, 'chats', chatId);
+        await setDoc(chatRef, { 
+            lastMessageAt: serverTimestamp(),
+            participants: [clientUserId, ADMIN_USER_ID] 
+        }, { merge: true });
+
+        if (content.text) {
+            setNewMessage("");
+        }
+
+    } catch (error) {
+        console.error('Error sending message:', error);
+        toast({ variant: "destructive", title: "Send Failed", description: getFirebaseErrorMessage(error) });
+    } finally {
+        setIsSending(false);
     }
-    setIsSending(false);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
+    await sendMessageWithContent({ text: newMessage });
   };
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,16 +139,10 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      const result = await sendMessage({
-        chatId,
-        userId: ADMIN_USER_ID,
+      await sendMessageWithContent({
         fileUrl: downloadURL,
         fileName: file.name,
       });
-
-      if (!result.success) {
-        toast({ variant: "destructive", title: "Send Failed", description: result.error });
-      }
 
     } catch (error) {
        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your file. Please try again." });

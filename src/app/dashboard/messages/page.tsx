@@ -10,10 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Paperclip, Send, File as FileIcon, LoaderCircle } from "lucide-react";
-import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "@/lib/firebase/client";
-import { sendMessage } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from 'date-fns';
 
@@ -32,6 +31,13 @@ const BLOCKED_EXTENSIONS = [
   '.run', '.wsh', '.sh', '.dll', '.scr', '.jar'
 ];
 
+function getFirebaseErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.includes('PERMISSION_DENIED')) {
+    return 'Permission Denied. Your Firestore security rules are blocking this action.';
+  }
+  return 'Could not send message. Please try again.';
+}
+
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -45,8 +51,6 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (user) {
-      // For this prototype, we'll create a single, predictable chat ID for the user
-      // to communicate with support. A real app might have a more complex system.
       const userChatId = `support_${user.uid}`;
       setChatId(userChatId);
     }
@@ -67,9 +71,9 @@ export default function MessagesPage() {
           ...data,
           createdAt: data.createdAt?.toDate(),
         } as Message;
-      }).sort((a, b) => a.createdAt?.getTime() - b.createdAt?.getTime());
+      });
       
-      setMessages(msgs);
+      setMessages(msgs.sort((a, b) => a.createdAt?.getTime() - b.createdAt?.getTime()));
       setIsLoadingMessages(false);
     }, (error) => {
       console.error("Error fetching messages:", error);
@@ -84,18 +88,41 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user || !chatId) return;
-    
+  const sendMessageWithContent = async (content: { text?: string; fileUrl?: string; fileName?: string }) => {
+    if (!user || !chatId) return;
+
     setIsSending(true);
-    const result = await sendMessage({ chatId, userId: user.uid, text: newMessage });
-    
-    if (!result.success) {
-      toast({ variant: "destructive", title: "Send Failed", description: result.error });
-    } else {
-      setNewMessage("");
+    try {
+        const messagesRef = collection(db, 'chats', chatId, 'messages');
+        await addDoc(messagesRef, {
+            senderId: user.uid,
+            text: content.text || null,
+            fileUrl: content.fileUrl || null,
+            fileName: content.fileName || null,
+            createdAt: serverTimestamp(),
+        });
+
+        const chatRef = doc(db, 'chats', chatId);
+        await setDoc(chatRef, { 
+            lastMessageAt: serverTimestamp(),
+            participants: [user.uid, 'support-admin'] 
+        }, { merge: true });
+
+        if (content.text) {
+            setNewMessage("");
+        }
+
+    } catch (error) {
+        console.error('Error sending message:', error);
+        toast({ variant: "destructive", title: "Send Failed", description: getFirebaseErrorMessage(error) });
+    } finally {
+        setIsSending(false);
     }
-    setIsSending(false);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
+    await sendMessageWithContent({ text: newMessage });
   };
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,22 +143,15 @@ export default function MessagesPage() {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      const result = await sendMessage({
-        chatId,
-        userId: user.uid,
+      await sendMessageWithContent({
         fileUrl: downloadURL,
         fileName: file.name,
       });
-
-      if (!result.success) {
-        toast({ variant: "destructive", title: "Send Failed", description: result.error });
-      }
 
     } catch (error) {
        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your file. Please try again." });
     } finally {
       setIsSending(false);
-      // Reset file input
       if(fileInputRef.current) fileInputRef.current.value = "";
     }
   };

@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, PlusCircle, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { getPaymentMethods, addPaymentMethod, removePaymentMethod } from "./actions";
+import { getPaymentMethods } from "./actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { db, collection, addDoc, serverTimestamp, doc, deleteDoc } from '@/lib/firebase/client';
+import { revalidatePath } from "next/cache";
 
 
 type PaymentMethod = {
@@ -29,18 +31,20 @@ export function PaymentsTab() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const fetchMethods = async () => {
+    if (!user) return;
+    setLoading(true);
+    const result = await getPaymentMethods(user.uid);
+    if (result.success) {
+      setPaymentMethods(result.methods as PaymentMethod[]);
+    } else {
+      toast({ variant: "destructive", title: "Error", description: result.error });
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (user) {
-      const fetchMethods = async () => {
-        setLoading(true);
-        const result = await getPaymentMethods(user.uid);
-        if (result.success) {
-          setPaymentMethods(result.methods as PaymentMethod[]);
-        } else {
-          toast({ variant: "destructive", title: "Error", description: result.error });
-        }
-        setLoading(false);
-      };
       fetchMethods();
     }
   }, [user, toast]);
@@ -60,34 +64,39 @@ export function PaymentsTab() {
       expYear: new Date().getFullYear() + Math.floor(2 + Math.random() * 4),
     };
     
-    const result = await addPaymentMethod(user.uid, newCard);
-    setIsSubmitting(false);
-
-    if (result.success) {
-      const fetchResult = await getPaymentMethods(user.uid);
-      if(fetchResult.success) setPaymentMethods(fetchResult.methods as PaymentMethod[]);
-      
-      setIsDialogOpen(false);
-      toast({
-        title: "Card Added",
-        description: "Your new payment method has been saved.",
-      });
-    } else {
-      toast({ variant: "destructive", title: "Error", description: result.error });
+    try {
+        const paymentMethodsRef = collection(db, 'users', user.uid, 'paymentMethods');
+        await addDoc(paymentMethodsRef, { ...newCard, createdAt: serverTimestamp() });
+        
+        await fetchMethods(); // Re-fetch to update the list
+        
+        setIsDialogOpen(false);
+        toast({
+            title: "Card Added",
+            description: "Your new payment method has been saved.",
+        });
+    } catch (error) {
+        console.error('Error adding payment method:', error);
+        toast({ variant: "destructive", title: "Error", description: "Could not add payment method. Your security rules might be blocking this." });
+    } finally {
+        setIsSubmitting(false);
     }
   };
   
   const handleRemoveCard = async (methodId: string) => {
     if (!user) return;
-    const result = await removePaymentMethod(user.uid, methodId);
-    if(result.success) {
+
+    try {
+        const methodRef = doc(db, 'users', user.uid, 'paymentMethods', methodId);
+        await deleteDoc(methodRef);
         setPaymentMethods(prev => prev.filter(m => m.id !== methodId));
         toast({
             title: "Card Removed",
             description: "The payment method has been deleted.",
         });
-    } else {
-        toast({ variant: "destructive", title: "Error", description: result.error });
+    } catch (error) {
+        console.error('Error removing payment method:', error);
+        toast({ variant: "destructive", title: "Error", description: "Could not remove card. Your security rules might be blocking this." });
     }
   };
   

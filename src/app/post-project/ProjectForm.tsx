@@ -25,11 +25,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { handleGenerateDescription } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
-import { createProject } from '@/app/projects/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
 
 const formSchema = z.object({
   projectTitle: z.string().min(5, "Title must be at least 5 characters."),
@@ -42,6 +42,13 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+function getFirebaseErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.includes('PERMISSION_DENIED')) {
+    return 'Permission Denied. Your Firestore security rules are blocking this action.';
+  }
+  return 'Could not submit project. Please try again.';
+}
 
 export function ProjectForm() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -126,21 +133,29 @@ export function ProjectForm() {
     }
 
     setIsSubmitting(true);
-    const result = await createProject({ ...values, userId: user.uid });
-    setIsSubmitting(false);
-    
-    if (result.success) {
-      toast({
-          title: "Project Submitted!",
-          description: "Your project is now being listed.",
-      });
-      router.push('/dashboard/projects');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Submission Failed",
-        description: result.error,
-      });
+    try {
+        await addDoc(collection(db, 'projects'), {
+            ...values,
+            userId: user.uid,
+            status: 'Open',
+            createdAt: serverTimestamp(),
+        });
+
+        toast({
+            title: "Project Submitted!",
+            description: "Your project is now being listed.",
+        });
+        router.push('/dashboard/projects');
+
+    } catch (error) {
+        console.error('Error creating project:', error);
+        toast({
+            variant: "destructive",
+            title: "Submission Failed",
+            description: getFirebaseErrorMessage(error),
+        });
+    } finally {
+        setIsSubmitting(false);
     }
   }
 

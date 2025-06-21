@@ -11,7 +11,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
 import { useState, useEffect } from "react";
-import { updateUserProfile, getUserProfile } from "./actions";
+import { getUserProfile } from "./actions";
+import { db, doc, setDoc } from '@/lib/firebase/client';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -74,20 +75,23 @@ export function ProfileForm() {
         return;
     }
     setLoading(true);
-    const result = await updateUserProfile(user.uid, data);
-    setLoading(false);
-
-    if (result.success) {
+    try {
+        const userRef = doc(db, 'users', user.uid);
+        // We use setDoc with merge:true to create or update the document
+        await setDoc(userRef, { firstName: data.firstName, lastName: data.lastName, email: data.email }, { merge: true });
         toast({
             title: "Profile Updated",
             description: "Your profile information has been saved.",
         });
-    } else {
+    } catch (error) {
+        console.error('Error updating profile:', error);
         toast({
             variant: "destructive",
             title: "Update Failed",
-            description: result.error,
+            description: "Could not update your profile. Your security rules might be blocking this.",
         });
+    } finally {
+        setLoading(false);
     }
   };
 

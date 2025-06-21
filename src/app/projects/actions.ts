@@ -18,41 +18,6 @@ function getFirebaseErrorMessage(error: unknown): string {
   return 'An unknown error occurred.';
 }
 
-
-const projectSchema = z.object({
-  projectTitle: z.string().min(5),
-  projectBrief: z.string().min(20),
-  desiredSkills: z.string().min(3),
-  budget: z.string().regex(/^\d+(\.\d{1,2})?$/),
-  deadline: z.date(),
-  paymentType: z.string(),
-  projectDescription: z.string().optional(),
-  userId: z.string(),
-});
-
-export async function createProject(data: z.infer<typeof projectSchema>) {
-  const parsedData = projectSchema.safeParse(data);
-  if (!parsedData.success) {
-    return { success: false, error: "Invalid project data." };
-  }
-
-  if (!parsedData.data.userId) {
-    return { success: false, error: "User is not authenticated. Cannot create project." };
-  }
-
-  try {
-    await addDoc(collection(db, 'projects'), {
-      ...parsedData.data,
-      status: 'Open',
-      createdAt: serverTimestamp(),
-    });
-    return { success: true };
-  } catch (error) {
-    console.error('Error creating project:', error);
-    return { success: false, error: getFirebaseErrorMessage(error) };
-  }
-}
-
 export async function getProjectsByUserId(userId: string) {
   if (!userId) {
     return { success: false, error: 'User ID is required.', projects: [] };
