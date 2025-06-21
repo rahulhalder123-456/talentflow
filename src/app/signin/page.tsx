@@ -17,8 +17,8 @@ import { Header } from "@/components/common/Header";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
+import { signInWithEmailAndPassword, type AuthProvider as FirebaseAuthProvider } from "firebase/auth";
+import { auth, googleProvider, githubProvider, microsoftProvider, socialSignIn } from "@/lib/firebase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -51,6 +51,7 @@ export default function SignInPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -74,6 +75,26 @@ export default function SignInPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: FirebaseAuthProvider, providerName: string) => {
+    setSocialLoading(providerName);
+    try {
+      await socialSignIn(provider);
+      toast({
+        title: "Success!",
+        description: "You have successfully signed in.",
+      });
+      router.push("/post-project");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Sign in failed",
+        description: `Could not sign in with ${providerName}. Please try again.`,
+      });
+    } finally {
+      setSocialLoading(null);
     }
   };
 
@@ -103,6 +124,7 @@ export default function SignInPage() {
                           type="email"
                           placeholder="m@example.com"
                           {...field}
+                          disabled={!!socialLoading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -121,13 +143,13 @@ export default function SignInPage() {
                         </Link>
                       </div>
                       <FormControl>
-                        <Input id="password" type="password" {...field} />
+                        <Input id="password" type="password" {...field} disabled={!!socialLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading || !!socialLoading}>
                   {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
                 </Button>
@@ -144,20 +166,20 @@ export default function SignInPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-               <Button variant="outline" type="button">
-                <GoogleIcon className="mr-2 h-4 w-4" />
+               <Button variant="outline" type="button" onClick={() => handleSocialLogin(googleProvider, 'Google')} disabled={loading || !!socialLoading}>
+                {socialLoading === 'Google' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
                 Google
               </Button>
-              <Button variant="outline" type="button">
+              <Button variant="outline" type="button" onClick={() => toast({ title: "Coming Soon!", description: "Apple sign-in is not yet available."})} disabled={loading || !!socialLoading}>
                 <Apple className="mr-2 h-4 w-4" />
                 Apple
               </Button>
-              <Button variant="outline" type="button">
-                <MicrosoftIcon className="mr-2 h-4 w-4" />
+              <Button variant="outline" type="button" onClick={() => handleSocialLogin(microsoftProvider, 'Microsoft')} disabled={loading || !!socialLoading}>
+                 {socialLoading === 'Microsoft' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon className="mr-2 h-4 w-4" />}
                 Microsoft
               </Button>
-              <Button variant="outline" type="button">
-                <Github className="mr-2 h-4 w-4" />
+              <Button variant="outline" type="button" onClick={() => handleSocialLogin(githubProvider, 'GitHub')} disabled={loading || !!socialLoading}>
+                 {socialLoading === 'GitHub' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
                 GitHub
               </Button>
             </div>
