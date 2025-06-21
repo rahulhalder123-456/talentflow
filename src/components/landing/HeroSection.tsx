@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -84,9 +85,9 @@ export function HeroSection() {
               className="mt-4 flex flex-col sm:flex-row items-center gap-4"
               variants={fadeInUp}
             >
-              <Button asChild size="lg" className="text-base shadow-lg shadow-primary/20">
+              <Button asChild size="lg" className="group text-base shadow-lg shadow-primary/20">
                 <Link href="/post-project">
-                  Post a Project <ArrowRight className="ml-2 h-5 w-5" />
+                  Post a Project <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <Button
