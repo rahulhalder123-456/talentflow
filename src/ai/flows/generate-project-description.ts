@@ -49,8 +49,17 @@ export async function generateProjectDescription(
     return { projectDescription: output.projectDescription };
     
   } catch (e) {
-    console.error(e);
-    // Provide a generic but clear error message to the user.
-    return { error: "An unexpected error occurred while generating the description. Please check the server logs." };
+    console.error("AI Generation Error:", e);
+    let errorMessage = "An unexpected error occurred while generating the description.";
+    if (e instanceof Error) {
+        // Provide a more specific error if the API key is the issue.
+        if (e.message.includes('API key not valid') || e.message.includes('provide an API key')) {
+            errorMessage = "The Google AI API key is missing or invalid. Please check your .env.local file and ensure the GOOGLE_API_KEY is set correctly.";
+        } else {
+             // Pass along other error messages from the AI service.
+            errorMessage = e.message;
+        }
+    }
+    return { error: errorMessage };
   }
 }

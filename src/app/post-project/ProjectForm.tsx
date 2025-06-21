@@ -102,7 +102,8 @@ export function ProjectForm() {
           description: "The project description has been filled in for you.",
         });
       } else {
-          throw new Error(result.error || "The AI returned an empty description.")
+          // The error from the flow is now more descriptive
+          throw new Error(result.error || "The AI returned an empty description.");
       }
 
     } catch (error) {
