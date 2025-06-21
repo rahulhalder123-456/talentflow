@@ -20,33 +20,6 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Optional
 };
 
-// Log the config to the browser console for debugging
-console.log("🔒 Initializing Firebase. Loaded Project ID:", firebaseConfig.projectId);
-
-
-// Check for missing environment variables
-const missingConfigKeys = Object.entries(firebaseConfig)
-  .filter(([_, value]) => !value)
-  .map(([key]) => key);
-
-if (missingConfigKeys.length > 0) {
-  const varNames = missingConfigKeys.map(
-    key =>
-      `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, "_$1").toUpperCase()}`
-  );
-
-  const errorMessage = `
-❌ Firebase configuration is incomplete!
-
-Missing the following environment variables in .env.local:
-${varNames.map(name => ` - ${name}`).join("\n")}
-
-💡 Make sure to restart the dev server after updating your .env file.
-`;
-
-  throw new Error(errorMessage);
-}
-
 // Initialize Firebase app and auth
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
