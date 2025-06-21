@@ -18,6 +18,18 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Validate that all Firebase config values are present.
+const missingConfigKeys = Object.entries(firebaseConfig)
+  .filter(([key, value]) => !value)
+  .map(([key]) => key);
+
+if (missingConfigKeys.length > 0) {
+  const varNames = missingConfigKeys.map(key => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, "_$1").toUpperCase()}`);
+  const errorMessage = `Firebase configuration is incomplete. Please add the following environment variables to your .env file: ${varNames.join(', ')}. After adding them, you MUST restart your development server.`;
+  throw new Error(errorMessage);
+}
+
+
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
