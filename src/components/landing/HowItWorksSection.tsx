@@ -45,8 +45,8 @@ export function HowItWorksSection() {
                 <h3 className="font-headline mt-6 text-2xl">{step}</h3>
                 <p className="mt-2 text-muted-foreground">
                   {index === 0 && 'Submit your project details through our easy-to-use form. Our AI assistant helps you create a perfect brief.'}
-                  {index === 1 && 'We\\'ll provide a detailed proposal. Once you give the green light, our team starts work immediately.'}
-                  {index === 2 && 'Pay securely upon milestone completion. We guarantee you\\'ll be 100% satisfied with the final result.'}
+                  {index === 1 && 'We\'ll provide a detailed proposal. Once you give the green light, our team starts work immediately.'}
+                  {index === 2 && 'Pay securely upon milestone completion. We guarantee you\'ll be 100% satisfied with the final result.'}
                 </p>
                 {index < 2 && <div className="absolute left-1/2 top-6 h-full w-px -translate-x-1/2 bg-gradient-to-b from-primary/50 via-primary/20 to-transparent md:hidden"></div>}
               </motion.div>
