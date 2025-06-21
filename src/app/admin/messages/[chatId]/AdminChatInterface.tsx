@@ -62,6 +62,7 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
           createdAt: data.createdAt?.toDate(),
         } as Message;
       });
+      
       setMessages(msgs);
       setIsLoadingMessages(false);
     }, (error) => {

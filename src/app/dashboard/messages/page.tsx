@@ -68,6 +68,7 @@ export default function MessagesPage() {
           createdAt: data.createdAt?.toDate(),
         } as Message;
       });
+      
       setMessages(msgs);
       setIsLoadingMessages(false);
     }, (error) => {
