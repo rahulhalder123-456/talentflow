@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type Chat = {
     id: string;
@@ -19,6 +20,7 @@ type Chat = {
 export function AllChatsList() {
     const [chats, setChats] = useState<Chat[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -27,11 +29,17 @@ export function AllChatsList() {
             if (result.success) {
                 const sortedChats = result.chats.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
                 setChats(sortedChats as Chat[]);
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Failed to load chats",
+                    description: result.error || "An unknown error occurred. This is often due to Firestore security rules.",
+                });
             }
             setLoading(false);
         };
         fetchChats();
-    }, []);
+    }, [toast]);
 
     if (loading) {
         return <Loader />;

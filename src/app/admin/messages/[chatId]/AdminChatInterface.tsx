@@ -61,7 +61,7 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
           ...data,
           createdAt: data.createdAt?.toDate(),
         } as Message;
-      });
+      }).sort((a, b) => a.createdAt?.getTime() - b.createdAt?.getTime());
       
       setMessages(msgs);
       setIsLoadingMessages(false);
@@ -80,10 +80,15 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !user || !chatId) return;
+    
     setIsSending(true);
-    // Admin sends message with their special ID
-    await sendMessage({ chatId, userId: ADMIN_USER_ID, text: newMessage });
-    setNewMessage("");
+    const result = await sendMessage({ chatId, userId: ADMIN_USER_ID, text: newMessage });
+    
+    if (!result.success) {
+        toast({ variant: "destructive", title: "Send Failed", description: result.error });
+    } else {
+        setNewMessage("");
+    }
     setIsSending(false);
   };
   
@@ -105,12 +110,16 @@ export function AdminChatInterface({ chatId }: AdminChatInterfaceProps) {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      await sendMessage({
+      const result = await sendMessage({
         chatId,
         userId: ADMIN_USER_ID,
         fileUrl: downloadURL,
         fileName: file.name,
       });
+
+      if (!result.success) {
+        toast({ variant: "destructive", title: "Send Failed", description: result.error });
+      }
 
     } catch (error) {
        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your file. Please try again." });
