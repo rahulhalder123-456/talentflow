@@ -5,21 +5,21 @@ import { Menu, Zap } from 'lucide-react';
 
 export function Header() {
   return (
-    <header className="bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-lg">
+      <div className="container mx-auto flex h-20 max-w-7xl items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2" prefetch={false}>
-          <Zap className="h-6 w-6 text-primary" />
-          <span className="font-headline text-lg font-bold">Talent Flow</span>
+          <Zap className="h-7 w-7 text-primary" />
+          <span className="font-headline text-xl font-bold">Talent Flow</span>
         </Link>
-        <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/#categories" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
-            Find Talent
+        <nav className="hidden items-center gap-8 text-sm md:flex">
+          <Link href="/#categories" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
+            Services
           </Link>
-          <Link href="/post-project" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
-            Post a Project
-          </Link>
-          <Link href="/#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
+          <Link href="/#how-it-works" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
             How It Works
+          </Link>
+           <Link href="/#about-us" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
+            About Us
           </Link>
         </nav>
         <div className="hidden items-center gap-2 md:flex">
@@ -27,7 +27,7 @@ export function Header() {
             <Link href="/signin">Sign In</Link>
           </Button>
           <Button asChild>
-            <Link href="/signup">Sign Up</Link>
+            <Link href="/post-project">Post a Project</Link>
           </Button>
         </div>
         <Sheet>
@@ -37,7 +37,7 @@ export function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="flex flex-col p-0">
+          <SheetContent side="right" className="flex flex-col p-0 bg-background">
             <SheetHeader className="border-b p-4">
               <SheetTitle>
                 <Link href="/" className="flex items-center gap-2" prefetch={false}>
@@ -49,13 +49,16 @@ export function Header() {
             <div className="flex-1 overflow-y-auto p-4">
               <nav className="grid gap-2">
                 <Link href="/#categories" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
-                  Find Talent
+                  Services
+                </Link>
+                 <Link href="/#how-it-works" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                  How It Works
+                </Link>
+                <Link href="/#about-us" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                  About Us
                 </Link>
                 <Link href="/post-project" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
                   Post a Project
-                </Link>
-                <Link href="/#how-it-works" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
-                  How It Works
                 </Link>
               </nav>
             </div>

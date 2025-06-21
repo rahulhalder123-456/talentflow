@@ -85,14 +85,14 @@ export function ProjectForm() {
     console.log(values);
     toast({
         title: "Project Submitted!",
-        description: "Your project is now live for bidding.",
+        description: "Your project is now live. We'll be in touch shortly.",
     });
   }
 
   return (
-    <Card className="shadow-lg">
+    <Card className="bg-secondary/20 border-border/50 shadow-lg">
       <CardHeader>
-        <CardTitle>Project Details</CardTitle>
+        <CardTitle className="font-headline text-3xl">Project Details</CardTitle>
         <CardDescription>
           Fill out the form below. For the description, you can write your own or use our AI assistant.
         </CardDescription>
@@ -162,7 +162,7 @@ export function ProjectForm() {
               )}
             />
             
-            <div className="space-y-4 rounded-lg border bg-background p-6 shadow-sm">
+            <div className="space-y-4 rounded-lg border border-border/60 bg-background/50 p-6 shadow-sm">
               <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1">
                   <FormLabel className="text-base font-semibold">Project Description</FormLabel>
@@ -186,7 +186,7 @@ export function ProjectForm() {
                   <FormItem>
                     <FormControl>
                       <Textarea
-                        placeholder="Let AI help you write a compelling project description..."
+                        placeholder="Let our AI help you write a compelling project description..."
                         className="min-h-[200px] resize-y"
                         {...field}
                       />
@@ -197,7 +197,7 @@ export function ProjectForm() {
               />
             </div>
             
-            <Button type="submit" size="lg" className="w-full">Post Project</Button>
+            <Button type="submit" size="lg" className="w-full text-lg">Post Project</Button>
           </form>
         </Form>
       </CardContent>

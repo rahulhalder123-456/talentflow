@@ -31,12 +31,12 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex flex-1 items-center justify-center bg-muted/40 p-4">
-        <Card className="mx-auto w-full max-w-sm shadow-lg">
+      <main className="flex flex-1 items-center justify-center p-4">
+        <Card className="mx-auto w-full max-w-sm bg-secondary/20 border-border/50 shadow-lg opacity-0 animate-fade-in-up">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Sign Up</CardTitle>
+            <CardTitle className="font-headline text-3xl">Create an Account</CardTitle>
             <CardDescription>
-              Enter your information to create an account.
+              Enter your information to get started.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -70,16 +70,16 @@ export default function SignUpPage() {
             </div>
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-border/50" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
+                <span className="bg-secondary/20 px-2 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" type="button">
+             <div className="grid grid-cols-2 gap-2">
+               <Button variant="outline" type="button">
                 <GoogleIcon className="mr-2 h-4 w-4" />
                 Google
               </Button>
