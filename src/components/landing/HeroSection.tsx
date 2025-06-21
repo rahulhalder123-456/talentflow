@@ -2,11 +2,11 @@
 "use client";
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CodeAnimation } from '@/components/common/CodeAnimation';
 
 const fadeInUp = {
   initial: { y: 20, opacity: 0 },
@@ -102,20 +102,12 @@ export function HeroSection() {
           </motion.div>
 
           <motion.div
-            className="relative order-first md:order-last"
-            initial={{ opacity: 0, x: 50, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            className="relative h-[400px] w-full order-first md:order-last"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Image
-              src="https://placehold.co/600x450.png"
-              alt="An illustration of a developer working at a desk."
-              width={600}
-              height={450}
-              className="rounded-lg shadow-2xl shadow-primary/20"
-              priority
-              data-ai-hint="developer illustration"
-            />
+            <CodeAnimation />
           </motion.div>
         </div>
       </div>
