@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Briefcase, PlusCircle } from "lucide-react";
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Project = {
@@ -21,6 +21,8 @@ type Project = {
     budget: string;
     status: string;
     createdAt: string;
+    deadline: string;
+    paymentType: string;
 };
 
 export default function ProjectsPage() {
@@ -110,9 +112,11 @@ export default function ProjectsPage() {
                                             {project.projectDescription || "No description provided."}
                                         </p>
                                     </CardContent>
-                                    <CardFooter className="flex justify-between items-center text-sm text-muted-foreground border-t border-border/50 pt-4 mt-4">
-                                        <span>Budget: <span className="font-semibold text-foreground">${project.budget}</span></span>
-                                        <span>{formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}</span>
+                                    <CardFooter className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground border-t border-border/50 pt-4 mt-4">
+                                        <div>Budget: <span className="font-semibold text-foreground">${project.budget}</span></div>
+                                        <div>Payment: <span className="font-semibold text-foreground capitalize">{project.paymentType}</span></div>
+                                        <div>Posted: <span className="font-semibold text-foreground">{formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}</span></div>
+                                        <div>Deadline: <span className="font-semibold text-foreground">{format(new Date(project.deadline), 'PP')}</span></div>
                                     </CardFooter>
                                 </Card>
                             ))}

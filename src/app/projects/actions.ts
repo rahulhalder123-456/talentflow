@@ -24,6 +24,8 @@ const projectSchema = z.object({
   projectBrief: z.string().min(20),
   desiredSkills: z.string().min(3),
   budget: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  deadline: z.date(),
+  paymentType: z.string(),
   projectDescription: z.string().optional(),
   userId: z.string(),
 });
@@ -60,6 +62,7 @@ export async function getProjectsByUserId(userId: string) {
             id: doc.id,
             ...data,
             createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+            deadline: data.deadline?.toDate().toISOString() || new Date().toISOString(),
         };
     });
     return { success: true, projects };
@@ -79,6 +82,7 @@ export async function getAllProjects() {
             id: doc.id,
             ...data,
             createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+            deadline: data.deadline?.toDate().toISOString() || new Date().toISOString(),
         };
     });
     return { success: true, projects };

@@ -7,7 +7,7 @@ import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 type Project = {
     id: string;
@@ -16,6 +16,8 @@ type Project = {
     budget: string;
     status: string;
     createdAt: string;
+    deadline: string;
+    paymentType: string;
 };
 
 export function AllProjectsList() {
@@ -54,6 +56,8 @@ export function AllProjectsList() {
                             <TableHead>Title</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Budget</TableHead>
+                            <TableHead>Payment Type</TableHead>
+                            <TableHead>Deadline</TableHead>
                             <TableHead>Posted</TableHead>
                             <TableHead className="text-right">Client ID</TableHead>
                         </TableRow>
@@ -67,13 +71,15 @@ export function AllProjectsList() {
                                         <Badge variant={project.status === 'Open' ? 'secondary' : 'default'}>{project.status}</Badge>
                                     </TableCell>
                                     <TableCell>${project.budget}</TableCell>
+                                    <TableCell className="capitalize">{project.paymentType}</TableCell>
+                                    <TableCell>{format(new Date(project.deadline), 'PP')}</TableCell>
                                     <TableCell>{formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}</TableCell>
                                     <TableCell className="text-right font-mono text-xs text-muted-foreground">{project.userId}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={7} className="h-24 text-center">
                                     No projects found.
                                 </TableCell>
                             </TableRow>

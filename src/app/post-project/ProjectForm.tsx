@@ -5,8 +5,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Wand2, LoaderCircle } from 'lucide-react';
+import { CalendarIcon, Wand2, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,12 +26,18 @@ import { handleGenerateDescription } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import { createProject } from '@/app/projects/actions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   projectTitle: z.string().min(5, "Title must be at least 5 characters."),
   projectBrief: z.string().min(20, "Brief must be at least 20 characters."),
   desiredSkills: z.string().min(3, "Please list at least one skill (e.g., React, Figma)."),
   budget: z.string().regex(/^\d+(\.\d{1,2})?$/, "Budget must be a valid number.").min(1, "Budget is required."),
+  deadline: z.date({ required_error: "A deadline for the project is required." }),
+  paymentType: z.string({ required_error: "Please select a payment type." }),
   projectDescription: z.string().optional(),
 });
 
@@ -53,6 +60,30 @@ export function ProjectForm() {
       projectDescription: "",
     },
   });
+
+  const paymentType = form.watch('paymentType');
+
+  const getBudgetLabel = () => {
+    switch (paymentType) {
+        case 'hourly':
+            return 'Hourly Rate (USD)';
+        case 'daily':
+            return 'Daily Rate (USD)';
+        default:
+            return 'Fixed Budget (USD)';
+    }
+  };
+
+  const getBudgetPlaceholder = () => {
+      switch (paymentType) {
+          case 'hourly':
+              return 'e.g., 50';
+          case 'daily':
+              return 'e.g., 400';
+          default:
+              return 'e.g., 5000';
+      }
+  };
 
   const onGenerate = async () => {
     const fieldsToValidate: (keyof FormValues)[] = ["projectTitle", "projectBrief", "desiredSkills", "budget"];
@@ -138,14 +169,73 @@ export function ProjectForm() {
                   </FormItem>
                 )}
               />
+               <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col pt-2">
+                    <FormLabel>Project Deadline</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="paymentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a payment model" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="fixed">Fixed Price</SelectItem>
+                            <SelectItem value="hourly">Per Hour</SelectItem>
+                            <SelectItem value="daily">Per Day</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="budget"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Budget (USD)</FormLabel>
+                    <FormLabel>{getBudgetLabel()}</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 5000" {...field} />
+                      <Input type="number" placeholder={getBudgetPlaceholder()} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -223,7 +313,7 @@ export function ProjectForm() {
             
             <Button type="submit" size="lg" className="w-full text-lg" disabled={isSubmitting || isGenerating}>
               {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-              Post Project
+              Post Your Project
             </Button>
           </form>
         </Form>
