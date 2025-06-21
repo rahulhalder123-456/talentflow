@@ -5,6 +5,20 @@ import { z } from 'zod';
 import { db, collection, doc, setDoc, getDoc, addDoc, getDocs, deleteDoc, serverTimestamp } from '@/lib/firebase/client';
 import { revalidatePath } from 'next/cache';
 
+// A helper to provide more specific error messages
+function getFirebaseErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    if (error.message.includes('PERMISSION_DENIED')) {
+      if (error.message.includes('Cloud Firestore API has not been used')) {
+        return 'Firestore API is not enabled for this project. Please enable it in the Google Cloud Console and try again.';
+      }
+      return 'Permission Denied. Please check your Firestore security rules.';
+    }
+    return error.message;
+  }
+  return 'An unknown error occurred.';
+}
+
 // --- Profile Actions ---
 
 const profileSchema = z.object({
@@ -24,7 +38,7 @@ export async function updateUserProfile(userId: string, data: z.infer<typeof pro
     return { success: true };
   } catch (error) {
     console.error('Error updating profile:', error);
-    return { success: false, error: 'Failed to update profile.' };
+    return { success: false, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -39,7 +53,7 @@ export async function getUserProfile(userId: string) {
     return { success: true, profile: null };
   } catch (error) {
     console.error('Error fetching profile:', error);
-    return { success: false, error: 'Failed to fetch profile.' };
+    return { success: false, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -64,7 +78,7 @@ export async function addPaymentMethod(userId: string, cardData: z.infer<typeof 
     return { success: true };
   } catch (error) {
     console.error('Error adding payment method:', error);
-    return { success: false, error: 'Failed to add payment method.' };
+    return { success: false, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -77,7 +91,7 @@ export async function getPaymentMethods(userId: string) {
     return { success: true, methods };
   } catch (error) {
     console.error('Error fetching payment methods:', error);
-    return { success: false, error: 'Failed to fetch payment methods.', methods: [] };
+    return { success: false, error: getFirebaseErrorMessage(error), methods: [] };
   }
 }
 
@@ -92,6 +106,6 @@ export async function removePaymentMethod(userId: string, methodId: string) {
     return { success: true };
   } catch (error) {
     console.error('Error removing payment method:', error);
-    return { success: false, error: 'Failed to remove payment method.' };
+    return { success: false, error: getFirebaseErrorMessage(error) };
   }
 }

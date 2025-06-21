@@ -4,6 +4,21 @@
 import { z } from 'zod';
 import { db, collection, addDoc, query, where, getDocs, serverTimestamp } from '@/lib/firebase/client';
 
+// A helper to provide more specific error messages
+function getFirebaseErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    if (error.message.includes('PERMISSION_DENIED')) {
+      if (error.message.includes('Cloud Firestore API has not been used')) {
+        return 'Firestore API is not enabled for this project. Please enable it in the Google Cloud Console and try again.';
+      }
+      return 'Permission Denied. Please check your Firestore security rules.';
+    }
+    return error.message;
+  }
+  return 'An unknown error occurred.';
+}
+
+
 const projectSchema = z.object({
   projectTitle: z.string().min(5),
   projectBrief: z.string().min(20),
@@ -28,7 +43,7 @@ export async function createProject(data: z.infer<typeof projectSchema>) {
     return { success: true };
   } catch (error) {
     console.error('Error creating project:', error);
-    return { success: false, error: 'Failed to save project to the database.' };
+    return { success: false, error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -50,7 +65,7 @@ export async function getProjectsByUserId(userId: string) {
     return { success: true, projects };
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return { success: false, error: 'Could not fetch projects.', projects: [] };
+    return { success: false, error: getFirebaseErrorMessage(error), projects: [] };
   }
 }
 
@@ -69,6 +84,6 @@ export async function getAllProjects() {
     return { success: true, projects };
   } catch (error) {
     console.error('Error fetching all projects:', error);
-    return { success: false, error: 'Could not fetch projects.', projects: [] };
+    return { success: false, error: getFirebaseErrorMessage(error), projects: [] };
   }
 }
