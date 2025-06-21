@@ -12,7 +12,7 @@ function getFirebaseErrorMessage(error: unknown): string {
       if (error.message.includes('Cloud Firestore API has not been used')) {
         return 'Firestore API is not enabled for this project. Please enable it in the Google Cloud Console and try again.';
       }
-      return 'Permission Denied. Please check your Firestore security rules.';
+      return 'Permission Denied. Your Firestore security rules are blocking this action. Go to the Firebase Console > Firestore > Rules and update them.';
     }
     return error.message;
   }
@@ -34,7 +34,7 @@ export async function updateUserProfile(userId: string, data: z.infer<typeof pro
 
   try {
     const userRef = doc(db, 'users', userId);
-    await setDoc(userRef, parsedData.data, { merge: true });
+    await setDoc(userRef, { ...parsedData.data, email: data.email }, { merge: true });
     revalidatePath('/dashboard/account');
     return { success: true };
   } catch (error) {

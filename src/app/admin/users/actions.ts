@@ -6,7 +6,7 @@ import { db, collection, getDocs } from '@/lib/firebase/client';
 function getFirebaseErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     if (error.message.includes('PERMISSION_DENIED')) {
-      return 'Permission Denied. Please check your Firestore security rules.';
+      return 'Permission Denied. Your Firestore security rules are blocking this action. Go to the Firebase Console > Firestore > Rules and update them.';
     }
     return error.message;
   }
