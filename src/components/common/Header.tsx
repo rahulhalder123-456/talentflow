@@ -4,11 +4,12 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
-import { Menu, Zap, LogOut, LayoutDashboard, PlusCircle } from 'lucide-react';
+import { Menu, Zap, LogOut, LayoutDashboard, PlusCircle, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/client';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { isAdmin } from '@/lib/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 export function Header() {
   const { user } = useAuth();
   const router = useRouter();
+  const isUserAdmin = user ? isAdmin(user.uid) : false;
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -70,6 +72,12 @@ export function Header() {
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </DropdownMenuItem>
+                {isUserAdmin && (
+                  <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => router.push('/post-project')}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   <span>Post a Project</span>
@@ -135,6 +143,13 @@ export function Header() {
                         Dashboard
                       </Link>
                     </SheetClose>
+                    {isUserAdmin && (
+                        <SheetClose asChild>
+                            <Link href="/admin/dashboard" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                                Admin Panel
+                            </Link>
+                        </SheetClose>
+                    )}
                     <SheetClose asChild>
                       <Link href="/post-project" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
                         Post a Project
