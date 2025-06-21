@@ -53,3 +53,22 @@ export async function getProjectsByUserId(userId: string) {
     return { success: false, error: 'Could not fetch projects.', projects: [] };
   }
 }
+
+export async function getAllProjects() {
+  try {
+    const q = query(collection(db, 'projects'));
+    const querySnapshot = await getDocs(q);
+    const projects = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+        };
+    });
+    return { success: true, projects };
+  } catch (error) {
+    console.error('Error fetching all projects:', error);
+    return { success: false, error: 'Could not fetch projects.', projects: [] };
+  }
+}

@@ -9,7 +9,7 @@ import { Header } from "@/components/common/Header";
 import { Loader } from '@/components/common/Loader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, MessageSquare, User, PlusCircle } from 'lucide-react';
+import { Briefcase, MessageSquare, User, PlusCircle, Shield } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -55,8 +55,8 @@ export default function DashboardPage() {
         </div>
 
         <div className="container mx-auto max-w-7xl py-12 px-4 md:px-6">
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-secondary/30 border-border/50 shadow-lg transition-shadow duration-300">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="bg-secondary/30 border-border/50 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">My Projects</CardTitle>
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -71,7 +71,7 @@ export default function DashboardPage() {
                         </Button>
                     </CardContent>
                 </Card>
-                <Card className="bg-secondary/30 border-border/50 shadow-lg transition-shadow duration-300">
+                <Card className="bg-secondary/30 border-border/50 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Messages</CardTitle>
                         <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -86,7 +86,7 @@ export default function DashboardPage() {
                         </Button>
                     </CardContent>
                 </Card>
-                 <Card className="bg-secondary/30 border-border/50 shadow-lg transition-shadow duration-300">
+                 <Card className="bg-secondary/30 border-border/50 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Account Settings</CardTitle>
                         <User className="h-4 w-4 text-muted-foreground" />
@@ -98,6 +98,21 @@ export default function DashboardPage() {
                         </p>
                         <Button variant="outline" size="sm" className="mt-4" asChild>
                            <Link href="/dashboard/account">Manage Account</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+                <Card className="bg-secondary/30 border-accent/30 shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Admin Panel</CardTitle>
+                        <Shield className="h-4 w-4 text-accent" />
+                    </CardHeader>
+                    <CardContent>
+                         <div className="text-2xl font-bold">Manage</div>
+                         <p className="text-xs text-muted-foreground">
+                            Access the admin dashboard to manage all projects.
+                        </p>
+                        <Button variant="outline" size="sm" className="mt-4" asChild>
+                           <Link href="/admin/dashboard">Go to Admin</Link>
                         </Button>
                     </CardContent>
                 </Card>
