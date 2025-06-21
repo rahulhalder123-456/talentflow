@@ -3,7 +3,6 @@
 
 import { z } from 'zod';
 import { db, collection, addDoc, serverTimestamp, query, where, getDocs, doc, setDoc } from '@/lib/firebase/client';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const messageSchema = z.object({
   chatId: z.string(),
