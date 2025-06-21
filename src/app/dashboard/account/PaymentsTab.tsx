@@ -1,15 +1,18 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CreditCard, PlusCircle } from "lucide-react";
+import { CreditCard, PlusCircle, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { getPaymentMethods, addPaymentMethod, removePaymentMethod } from "./actions";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Placeholder for a payment method type
+
 type PaymentMethod = {
   id: string;
   brand: string;
@@ -19,29 +22,91 @@ type PaymentMethod = {
 };
 
 export function PaymentsTab() {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddCard = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      const fetchMethods = async () => {
+        setLoading(true);
+        const result = await getPaymentMethods(user.uid);
+        if (result.success) {
+          setPaymentMethods(result.methods as PaymentMethod[]);
+        } else {
+          toast({ variant: "destructive", title: "Error", description: result.error });
+        }
+        setLoading(false);
+      };
+      fetchMethods();
+    }
+  }, [user, toast]);
+
+  const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+
+    setIsSubmitting(true);
     // In a real app, you would use a library like Stripe Elements
     // and send the token to your backend.
     // For this prototype, we'll just add a fake card.
-    const newCard: PaymentMethod = {
-      id: `card_${Math.random().toString(36).substr(2, 9)}`,
+    const newCard = {
       brand: "Visa",
       last4: Math.floor(1000 + Math.random() * 9000).toString(),
       expMonth: Math.floor(1 + Math.random() * 12),
       expYear: new Date().getFullYear() + Math.floor(2 + Math.random() * 4),
     };
-    setPaymentMethods(prev => [...prev, newCard]);
-    setIsDialogOpen(false);
-    toast({
-      title: "Card Added",
-      description: "Your new payment method has been saved.",
-    });
+    
+    const result = await addPaymentMethod(user.uid, newCard);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      const fetchResult = await getPaymentMethods(user.uid);
+      if(fetchResult.success) setPaymentMethods(fetchResult.methods as PaymentMethod[]);
+      
+      setIsDialogOpen(false);
+      toast({
+        title: "Card Added",
+        description: "Your new payment method has been saved.",
+      });
+    } else {
+      toast({ variant: "destructive", title: "Error", description: result.error });
+    }
   };
+  
+  const handleRemoveCard = async (methodId: string) => {
+    if (!user) return;
+    const result = await removePaymentMethod(user.uid, methodId);
+    if(result.success) {
+        setPaymentMethods(prev => prev.filter(m => m.id !== methodId));
+        toast({
+            title: "Card Removed",
+            description: "The payment method has been deleted.",
+        });
+    } else {
+        toast({ variant: "destructive", title: "Error", description: result.error });
+    }
+  };
+  
+  if (loading) {
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border p-4">
+                 <div className="flex items-center gap-4">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-3 w-32" />
+                    </div>
+                 </div>
+                 <Skeleton className="h-8 w-20" />
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -58,7 +123,7 @@ export function PaymentsTab() {
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive">
+              <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveCard(method.id)}>
                 Remove
               </Button>
             </li>
@@ -106,7 +171,10 @@ export function PaymentsTab() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Add Card</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                Add Card
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

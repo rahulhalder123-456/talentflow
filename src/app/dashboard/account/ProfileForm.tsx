@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { updateUserProfile, getUserProfile } from "./actions";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -36,29 +37,61 @@ export function ProfileForm() {
 
   useEffect(() => {
     if (user) {
-      const displayName = user.displayName || "";
-      const nameParts = displayName.split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-      form.reset({
-        firstName: firstName,
-        lastName: lastName,
-        email: user.email || "",
-      });
+      // Set email from auth
+      form.setValue('email', user.email || "");
+
+      // Fetch profile from Firestore
+      const fetchProfile = async () => {
+        const result = await getUserProfile(user.uid);
+        if (result.success && result.profile) {
+          const profile = result.profile as ProfileFormValues;
+          form.reset({
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            email: user.email || "",
+          });
+        } else {
+          // Fallback to display name if no profile in DB
+          const displayName = user.displayName || "";
+          const nameParts = displayName.split(" ");
+          const firstName = nameParts[0] || "";
+          const lastName = nameParts.slice(1).join(" ") || "";
+          form.reset({
+            firstName: firstName,
+            lastName: lastName,
+            email: user.email || "",
+          });
+        }
+      };
+      fetchProfile();
     }
   }, [user, form]);
 
 
   const onSubmit = async (data: ProfileFormValues) => {
+    if (!user) {
+        toast({ variant: "destructive", title: "Authentication Error", description: "You must be logged in." });
+        return;
+    }
     setLoading(true);
-    // In a real app, you would call an action to update user profile in Firebase
-    console.log(data);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    setLoading(false);
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved.",
+    const result = await updateUserProfile(user.uid, {
+        firstName: data.firstName,
+        lastName: data.lastName,
     });
+    setLoading(false);
+
+    if (result.success) {
+        toast({
+            title: "Profile Updated",
+            description: "Your profile information has been saved.",
+        });
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: result.error,
+        });
+    }
   };
 
   return (

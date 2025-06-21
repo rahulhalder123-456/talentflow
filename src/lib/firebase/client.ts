@@ -9,7 +9,7 @@ import {
   type AuthProvider as FirebaseAuthProvider,
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 
 
 // --- Firebase Configuration ---
@@ -63,5 +63,9 @@ export {
   query,
   where,
   getDocs,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc
 };
