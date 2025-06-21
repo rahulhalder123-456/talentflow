@@ -41,6 +41,7 @@ const staggerContainer = {
 };
 
 const headlineStagger = {
+  initial: {},
   animate: {
     transition: {
       staggerChildren: 0.08,
