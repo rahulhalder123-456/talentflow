@@ -92,7 +92,9 @@ export default function DashboardPage() {
                          <p className="text-xs text-muted-foreground">
                             Update your personal information and payment methods.
                         </p>
-                        <Button variant="outline" size="sm" className="mt-4">Manage Account</Button>
+                        <Button variant="outline" size="sm" className="mt-4" asChild>
+                           <Link href="/dashboard/account">Manage Account</Link>
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
