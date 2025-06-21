@@ -74,10 +74,7 @@ export function ProfileForm() {
         return;
     }
     setLoading(true);
-    const result = await updateUserProfile(user.uid, {
-        firstName: data.firstName,
-        lastName: data.lastName,
-    });
+    const result = await updateUserProfile(user.uid, data);
     setLoading(false);
 
     if (result.success) {

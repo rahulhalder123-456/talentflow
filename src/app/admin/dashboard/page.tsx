@@ -49,10 +49,10 @@ export default function AdminDashboardPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-xs text-muted-foreground pt-4">
-                        This feature is coming soon.
+                        View and manage all registered users on the platform.
                     </p>
-                    <Button variant="outline" size="sm" className="mt-4" disabled>
-                        View Users
+                    <Button variant="outline" size="sm" className="mt-4" asChild>
+                        <Link href="/admin/users">View Users</Link>
                     </Button>
                 </CardContent>
             </Card>
