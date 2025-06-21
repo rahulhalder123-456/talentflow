@@ -98,13 +98,45 @@ export default {
               transform: 'translateY(0)'
           },
         },
+        'spin-slow': {
+          '0%': { transform: 'rotateY(0deg) rotateX(0deg)' },
+          '100%': { transform: 'rotateY(360deg) rotateX(360deg)' },
+        },
+        'orbit-1': {
+          '0%': { transform: 'rotateZ(0deg) rotateX(60deg) rotateY(0deg)' },
+          '100%': { transform: 'rotateZ(360deg) rotateX(60deg) rotateY(0deg)' },
+        },
+        'orbit-2': {
+          '0%': { transform: 'rotateZ(0deg) rotateX(60deg) rotateY(60deg)' },
+          '100%': { transform: 'rotateZ(360deg) rotateX(60deg) rotateY(60deg)' },
+        },
+        'orbit-3': {
+          '0%': { transform: 'rotateZ(0deg) rotateX(60deg) rotateY(120deg)' },
+          '100%': { transform: 'rotateZ(360deg) rotateX(60deg) rotateY(120deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+        'spin-slow': 'spin-slow 15s linear infinite',
+        'orbit-1': 'orbit-1 5s linear infinite',
+        'orbit-2': 'orbit-2 5s linear infinite 0.5s',
+        'orbit-3': 'orbit-3 5s linear infinite 1s',
       },
+      transformStyle: {
+        'preserve-3d': 'preserve-3d',
+      }
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    function ({ addUtilities }) {
+      addUtilities({
+        '.transform-style-preserve-3d': {
+          'transform-style': 'preserve-3d',
+        },
+      });
+    },
+  ],
 } satisfies Config;
