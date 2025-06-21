@@ -142,11 +142,15 @@ export default {
         'scroll-y-reverse-medium': 'scroll-y-reverse 60s linear infinite',
         'scroll-y-reverse-fast': 'scroll-y-reverse 40s linear infinite',
       },
+      // Add boxShadow extension here
+      boxShadow: {
+        'glow': '0 0 8px rgba(255,255,255,0.2), 0 0 24px rgba(255,0,255,0.3)',
+      },
     },
   },
   plugins: [
     require('tailwindcss-animate'),
-    function ({ addUtilities }) {
+    function ({ addUtilities }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
       addUtilities({
         '.transform-style-preserve-3d': {
           'transform-style': 'preserve-3d',
@@ -155,3 +159,4 @@ export default {
     },
   ],
 } satisfies Config;
+
