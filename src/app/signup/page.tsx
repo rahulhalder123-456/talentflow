@@ -89,11 +89,18 @@ export default function SignUpPage() {
         description: "You have successfully signed up.",
       });
       router.push("/post-project");
-    } catch (error) {
+    } catch (error: any) {
+      console.error(`Sign up with ${providerName} failed:`, error);
+      let description = `Could not sign up with ${providerName}. Please try again.`;
+      if (error.code === 'auth/popup-closed-by-user') {
+          description = 'Sign-up cancelled. You closed the pop-up window.'
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+          description = 'An account already exists with this email. Please sign in with the original method.'
+      }
       toast({
         variant: "destructive",
         title: "Sign up failed",
-        description: `Could not sign up with ${providerName}. Please try again.`,
+        description: description,
       });
     } finally {
       setSocialLoading(null);

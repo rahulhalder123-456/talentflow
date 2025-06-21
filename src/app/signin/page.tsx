@@ -87,11 +87,19 @@ export default function SignInPage() {
         description: "You have successfully signed in.",
       });
       router.push("/post-project");
-    } catch (error) {
+    } catch (error: any) {
+      console.error(`Sign in with ${providerName} failed:`, error);
+      let description = `Could not sign in with ${providerName}. Please try again.`;
+      if (error.code === 'auth/popup-closed-by-user') {
+          description = 'Sign-in cancelled. You closed the pop-up window.'
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+          description = 'An account already exists with this email. Please sign in with the original method.'
+      }
+      
       toast({
         variant: "destructive",
         title: "Sign in failed",
-        description: `Could not sign in with ${providerName}. Please try again.`,
+        description: description,
       });
     } finally {
       setSocialLoading(null);
