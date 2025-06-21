@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 
 // --- Firebase Configuration ---
@@ -28,6 +29,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 
 // --- Conditionally Load Analytics ---
@@ -53,6 +55,7 @@ export {
   app,
   auth,
   db,
+  storage,
   analyticsPromise,
   googleProvider,
   githubProvider,
