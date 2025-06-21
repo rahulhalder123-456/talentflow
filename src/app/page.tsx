@@ -24,11 +24,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CodeAnimation } from '@/components/common/CodeAnimation';
 
 const fadeInUp = {
-  initial: { y: 60, opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
+  initial: { y: 20, opacity: 0 },
+  animate: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
 const staggerContainer = {
@@ -36,6 +35,7 @@ const staggerContainer = {
   animate: {
     transition: {
       staggerChildren: 0.1,
+      delayChildren: 0.2,
     },
   },
 };
@@ -50,8 +50,8 @@ const headlineStagger = {
 };
 
 const headlineWord = {
-  initial: { y: "120%" },
-  animate: { y: "0%", transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } },
+  initial: { y: '120%' },
+  animate: { y: '0%', transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } },
 };
 
 const categories = [
@@ -121,55 +121,85 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
-          <div className="container mx-auto max-w-7xl px-4 md:px-6 relative z-10">
-            <motion.div
-              className="flex flex-col items-center gap-6 text-center"
-              initial="initial"
-              animate="animate"
-              variants={staggerContainer}
-            >
-              <motion.div variants={fadeInUp}>
-                <Badge variant="secondary" className="text-sm">Your On-Demand Creative & Technical Team</Badge>
-              </motion.div>
-
-              <motion.h1
-                className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent"
-                variants={headlineStagger}
-              >
-                {"Where Great Ideas Meet Great Talent".split(" ").map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden py-1">
-                    <motion.span
-                      className="inline-block"
-                      variants={headlineWord}
-                    >
-                      {word}&nbsp;
-                    </motion.span>
-                  </span>
-                ))}
-              </motion.h1>
-
-              <motion.p
-                className="max-w-3xl text-lg text-muted-foreground md:text-xl"
-                variants={fadeInUp}
-              >
-                We are your dedicated team of creative and technical experts, ready to bring your vision to life with precision and passion. From stunning designs to robust code, we deliver excellence on demand.
-              </motion.p>
-              <motion.div
-                className="mt-4 flex flex-col sm:flex-row items-center gap-4"
-                variants={fadeInUp}
-              >
-                <Button asChild size="lg" className="text-base">
-                  <Link href="/post-project">
-                    Post a Project <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="text-base border-primary/50 hover:bg-primary/10 hover:text-primary-foreground">
-                  <Link href="#categories">Explore Services</Link>
-                </Button>
-              </motion.div>
-            </motion.div>
+           <div className="absolute inset-0 z-0 opacity-10">
+            <div
+              className="absolute inset-0 bg-grid-pattern"
+              style={{ maskImage: 'linear-gradient(to bottom, white 0%, white 75%, transparent 100%)' }}
+            />
           </div>
-          <CodeAnimation />
+          <div className="container mx-auto max-w-7xl px-4 md:px-6">
+            <div className="grid items-center gap-12 md:grid-cols-2">
+              <motion.div
+                className="flex flex-col items-center gap-6 text-center md:items-start md:text-left"
+                initial="initial"
+                animate="animate"
+                variants={staggerContainer}
+              >
+                <motion.div variants={fadeInUp}>
+                  <Badge variant="secondary" className="text-sm shadow-lg backdrop-blur-sm">
+                    Your On-Demand Creative & Technical Team
+                  </Badge>
+                </motion.div>
+
+                <motion.h1
+                  className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground/80 to-muted-foreground bg-clip-text text-transparent"
+                  variants={headlineStagger}
+                >
+                  {"Where Great Ideas Meet Great Talent".split(" ").map((word, i) => (
+                    <span key={i} className="inline-block overflow-hidden py-1">
+                      <motion.span className="inline-block" variants={headlineWord}>
+                        {word}&nbsp;
+                      </motion.span>
+                    </span>
+                  ))}
+                </motion.h1>
+
+                <motion.p
+                  className="max-w-3xl text-lg text-muted-foreground md:text-xl"
+                  variants={fadeInUp}
+                >
+                  We are your dedicated team of creative and technical experts, ready to bring your vision to life
+                  with precision and passion. From stunning designs to robust code, we deliver excellence on
+                  demand.
+                </motion.p>
+                <motion.div
+                  className="mt-4 flex flex-col sm:flex-row items-center gap-4"
+                  variants={fadeInUp}
+                >
+                  <Button asChild size="lg" className="text-base shadow-lg shadow-primary/20">
+                    <Link href="/post-project">
+                      Post a Project <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="text-base bg-background/50 border-primary/50 hover:bg-primary/10 hover:text-primary-foreground backdrop-blur-sm"
+                  >
+                    <Link href="#categories">Explore Services</Link>
+                  </Button>
+                </motion.div>
+              </motion.div>
+
+              <motion.div 
+                className="relative order-first md:order-last"
+                initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              >
+                <Image
+                  src="https://placehold.co/600x600.png"
+                  alt="A team working collaboratively on their computers"
+                  width={600}
+                  height={600}
+                  className="rounded-lg shadow-2xl shadow-primary/20"
+                  data-ai-hint="team collaboration"
+                  priority
+                />
+              </motion.div>
+            </div>
+          </div>
         </section>
 
         <motion.section 
@@ -192,7 +222,7 @@ export default function Home() {
                 <motion.div key={category.name} variants={fadeInUp}>
                   <Link
                     href="#"
-                    className="group flex flex-col items-center gap-4 rounded-lg border bg-secondary/30 p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:bg-secondary/70 hover:shadow-primary/20 hover:shadow-lg"
+                    className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-6 text-center shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:bg-white/10 hover:shadow-primary/20 hover:shadow-2xl"
                   >
                     {category.icon}
                     <h3 className="font-semibold text-foreground/90">{category.name}</h3>
@@ -220,18 +250,19 @@ export default function Home() {
                 Our streamlined process ensures a smooth and efficient collaboration.
               </p>
             </motion.div>
-            <div className="relative mt-12 grid gap-8 md:grid-cols-3">
-               <div className="absolute left-1/2 top-5 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-               <div className="absolute left-1/2 top-5 h-full w-px -translate-x-1/2 bg-gradient-to-b from-primary/50 via-primary/50 to-transparent md:hidden"></div>
+            <div className="relative mt-12 grid gap-12 md:grid-cols-3">
+               <div className="absolute left-1/2 top-5 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent md:block hidden"></div>
+               
               {['Post a Project', 'Approve & Kick-off', 'Review & Complete'].map((step, index) => (
                  <motion.div key={step} variants={fadeInUp} className="relative flex flex-col items-center text-center">
-                   <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary font-bold shadow-[0_0_15px_hsl(var(--primary)/0.5)]">{index + 1}</div>
+                   <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary bg-background text-primary font-bold shadow-[0_0_20px_hsl(var(--primary)/0.5)] z-10">{index + 1}</div>
                    <h3 className="font-headline mt-6 text-2xl">{step}</h3>
                    <p className="mt-2 text-muted-foreground">
                      {index === 0 && 'Submit your project details through our easy-to-use form. Our AI assistant helps you create a perfect brief.'}
                      {index === 1 && 'We\'ll provide a detailed proposal. Once you give the green light, our team starts work immediately.'}
                      {index === 2 && 'Pay securely upon milestone completion. We guarantee you\'ll be 100% satisfied with the final result.'}
                    </p>
+                   {index < 2 && <div className="absolute left-1/2 top-6 h-full w-px -translate-x-1/2 bg-gradient-to-b from-primary/50 via-primary/20 to-transparent md:hidden"></div>}
                  </motion.div>
               ))}
             </div>
@@ -240,7 +271,7 @@ export default function Home() {
 
         <motion.section
           id="why-us"
-          className="py-16 md:py-24 bg-secondary/20"
+          className="py-16 md:py-24 bg-gradient-to-b from-background to-secondary/20"
           variants={staggerContainer}
           initial="initial"
           whileInView="animate"
@@ -257,9 +288,9 @@ export default function Home() {
             </motion.div>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {whyUsBenefits.map((benefit) => (
-                 <MotionCard key={benefit.title} variants={fadeInUp} className="bg-background/50 border-border/50 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 h-full">
+                 <MotionCard key={benefit.title} variants={fadeInUp} className="bg-secondary/30 border-white/10 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 h-full backdrop-blur-sm">
                     <CardHeader className="items-center gap-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">{benefit.icon}</div>
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">{benefit.icon}</div>
                         <CardTitle className="font-headline text-xl">{benefit.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -316,7 +347,7 @@ export default function Home() {
                   width={600}
                   height={600}
                   className="rounded-lg shadow-2xl shadow-primary/10"
-                  data-ai-hint="team collaboration"
+                  data-ai-hint="team photo"
                 />
               </motion.div>
             </div>
@@ -342,7 +373,7 @@ export default function Home() {
             </motion.div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial) => (
-                <MotionCard key={testimonial.name} variants={fadeInUp} className="flex h-full flex-col bg-background/50 border-border/50">
+                <MotionCard key={testimonial.name} variants={fadeInUp} className="flex h-full flex-col bg-secondary/30 border-white/10 backdrop-blur-sm">
                   <CardHeader>
                      <div className="flex items-center gap-0.5">
                         {Array.from({ length: testimonial.rating }).map((_, i) => (
@@ -353,7 +384,7 @@ export default function Home() {
                   <CardContent className="flex-1">
                     <p className="text-foreground/90">"{testimonial.quote}"</p>
                   </CardContent>
-                   <div className="p-6 pt-0 mt-4 flex items-center gap-4 border-t border-border/50">
+                   <div className="p-6 pt-0 mt-4 flex items-center gap-4 border-t border-white/10">
                       <Avatar>
                         <AvatarImage src={`https://placehold.co/40x40.png`} alt={testimonial.name} data-ai-hint="person portrait"/>
                         <AvatarFallback>{testimonial.avatar}</AvatarFallback>
@@ -377,7 +408,7 @@ export default function Home() {
           transition={{duration: 0.8}}
         >
           <div className="container mx-auto max-w-4xl px-4 text-center md:px-6">
-            <div className="rounded-lg bg-gradient-to-br from-primary/80 to-accent/80 p-8 md:p-12 shadow-2xl">
+            <div className="rounded-xl bg-gradient-to-br from-primary/80 to-accent/80 p-8 md:p-12 shadow-2xl shadow-primary/20">
               <h2 className="font-headline text-3xl font-bold tracking-tight text-primary-foreground md:text-4xl">
                 Ready to bring your ideas to life?
               </h2>
@@ -386,7 +417,7 @@ export default function Home() {
               </p>
               <div className="mt-8">
                 <Link href="/post-project">
-                  <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90">
+                  <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90 text-lg">
                     Post a Project <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
@@ -396,7 +427,7 @@ export default function Home() {
         </motion.section>
       </main>
 
-      <footer className="border-t border-border/40">
+      <footer className="border-t border-white/10">
         <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
             <div className="sm:col-span-2">
@@ -422,7 +453,7 @@ export default function Home() {
               </ul>
             </div>
           </div>
-          <div className="mt-8 border-t border-border/40 pt-8 text-center text-sm text-muted-foreground">
+          <div className="mt-8 border-t border-white/10 pt-8 text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Talent Flow, Inc. All rights reserved.</p>
           </div>
         </div>
