@@ -3,19 +3,24 @@
 /**
  * @fileOverview A flow to generate a project description using AI.
  *
- * - generateProjectDescription - A server action that takes project details and returns a generated description.
+ * This file contains a single server action `generateProjectDescription`
+ * that takes project details and returns a generated description.
+ * It is designed to be called directly from client components.
  */
 
 import { ai } from '@/ai/genkit';
 import { GenerateDescriptionInputSchema, GenerateDescriptionOutputSchema, type GenerateDescriptionInput } from '@/app/projects/types';
 
+// This is the only export from this file.
 export async function generateProjectDescription(
   input: GenerateDescriptionInput
 ): Promise<{ projectDescription: string } | { error: string }> {
 
   const parsedInput = GenerateDescriptionInputSchema.safeParse(input);
   if (!parsedInput.success) {
-      return { error: "Invalid input provided." };
+      // Creates a user-friendly error message from the validation issues.
+      const errorMessages = parsedInput.error.issues.map(issue => issue.message).join(' ');
+      return { error: `Invalid input: ${errorMessages}` };
   }
 
   try {
@@ -44,6 +49,7 @@ Generate the detailed project description now.`,
     
   } catch (e) {
     console.error(e);
-    return { error: "An unexpected error occurred while generating the description." };
+    // Provide a generic but clear error message to the user.
+    return { error: "An unexpected error occurred while generating the description. Please check the server logs." };
   }
 }

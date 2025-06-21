@@ -74,9 +74,9 @@ export function ProjectForm() {
   };
 
   const handleGenerateClick = async () => {
-    const { projectTitle, projectBrief, desiredSkills } = form.getValues();
-
-    if (!projectTitle || !projectBrief || !desiredSkills) {
+    // Trigger validation for only the fields required for generation
+    const isValid = await form.trigger(["projectTitle", "projectBrief", "desiredSkills"]);
+    if (!isValid) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -84,6 +84,8 @@ export function ProjectForm() {
       });
       return;
     }
+    
+    const { projectTitle, projectBrief, desiredSkills } = form.getValues();
 
     setIsGenerating(true);
     try {
