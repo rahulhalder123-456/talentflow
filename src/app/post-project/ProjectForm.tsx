@@ -103,12 +103,12 @@ export function ProjectForm() {
 
     } catch (error) {
       console.error("Error generating description:", error);
-      let errorMessage = "An unexpected error occurred. Please check the server logs for details.";
+      let errorMessage = "An unexpected error occurred. Please check the server logs.";
       if (error instanceof Error) {
           if (error.message.includes('400 Bad Request') || error.message.includes('API key not valid')) {
-              errorMessage = "Your Google AI API key appears to be invalid or missing. Please check your .env.local file.";
-          } else if (error.message.includes('404 Not Found')) {
-              errorMessage = "The AI model was not found. This can happen if your API key is restricted to a specific region.";
+              errorMessage = "Your Google AI API key appears to be invalid or missing. Please check your .env.local file and restart the server.";
+          } else if (error.message.includes('404 Not Found') || error.message.includes('is not found for API version')) {
+              errorMessage = "The AI model was not found. This can happen if the model name is incorrect or your API key is restricted to a specific region.";
           }
       }
       toast({
