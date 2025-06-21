@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Zap } from 'lucide-react';
 
 export function Header() {
@@ -37,31 +37,35 @@ export function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right">
-            <div className="grid gap-4 p-4">
-              <Link href="/" className="flex items-center gap-2" prefetch={false}>
-                <Zap className="h-6 w-6 text-primary" />
-                <span className="font-headline text-lg font-bold">Talent Flow</span>
-              </Link>
+          <SheetContent side="right" className="flex flex-col p-0">
+            <SheetHeader className="border-b p-4">
+              <SheetTitle>
+                <Link href="/" className="flex items-center gap-2" prefetch={false}>
+                  <Zap className="h-6 w-6 text-primary" />
+                  <span className="font-headline text-lg font-bold">Talent Flow</span>
+                </Link>
+              </SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto p-4">
               <nav className="grid gap-2">
-                <Link href="/#categories" className="py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                <Link href="/#categories" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
                   Find Talent
                 </Link>
-                <Link href="/post-project" className="py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                <Link href="/post-project" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
                   Post a Project
                 </Link>
-                <Link href="/#how-it-works" className="py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                <Link href="/#how-it-works" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
                   How It Works
                 </Link>
               </nav>
-              <div className="grid gap-2">
+            </div>
+            <div className="mt-auto grid gap-2 border-t p-4">
                 <Button variant="ghost" className="w-full" asChild>
                   <Link href="/signin">Sign In</Link>
                 </Button>
                 <Button className="w-full" asChild>
                   <Link href="/signup">Sign Up</Link>
                 </Button>
-              </div>
             </div>
           </SheetContent>
         </Sheet>
