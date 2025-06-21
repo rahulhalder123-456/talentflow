@@ -7,36 +7,27 @@ This app will not run until you configure your API keys and Firebase credentials
 ### 1. Create the Credentials File
 
 - In the root of your project, create a new file named `.env.local`.
-- You can do this by renaming the `env.local.example` file.
 
-### 2. Add Google AI API Key
+### 2. Add Your Keys
 
-- The AI features of this app are powered by Google's Gemini model through Genkit.
-- Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to generate a free API key.
-- Open your new `.env.local` file and add the following line, pasting your key after the `=`:
-  ```
-  GOOGLE_API_KEY=YOUR_API_KEY_HERE
-  ```
+- Open your new `.env.local` file and add the following lines, pasting your keys after the `=`.
+- Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to generate a free **Google AI API key**.
+- Go to your [Firebase Project Settings](https://console.firebase.google.com/) to find your web app's **Firebase credentials**.
 
-### 3. Add Firebase Credentials
+```
+# Google AI API Key
+GOOGLE_API_KEY=YOUR_API_KEY_HERE
 
-- In your [Firebase Project Settings](https://console.firebase.google.com/), find your web app's configuration credentials.
-- Copy and paste these into your `.env.local` file. The file should look like this:
+# Firebase Credentials
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
 
-  ```
-  # Google AI API Key
-  GOOGLE_API_KEY=...
-
-  # Firebase Credentials
-  NEXT_PUBLIC_FIREBASE_API_KEY=...
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
-  NEXT_PUBLIC_FIREBASE_APP_ID=...
-  ```
-
-### 4. Restart the Server
+### 3. Restart the Server
 
 - If the development server is running, you **must** stop it (Ctrl+C) and restart it (`npm run dev`) for the new credentials to be loaded.
 

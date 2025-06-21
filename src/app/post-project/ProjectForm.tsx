@@ -95,23 +95,26 @@ export function ProjectForm() {
         desiredSkills,
       });
 
-      if (result.projectDescription) {
-        form.setValue('projectDescription', result.projectDescription, { shouldValidate: true });
-        toast({
-          title: "Description Generated!",
-          description: "The project description has been filled in for you.",
-        });
-      } else {
-          // The error from the flow is now more descriptive
-          throw new Error(result.error || "The AI returned an empty description.");
-      }
+      form.setValue('projectDescription', result.projectDescription, { shouldValidate: true });
+      toast({
+        title: "Description Generated!",
+        description: "The project description has been filled in for you.",
+      });
 
     } catch (error) {
       console.error("Error generating description:", error);
+      let errorMessage = "An unexpected error occurred while generating the description.";
+      if (error instanceof Error) {
+        if (error.message.includes('API key not valid')) {
+            errorMessage = "The Google AI API key is missing or invalid. Please check your .env.local file and ensure the GOOGLE_API_KEY is set correctly.";
+        } else {
+             errorMessage = error.message;
+        }
+      }
       toast({
         variant: "destructive",
         title: "AI Generation Failed",
-        description: error instanceof Error ? error.message : "Could not generate a description. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setIsGenerating(false);
