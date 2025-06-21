@@ -11,11 +11,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Briefcase, MessageSquare, User, PlusCircle, Shield } from 'lucide-react';
 import { isAdmin } from '@/lib/admin';
+import { getProjectsByUserId } from '@/app/projects/actions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [projectCount, setProjectCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,6 +26,16 @@ export default function DashboardPage() {
     }
     if (user) {
       setIsUserAdmin(isAdmin(user.uid));
+      
+      const fetchProjectCount = async () => {
+        const result = await getProjectsByUserId(user.uid);
+        if (result.success) {
+          setProjectCount(result.projects.length);
+        } else {
+          setProjectCount(0);
+        }
+      };
+      fetchProjectCount();
     }
   }, [user, loading, router]);
 
@@ -67,7 +80,11 @@ export default function DashboardPage() {
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">3 Active</div>
+                        {projectCount === null ? (
+                            <Skeleton className="h-8 w-24 mb-2" />
+                        ) : (
+                            <div className="text-2xl font-bold">{projectCount} Active</div>
+                        )}
                         <p className="text-xs text-muted-foreground">
                             View and manage your ongoing and completed projects.
                         </p>
@@ -82,9 +99,9 @@ export default function DashboardPage() {
                         <MessageSquare className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">2 Unread</div>
+                        <div className="text-2xl font-bold">Inbox</div>
                          <p className="text-xs text-muted-foreground">
-                            Communicate with freelancers and our support team.
+                            Chat with our team about your projects.
                         </p>
                         <Button variant="outline" size="sm" className="mt-4" asChild>
                             <Link href="/dashboard/messages">View Messages</Link>
