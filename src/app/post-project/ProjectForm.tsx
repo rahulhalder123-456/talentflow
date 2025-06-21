@@ -303,10 +303,10 @@ export function ProjectForm() {
                     <FormLabel>Project Description</FormLabel>
                     <Button
                       type="button"
-                      variant="outline"
                       size="sm"
                       onClick={handleGenerateDescription}
                       disabled={isGenerating}
+                      className="bg-accent text-accent-foreground hover:bg-accent/90"
                     >
                       {isGenerating ? (
                         <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
