@@ -20,6 +20,10 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Optional
 };
 
+// Log the config to the browser console for debugging
+console.log("🔒 Initializing Firebase. Loaded Project ID:", firebaseConfig.projectId);
+
+
 // Check for missing environment variables
 const missingConfigKeys = Object.entries(firebaseConfig)
   .filter(([_, value]) => !value)
