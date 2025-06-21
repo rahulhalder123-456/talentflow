@@ -41,7 +41,7 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateProjectDescriptionInputSchema},
   output: {schema: GenerateProjectDescriptionOutputSchema},
   model: 'googleai/gemini-1.5-flash-latest',
-  prompt: `You are an expert project description writer.
+  prompt: `You are an expert project description writer. Your output MUST be a valid JSON object.
 
 You will use the following information to generate a comprehensive and appealing project description.
 
@@ -51,6 +51,8 @@ Desired Skills: {{{desiredSkills}}}
 Budget: {{{budget}}}
 
 Generate a detailed project description that is attractive to freelancers. Make sure to include all the details in a well-organized manner and keep it under 300 words.
+
+The output must be a JSON object with a single key "projectDescription".
 `,
 });
 
