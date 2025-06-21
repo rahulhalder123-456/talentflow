@@ -114,6 +114,57 @@ const testimonials = [
 
 const MotionCard = motion(Card);
 
+const projects = [
+  { src: 'https://placehold.co/400x600.png', alt: 'Website for a coffee brand', hint: 'website design' },
+  { src: 'https://placehold.co/400x500.png', alt: 'Dashboard UI for a SaaS product', hint: 'dashboard ui' },
+  { src: 'https://placehold.co/400x700.png', alt: 'Mobile app for a fitness company', hint: 'mobile app' },
+  { src: 'https://placehold.co/400x450.png', alt: 'Branding for a tech startup', hint: 'branding identity' },
+  { src: 'https://placehold.co/400x650.png', alt: 'Landing page for a new course', hint: 'landing page' },
+  { src: 'https://placehold.co/400x550.png', alt: 'UX design for an e-commerce store', hint: 'ux design' },
+];
+
+const ScrollingProjectGallery = () => {
+  const columns = [
+    [...projects.slice(0, 3)],
+    [...projects.slice(3, 6)],
+    [...projects.slice(2, 5)],
+    [...projects.slice(0, 3)].reverse(),
+  ];
+
+  const animationClasses = [
+    'animate-scroll-y-slow',
+    'animate-scroll-y-reverse-medium',
+    'animate-scroll-y-fast',
+    'animate-scroll-y-reverse-slow',
+  ];
+
+  return (
+    <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]">
+      <div className="flex h-max min-w-full justify-center gap-6 px-6">
+        {columns.map((column, colIndex) => (
+          <div key={colIndex} className={`flex w-1/4 max-w-[400px] flex-shrink-0 flex-col gap-6 ${animationClasses[colIndex]}`}>
+            {[...column, ...column].map((project, projectIndex) => (
+              <div key={projectIndex} className="relative overflow-hidden rounded-lg shadow-lg">
+                <Image
+                  src={project.src}
+                  alt={project.alt}
+                  width={400}
+                  height={600}
+                  className="h-auto w-full object-cover"
+                  data-ai-hint={project.hint}
+                  priority={projectIndex < 3}
+                />
+                <div className="absolute inset-0 bg-black/10"></div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background overflow-hidden">
@@ -122,12 +173,11 @@ export default function Home() {
         <motion.section 
           className="relative py-24 md:py-32 lg:py-40 text-center overflow-hidden"
         >
-           <div className="absolute inset-0 -z-10 overflow-hidden bg-background">
-              <div className="absolute -top-1/4 left-1/4 h-[50rem] w-[50rem] -translate-x-1/2 rounded-full bg-primary/5 blur-[150px] animate-pulse-slow" />
-              <div className="absolute -bottom-1/4 right-1/4 h-[50rem] w-[50rem] translate-x-1/2 rounded-full bg-accent/5 blur-[150px] animate-pulse-slow" style={{animationDelay: '2s'}}/>
-          </div>
+           <ScrollingProjectGallery />
+           <div className="absolute inset-0 z-0 bg-background/60 backdrop-blur-sm"></div>
+
           <motion.div 
-            className="container mx-auto max-w-7xl px-4 md:px-6 flex flex-col items-center gap-6"
+            className="relative z-10 container mx-auto max-w-7xl px-4 md:px-6 flex flex-col items-center gap-6"
             initial="initial"
             animate="animate"
             variants={{ animate: { transition: { staggerChildren: 0.3, delayChildren: 0.2 }}}}

@@ -117,6 +117,14 @@ export default {
         'pulse-slow': {
           '50%': { opacity: '.5' },
         },
+        'scroll-y': {
+          from: { transform: 'translateY(0)' },
+          to: { transform: 'translateY(-50%)' },
+        },
+        'scroll-y-reverse': {
+          from: { transform: 'translateY(-50%)' },
+          to: { transform: 'translateY(0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -127,6 +135,12 @@ export default {
         'orbit-2': 'orbit-2 5s linear infinite 0.5s',
         'orbit-3': 'orbit-3 5s linear infinite 1s',
         'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'scroll-y-slow': 'scroll-y 80s linear infinite',
+        'scroll-y-medium': 'scroll-y 60s linear infinite',
+        'scroll-y-fast': 'scroll-y 40s linear infinite',
+        'scroll-y-reverse-slow': 'scroll-y-reverse 80s linear infinite',
+        'scroll-y-reverse-medium': 'scroll-y-reverse 60s linear infinite',
+        'scroll-y-reverse-fast': 'scroll-y-reverse 40s linear infinite',
       },
       transformStyle: {
         'preserve-3d': 'preserve-3d',
