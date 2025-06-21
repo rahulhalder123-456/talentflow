@@ -26,7 +26,7 @@ const missingEnvVars = requiredEnvVars.filter(
 
 if (missingEnvVars.length > 0) {
   throw new Error(
-    `STOP! Your Firebase credentials are not configured. This is not an error in the code. You MUST perform the following manual steps: 1. Rename the file '.env.local.example' to '.env.local'. 2. Open '.env.local' and paste your Firebase project credentials into it. 3. COMPLETELY RESTART the development server. The app cannot run without this. Missing variables:\n- ${missingEnvVars.join('\n- ')}`
+    `Firebase configuration is incomplete. This is a required setup step, not a code bug.\n\nPlease follow the instructions in the README.md file to set up your Firebase credentials in the '.env.local' file and then restart the server.`
   );
 }
 
