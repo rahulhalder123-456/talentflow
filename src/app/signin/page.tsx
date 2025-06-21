@@ -94,6 +94,8 @@ export default function SignInPage() {
           description = 'Sign-in cancelled. You closed the pop-up window.'
       } else if (error.code === 'auth/account-exists-with-different-credential') {
           description = 'An account already exists with this email. Please sign in with the original method.'
+      } else if (error.code === 'auth/unauthorized-domain') {
+          description = 'This domain is not authorized for sign-in. Please check your Firebase project settings.'
       }
       
       toast({
