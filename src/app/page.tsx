@@ -189,12 +189,13 @@ export default function Home() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
               >
                 <Image
-                  src="/hero-image.png"
+                  src="https://placehold.co/600x450.png"
                   alt="A team of three diverse individuals collaborating around a laptop in a modern office."
                   width={600}
                   height={450}
                   className="rounded-lg shadow-2xl shadow-primary/20"
                   priority
+                  data-ai-hint="team collaboration"
                 />
               </motion.div>
             </div>
