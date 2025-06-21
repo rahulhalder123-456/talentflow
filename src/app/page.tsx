@@ -189,7 +189,7 @@ export default function Home() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
               >
                 <Image
-                  src="https://placehold.co/600x450.png"
+                  src="https://storage.googleapis.com/project-spark-301511/global/images/idx_616196230_32007_17.png"
                   alt="A team of three diverse individuals collaborating around a laptop in a modern office."
                   width={600}
                   height={450}
