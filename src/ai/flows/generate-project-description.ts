@@ -56,7 +56,7 @@ The output should be a detailed project description.
 `,
 });
 
-// Flow definition with error handling
+// Flow definition
 const generateProjectDescriptionFlow = ai.defineFlow(
   {
     name: 'generateProjectDescriptionFlow',
@@ -65,10 +65,9 @@ const generateProjectDescriptionFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-
-    // Genkit will throw an error if the output does not match the schema,
-    // so we can be confident in the output if we reach this point.
-    // The '!' tells TypeScript we are sure `output` is not null/undefined.
-    return output!;
+    if (!output) {
+      throw new Error('AI failed to generate a description.');
+    }
+    return output;
   }
 );

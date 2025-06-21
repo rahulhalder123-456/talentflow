@@ -22,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { handleGenerateDescription } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -30,6 +29,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
+import { generateProjectDescription } from '@/ai/flows/generate-project-description';
+
 
 const formSchema = z.object({
   projectTitle: z.string().min(5, "Title must be at least 5 characters."),
@@ -42,13 +43,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-function getFirebaseErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.includes('PERMISSION_DENIED')) {
-    return 'Permission Denied. Your Firestore security rules are blocking this action.';
-  }
-  return 'Could not submit project. Please try again.';
-}
 
 export function ProjectForm() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -108,21 +102,21 @@ export function ProjectForm() {
     const { projectTitle, projectBrief, desiredSkills, budget } = form.getValues();
 
     setIsGenerating(true);
-    const result = await handleGenerateDescription({ projectTitle, projectBrief, desiredSkills, budget });
-    setIsGenerating(false);
-
-    if (result.success && result.description) {
-      form.setValue('projectDescription', result.description, { shouldValidate: true });
+    try {
+      const result = await generateProjectDescription({ projectTitle, projectBrief, desiredSkills, budget });
+      form.setValue('projectDescription', result.projectDescription, { shouldValidate: true });
       toast({
         title: "Description Generated!",
         description: "Your project description has been created by AI.",
       });
-    } else {
-      toast({
+    } catch (error) {
+       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: result.error,
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
       });
+    } finally {
+        setIsGenerating(false);
     }
   };
 
@@ -139,6 +133,7 @@ export function ProjectForm() {
             userId: user.uid,
             status: 'Open',
             createdAt: serverTimestamp(),
+            deadline: values.deadline,
         });
 
         toast({
@@ -152,7 +147,7 @@ export function ProjectForm() {
         toast({
             variant: "destructive",
             title: "Submission Failed",
-            description: getFirebaseErrorMessage(error),
+            description: "Could not submit your project. Please try again.",
         });
     } finally {
         setIsSubmitting(false);
