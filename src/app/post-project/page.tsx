@@ -1,7 +1,23 @@
+import { redirect } from 'next/navigation';
 import { Header } from "@/components/common/Header";
 import { ProjectForm } from "./ProjectForm";
 
-export default function PostProjectPage() {
+// This is a placeholder for a real authentication check.
+// In a real application, you would replace this with a call to your auth provider
+// (e.g., checking for a valid session cookie or token).
+const checkIsUserAuthenticated = async (): Promise<boolean> => {
+  // For demonstration purposes, we'll assume the user is not signed in.
+  // In a real app, this would involve actual auth logic.
+  return false;
+};
+
+export default async function PostProjectPage() {
+  const isAuthenticated = await checkIsUserAuthenticated();
+
+  if (!isAuthenticated) {
+    redirect('/signin');
+  }
+
   return (
     <>
       <Header />
