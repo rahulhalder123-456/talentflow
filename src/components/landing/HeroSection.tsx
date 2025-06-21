@@ -22,9 +22,26 @@ const staggerContainer = {
   },
 };
 
-export function HeroSection() {
-  const headlineWords = "Where Great Ideas Meet Great Talent".split(" ");
+const headlineStagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
 
+const headlineWord = {
+  initial: { y: "100%" },
+  animate: {
+    y: "0%",
+    transition: {
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
+export function HeroSection() {
   return (
     <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
       <div className="absolute inset-0 z-0 opacity-10">
