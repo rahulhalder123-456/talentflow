@@ -142,9 +142,6 @@ export default {
         'scroll-y-reverse-medium': 'scroll-y-reverse 60s linear infinite',
         'scroll-y-reverse-fast': 'scroll-y-reverse 40s linear infinite',
       },
-      transformStyle: {
-        'preserve-3d': 'preserve-3d',
-      }
     },
   },
   plugins: [
