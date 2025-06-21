@@ -190,7 +190,7 @@ export default function Home() {
               >
                 <Image
                   src="/hero-image.png"
-                  alt="A team working collaboratively on their computers"
+                  alt="A team of three diverse individuals collaborating around a laptop in a modern office."
                   width={600}
                   height={450}
                   className="rounded-lg shadow-2xl shadow-primary/20"
@@ -460,5 +460,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
