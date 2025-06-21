@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Header } from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +24,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useRef } from 'react';
 
 const fadeInUp = {
   initial: { y: 60, opacity: 0 },
@@ -103,23 +102,12 @@ const testimonials = [
 const MotionCard = motion(Card);
 
 export default function Home() {
-    const heroRef = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: heroRef,
-        offset: ["start start", "end start"],
-    });
-    const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-    const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50]);
-
-
   return (
     <div className="flex min-h-screen flex-col bg-background overflow-x-hidden">
       <Header />
       <main className="flex-1">
         <motion.section 
-            ref={heroRef}
             className="relative py-24 md:py-32 lg:py-40 text-center"
-            style={{ opacity: heroOpacity, y: heroY }}
         >
           <motion.div 
             className="container mx-auto max-w-7xl px-4 md:px-6 flex flex-col items-center gap-6"
