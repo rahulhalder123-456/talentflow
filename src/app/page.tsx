@@ -1,5 +1,8 @@
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Header } from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +24,22 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRef } from 'react';
+
+const fadeInUp = {
+  initial: { y: 60, opacity: 0 },
+  animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
+const staggerContainer = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
 
 const categories = [
   { name: 'Web Development', icon: <CodeXml className="h-8 w-8 text-primary" /> },
@@ -81,73 +100,117 @@ const testimonials = [
   },
 ];
 
+const MotionCard = motion(Card);
+
 export default function Home() {
+    const heroRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: heroRef,
+        offset: ["start start", "end start"],
+    });
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+    const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50]);
+
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background overflow-x-hidden">
       <Header />
       <main className="flex-1">
-        <section className="relative py-24 md:py-32 lg:py-40">
-          <div className="container mx-auto max-w-7xl px-4 text-center md:px-6">
-            <div className="flex flex-col items-center gap-6 opacity-0 animate-fade-in-up">
+        <motion.section 
+            ref={heroRef}
+            className="relative py-24 md:py-32 lg:py-40 text-center"
+            style={{ opacity: heroOpacity, y: heroY }}
+        >
+          <motion.div 
+            className="container mx-auto max-w-7xl px-4 md:px-6 flex flex-col items-center gap-6"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div variants={fadeInUp}>
               <Badge variant="secondary" className="text-sm">Your On-Demand Creative & Technical Team</Badge>
-              <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                Exceptional Talent, One Team
-              </h1>
-              <p className="mx-auto max-w-3xl text-lg text-muted-foreground md:text-xl">
-                Stop searching. Start building. Partner with our dedicated team of vetted professionals to bring your vision to life, delivering quality on time, every time.
-              </p>
-              <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
-                <Button asChild size="lg" className="text-base">
-                  <Link href="/post-project">
-                    Post a Project <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="text-base border-primary/50 hover:bg-primary/10 hover:text-primary-foreground">
-                  <Link href="#categories">Explore Services</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+            </motion.div>
+            <motion.h1 
+              className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+              variants={fadeInUp}
+            >
+              Exceptional Talent, One Team
+            </motion.h1>
+            <motion.p 
+              className="mx-auto max-w-3xl text-lg text-muted-foreground md:text-xl"
+              variants={fadeInUp}
+            >
+              Stop searching. Start building. Partner with our dedicated team of vetted professionals to bring your vision to life, delivering quality on time, every time.
+            </motion.p>
+            <motion.div 
+              className="mt-4 flex flex-col sm:flex-row items-center gap-4"
+              variants={fadeInUp}
+            >
+              <Button asChild size="lg" className="text-base">
+                <Link href="/post-project">
+                  Post a Project <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="text-base border-primary/50 hover:bg-primary/10 hover:text-primary-foreground">
+                <Link href="#categories">Explore Services</Link>
+              </Button>
+            </motion.div>
+          </motion.div>
+        </motion.section>
 
-        <section id="categories" className="py-16 md:py-24">
+        <motion.section 
+          id="categories"
+          className="py-16 md:py-24"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           <div className="container mx-auto max-w-7xl px-4 md:px-6">
-            <div className="flex flex-col items-center text-center gap-4 mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: '200ms'}}>
+            <motion.div variants={fadeInUp} className="flex flex-col items-center text-center gap-4 mb-12">
               <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
                 A Full Suite of Professional Services
               </h2>
               <p className="max-w-2xl text-muted-foreground">Whatever your project needs, our versatile team has you covered.</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 md:gap-6 opacity-0 animate-fade-in-up" style={{animationDelay: '400ms'}}>
+            </motion.div>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 md:gap-6">
               {categories.map((category) => (
-                <Link
-                  href="#"
-                  key={category.name}
-                  className="group flex flex-col items-center gap-4 rounded-lg border bg-secondary/30 p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:bg-secondary/70 hover:shadow-primary/20 hover:shadow-lg"
-                >
-                  {category.icon}
-                  <h3 className="font-semibold text-foreground/90">{category.name}</h3>
-                </Link>
+                <motion.div key={category.name} variants={fadeInUp}>
+                  <Link
+                    href="#"
+                    className="group flex flex-col items-center gap-4 rounded-lg border bg-secondary/30 p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:bg-secondary/70 hover:shadow-primary/20 hover:shadow-lg"
+                  >
+                    {category.icon}
+                    <h3 className="font-semibold text-foreground/90">{category.name}</h3>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="how-it-works" className="py-16 md:py-24">
+        <motion.section 
+          id="how-it-works"
+          className="py-16 md:py-24"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <div className="container mx-auto max-w-7xl px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: '200ms'}}>
+            <motion.div variants={fadeInUp} className="mx-auto max-w-3xl text-center mb-12">
               <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
                 From Idea to Impact in Three Steps
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
                 Our streamlined process ensures a smooth and efficient collaboration.
               </p>
-            </div>
-            <div className="relative mt-12 grid gap-8 md:grid-cols-3 opacity-0 animate-fade-in-up" style={{animationDelay: '400ms'}}>
+            </motion.div>
+            <div className="relative mt-12 grid gap-8 md:grid-cols-3">
                <div className="absolute left-1/2 top-5 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
                <div className="absolute left-1/2 top-5 h-full w-px -translate-x-1/2 bg-gradient-to-b from-primary/50 via-primary/50 to-transparent md:hidden"></div>
               {['Post a Project', 'Approve & Kick-off', 'Review & Complete'].map((step, index) => (
-                 <div key={step} className="relative flex flex-col items-center text-center">
+                 <motion.div key={step} variants={fadeInUp} className="relative flex flex-col items-center text-center">
                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary font-bold shadow-[0_0_15px_hsl(var(--primary)/0.5)]">{index + 1}</div>
                    <h3 className="font-headline mt-6 text-2xl">{step}</h3>
                    <p className="mt-2 text-muted-foreground">
@@ -155,25 +218,32 @@ export default function Home() {
                      {index === 1 && 'We\'ll provide a detailed proposal. Once you give the green light, our team starts work immediately.'}
                      {index === 2 && 'Pay securely upon milestone completion. We guarantee you\'ll be 100% satisfied with the final result.'}
                    </p>
-                 </div>
+                 </motion.div>
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="why-us" className="py-16 md:py-24 bg-secondary/20">
+        <motion.section
+          id="why-us"
+          className="py-16 md:py-24 bg-secondary/20"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           <div className="container mx-auto max-w-7xl px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: '200ms'}}>
+            <motion.div variants={fadeInUp} className="mx-auto max-w-3xl text-center mb-12">
                 <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
                     The Talent Flow Advantage
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground">
                     We are a curated team of experts dedicated to your success.
                 </p>
-            </div>
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 opacity-0 animate-fade-in-up" style={{animationDelay: '400ms'}}>
+            </motion.div>
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {whyUsBenefits.map((benefit) => (
-                 <Card key={benefit.title} className="bg-background/50 border-border/50 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1">
+                 <MotionCard key={benefit.title} variants={fadeInUp} className="bg-background/50 border-border/50 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 h-full">
                     <CardHeader className="items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">{benefit.icon}</div>
                         <CardTitle className="font-headline text-xl">{benefit.title}</CardTitle>
@@ -183,16 +253,28 @@ export default function Home() {
                            {benefit.description}
                         </p>
                     </CardContent>
-                </Card>
+                </MotionCard>
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="about-us" className="py-16 md:py-24">
-          <div className="container mx-auto max-w-7xl px-4 md:px-6 opacity-0 animate-fade-in-up">
+        <section id="about-us" className="py-16 md:py-24 overflow-hidden">
+          <motion.div 
+            className="container mx-auto max-w-7xl px-4 md:px-6"
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerContainer}
+          >
             <div className="grid items-center gap-12 md:grid-cols-2">
-              <div className="order-2 md:order-1 space-y-6">
+              <motion.div
+                variants={{
+                  initial: { opacity: 0, x: -100 },
+                  animate: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
+                }}
+                className="order-2 md:order-1 space-y-6"
+              >
                 <Badge variant="secondary">Our Mission</Badge>
                 <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">A Passionate Team of Creators</h2>
                 <p className="text-lg text-muted-foreground">
@@ -206,8 +288,14 @@ export default function Home() {
                 <Button asChild size="lg">
                   <Link href="/post-project">Start Your Project</Link>
                 </Button>
-              </div>
-              <div className="order-1 md:order-2">
+              </motion.div>
+              <motion.div 
+                variants={{
+                  initial: { opacity: 0, x: 100 },
+                  animate: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
+                }}
+                className="order-1 md:order-2"
+              >
                 <Image
                   src="https://placehold.co/600x600.png"
                   alt="Talent Flow Team"
@@ -216,24 +304,31 @@ export default function Home() {
                   className="rounded-lg shadow-2xl shadow-primary/10"
                   data-ai-hint="team collaboration"
                 />
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
-        <section id="reviews" className="py-16 md:py-24 bg-secondary/20">
+        <motion.section 
+          id="reviews" 
+          className="py-16 md:py-24 bg-secondary/20"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           <div className="container mx-auto max-w-7xl px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: '200ms'}}>
+            <motion.div variants={fadeInUp} className="mx-auto max-w-3xl text-center mb-12">
               <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
                 Loved by Teams Worldwide
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
                 Don't just take our word for it. Here's what our clients have to say.
               </p>
-            </div>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-0 animate-fade-in-up" style={{animationDelay: '400ms'}}>
+            </motion.div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial) => (
-                <Card key={testimonial.name} className="flex flex-col bg-background/50 border-border/50">
+                <MotionCard key={testimonial.name} variants={fadeInUp} className="flex h-full flex-col bg-background/50 border-border/50">
                   <CardHeader>
                      <div className="flex items-center gap-0.5">
                         {Array.from({ length: testimonial.rating }).map((_, i) => (
@@ -254,14 +349,20 @@ export default function Home() {
                         <p className="text-sm text-muted-foreground">{testimonial.title}</p>
                       </div>
                     </div>
-                </Card>
+                </MotionCard>
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto max-w-4xl px-4 text-center md:px-6 opacity-0 animate-fade-in-up">
+        <motion.section 
+          className="py-16 md:py-24"
+          initial={{opacity: 0}}
+          whileInView={{opacity: 1}}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{duration: 0.8}}
+        >
+          <div className="container mx-auto max-w-4xl px-4 text-center md:px-6">
             <div className="rounded-lg bg-gradient-to-br from-primary/80 to-accent/80 p-8 md:p-12 shadow-2xl">
               <h2 className="font-headline text-3xl font-bold tracking-tight text-primary-foreground md:text-4xl">
                 Ready to bring your ideas to life?
@@ -278,7 +379,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
       </main>
 
       <footer className="border-t border-border/40">
