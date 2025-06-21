@@ -23,8 +23,12 @@ export function Header() {
           </Link>
         </nav>
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost">Sign In</Button>
-          <Button>Sign Up</Button>
+          <Button variant="ghost" asChild>
+            <Link href="/signin">Sign In</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/signup">Sign Up</Link>
+          </Button>
         </div>
         <Sheet>
           <SheetTrigger asChild>
@@ -51,8 +55,12 @@ export function Header() {
                 </Link>
               </nav>
               <div className="grid gap-2">
-                <Button variant="ghost">Sign In</Button>
-                <Button>Sign Up</Button>
+                <Button variant="ghost" className="w-full" asChild>
+                  <Link href="/signin">Sign In</Link>
+                </Button>
+                <Button className="w-full" asChild>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
               </div>
             </div>
           </SheetContent>
