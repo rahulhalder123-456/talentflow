@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const fadeInUp = {
   initial: { y: 20, opacity: 0 },
@@ -36,11 +37,10 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 md:px-6">
-        <div className="grid items-center gap-12 md:grid-cols-2">
-          {/* Left content */}
+      <div className="container mx-auto max-w-4xl px-4 md:px-6">
+        <div className="flex flex-col items-center text-center">
           <motion.div
-            className="flex flex-col items-center gap-6 text-center md:items-start md:text-left"
+            className="flex flex-col items-center gap-6"
             initial="initial"
             animate="animate"
             variants={staggerContainer}
@@ -54,12 +54,11 @@ export function HeroSection() {
               </Badge>
             </motion.div>
 
-            {/* Animated Heading */}
             <motion.h1 className="font-headline text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-balance bg-gradient-to-br from-white via-gray-200 to-zinc-300 bg-clip-text text-transparent leading-tight">
               {headlineWords.map((word, i) => (
                 <span key={i} className="inline-block overflow-hidden px-[2px] py-1">
                   <motion.span
-                    className="inline-block blur-sm"
+                    className="inline-block"
                     initial={{ y: "100%", opacity: 0, filter: "blur(8px)" }}
                     animate={{
                       y: "0%",
@@ -97,67 +96,22 @@ export function HeroSection() {
               demand.
             </motion.p>
 
-            {/* CTA Buttons */}
             <motion.div
               className="mt-4 flex flex-col sm:flex-row items-center gap-4"
               variants={fadeInUp}
             >
-              <Link href="/post-project" className="group relative inline-block w-full sm:w-auto">
-                <div className="relative p-[2px] rounded-2xl bg-gradient-to-r from-[#8e2de2] via-[#4a00e0] to-[#8e2de2] transition-transform duration-300 ease-out group-hover:scale-105 group-hover:-rotate-1 shadow-[0_10px_30px_rgba(138,43,226,0.3)]">
-                  
-                  {/* ✨ floating spark */}
-                  <motion.span
-                    className="absolute -top-3 -right-3 text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                    animate={{
-                      y: [0, -5, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    ✨
-                  </motion.span>
-
-                  <div className="flex items-center gap-3 px-7 py-4 bg-[rgba(0,0,0,0.6)] backdrop-blur-xl rounded-2xl text-base font-semibold text-white transition-all duration-300 shadow-inner hover:bg-[rgba(255,255,255,0.05)]">
-                    <span className="text-xl">🎉</span>
-                    <span className="whitespace-nowrap tracking-wide">
-                      Ready to build magic?
-                    </span>
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                  </div>
-                </div>
-              </Link>
-
-              <Link href="#categories">
-                <button className="text-base bg-background/50 border border-primary/50 hover:bg-primary/10 hover:text-primary-foreground backdrop-blur-sm text-white font-medium rounded-xl px-6 py-3 transition-all duration-300">
+              <Button asChild size="lg">
+                <Link href="/post-project">
+                  Post a Project
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="#categories">
                   Explore Services
-                </button>
-              </Link>
+                </Link>
+              </Button>
             </motion.div>
-          </motion.div>
-
-          {/* Right: Video with glow ring */}
-          <motion.div
-            className="relative order-first md:order-last"
-            initial={{ opacity: 0, x: 50, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-          >
-            <div className="relative rounded-xl overflow-hidden shadow-2xl ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
-              <motion.video
-                src="/videos/1anime.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="rounded-xl brightness-[0.6] contrast-[1.1] saturate-[1.2] w-full h-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1 }}
-              />
-            </div>
           </motion.div>
         </div>
       </div>
