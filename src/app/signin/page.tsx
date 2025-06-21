@@ -66,7 +66,7 @@ export default function SignInPage() {
         title: "Success!",
         description: "You have successfully signed in.",
       });
-      router.push("/post-project");
+      router.push("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -86,7 +86,7 @@ export default function SignInPage() {
         title: "Success!",
         description: "You have successfully signed in.",
       });
-      router.push("/post-project");
+      router.push("/dashboard");
     } catch (error: any) {
       console.error(`Sign in with ${providerName} failed:`, error);
       let description = `Could not sign in with ${providerName}. Please try again.`;

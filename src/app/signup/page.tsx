@@ -68,7 +68,7 @@ export default function SignUpPage() {
         title: "Account Created!",
         description: "You have successfully signed up.",
       });
-      router.push("/post-project");
+      router.push("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -88,7 +88,7 @@ export default function SignUpPage() {
         title: "Account Created!",
         description: "You have successfully signed up.",
       });
-      router.push("/post-project");
+      router.push("/dashboard");
     } catch (error: any) {
       console.error(`Sign up with ${providerName} failed:`, error);
       let description = `Could not sign up with ${providerName}. Please try again.`;

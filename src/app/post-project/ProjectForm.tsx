@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -5,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Wand2, LoaderCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +37,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function ProjectForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -87,6 +90,7 @@ export function ProjectForm() {
         title: "Project Submitted!",
         description: "Your project is now live. We'll be in touch shortly.",
     });
+    router.push('/dashboard');
   }
 
   return (
