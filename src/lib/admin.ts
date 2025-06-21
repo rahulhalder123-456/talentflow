@@ -2,8 +2,7 @@
 // You can find your UID after you sign into the app by checking the
 // browser's developer console or your Firebase Authentication user list.
 const ADMIN_UIDS = [
-  'REPLACE_WITH_YOUR_FIREBASE_UID',
-  'REPLACE_WITH_A_TEAM_MEMBER_UID',
+  'ToBDMq0KVIgnLQCEeFzxLzB4HUj1',
 ];
 
 /**
