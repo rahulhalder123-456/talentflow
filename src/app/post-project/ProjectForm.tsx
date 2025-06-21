@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, Wand2, LoaderCircle } from 'lucide-react';
+import { CalendarIcon, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 
@@ -29,7 +29,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
-import { generateProjectDescription } from '@/ai/flows/generate-project-description';
 
 
 const formSchema = z.object({
@@ -45,7 +44,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function ProjectForm() {
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -84,40 +82,6 @@ export function ProjectForm() {
           default:
               return 'e.g., 5000';
       }
-  };
-
-  const onGenerate = async () => {
-    const fieldsToValidate: (keyof FormValues)[] = ["projectTitle", "projectBrief", "desiredSkills", "budget"];
-    const isValid = await form.trigger(fieldsToValidate);
-
-    if (!isValid) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in Title, Brief, Skills, and Budget before generating.",
-      });
-      return;
-    }
-    
-    const { projectTitle, projectBrief, desiredSkills, budget } = form.getValues();
-
-    setIsGenerating(true);
-    try {
-      const result = await generateProjectDescription({ projectTitle, projectBrief, desiredSkills, budget });
-      form.setValue('projectDescription', result.projectDescription, { shouldValidate: true });
-      toast({
-        title: "Description Generated!",
-        description: "Your project description has been created by AI.",
-      });
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-      });
-    } finally {
-        setIsGenerating(false);
-    }
   };
 
   async function onSubmit(values: FormValues) {
@@ -159,7 +123,7 @@ export function ProjectForm() {
       <CardHeader>
         <CardTitle className="font-headline text-3xl">Project Details</CardTitle>
         <CardDescription>
-          Fill out the form below. For the description, you can write your own or use our AI assistant.
+          Fill out the form below to get your project posted.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -286,42 +250,28 @@ export function ProjectForm() {
               )}
             />
             
-            <div className="space-y-4 rounded-lg border border-border/60 bg-background/50 p-6 shadow-sm">
-              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex-1">
-                  <FormLabel className="text-base font-semibold">Project Description</FormLabel>
-                   <FormDescription className="mt-1">
-                      This will be the main description freelancers see. You can edit the generated text.
+            <FormField
+              control={form.control}
+              name="projectDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Provide a detailed description for freelancers to see..."
+                      className="min-h-[200px] resize-y"
+                      {...field}
+                    />
+                  </FormControl>
+                   <FormDescription>
+                      This will be the main description freelancers see.
                     </FormDescription>
-                </div>
-                <Button type="button" size="sm" onClick={onGenerate} disabled={isGenerating || isSubmitting} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                  {isGenerating ? (
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Wand2 className="mr-2 h-4 w-4" />
-                  )}
-                  Generate with AI
-                </Button>
-              </div>
-              <FormField
-                control={form.control}
-                name="projectDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Let our AI help you write a compelling project description..."
-                        className="min-h-[200px] resize-y"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
-            <Button type="submit" size="lg" className="w-full text-lg" disabled={isSubmitting || isGenerating}>
+            <Button type="submit" size="lg" className="w-full text-lg" disabled={isSubmitting}>
               {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
               Post Your Project
             </Button>
