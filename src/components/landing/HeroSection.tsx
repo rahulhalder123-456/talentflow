@@ -107,28 +107,15 @@ export function HeroSection() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           >
-            {/* <Image
-              src="/images/team.png"
-              alt="A team of three diverse individuals collaborating around a laptop in a modern office."
+            <Image
+              src="https://placehold.co/600x450.png"
+              alt="An illustration of a developer working at a desk."
               width={600}
               height={450}
-              className="rounded-lg shadow-2xl shadow-primary/20 transition-transform duration-300 hover:scale-105"
+              className="rounded-lg shadow-2xl shadow-primary/20"
               priority
-              data-ai-hint="team collaboration"
-            /> */}
-            <motion.video
-              src="/videos/1anime.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="rounded-lg shadow-2xl shadow-primary/20 w-full h-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1 }}
+              data-ai-hint="developer illustration"
             />
-
-
           </motion.div>
         </div>
       </div>
