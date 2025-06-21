@@ -40,6 +40,19 @@ const staggerContainer = {
   },
 };
 
+const headlineStagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const headlineWord = {
+  initial: { y: "120%" },
+  animate: { y: "0%", transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } },
+};
+
 const categories = [
   { name: 'Web Development', icon: <CodeXml className="h-8 w-8 text-primary" /> },
   { name: 'Graphic Design', icon: <Palette className="h-8 w-8 text-primary" /> },
@@ -103,32 +116,47 @@ const MotionCard = motion(Card);
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-background overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-background overflow-hidden">
       <Header />
       <main className="flex-1">
         <motion.section 
-            className="relative py-24 md:py-32 lg:py-40 text-center"
+          className="relative py-24 md:py-32 lg:py-40 text-center overflow-hidden"
         >
+           <div className="absolute inset-0 -z-10 overflow-hidden bg-background">
+              <div className="absolute -top-1/4 left-1/4 h-[50rem] w-[50rem] -translate-x-1/2 rounded-full bg-primary/5 blur-[150px] animate-pulse-slow" />
+              <div className="absolute -bottom-1/4 right-1/4 h-[50rem] w-[50rem] translate-x-1/2 rounded-full bg-accent/5 blur-[150px] animate-pulse-slow" style={{animationDelay: '2s'}}/>
+          </div>
           <motion.div 
             className="container mx-auto max-w-7xl px-4 md:px-6 flex flex-col items-center gap-6"
-            variants={staggerContainer}
             initial="initial"
             animate="animate"
+            variants={{ animate: { transition: { staggerChildren: 0.3, delayChildren: 0.2 }}}}
           >
             <motion.div variants={fadeInUp}>
               <Badge variant="secondary" className="text-sm">Your On-Demand Creative & Technical Team</Badge>
             </motion.div>
+
             <motion.h1 
-              className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
-              variants={fadeInUp}
+              className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent"
+              variants={headlineStagger}
             >
-              Exceptional Talent, One Team
+              {"Where Great Ideas Meet Great Talent".split(" ").map((word, i) => (
+                <span key={i} className="inline-block overflow-hidden py-1">
+                  <motion.span
+                    className="inline-block"
+                    variants={headlineWord}
+                  >
+                    {word}&nbsp;
+                  </motion.span>
+                </span>
+              ))}
             </motion.h1>
+
             <motion.p 
               className="mx-auto max-w-3xl text-lg text-muted-foreground md:text-xl"
               variants={fadeInUp}
             >
-              Stop searching. Start building. Partner with our dedicated team of vetted professionals to bring your vision to life, delivering quality on time, every time.
+              We are your dedicated team of creative and technical experts, ready to bring your vision to life with precision and passion.
             </motion.p>
             <motion.div 
               className="mt-4 flex flex-col sm:flex-row items-center gap-4"

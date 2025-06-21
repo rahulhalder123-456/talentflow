@@ -114,6 +114,9 @@ export default {
           '0%': { transform: 'rotateZ(0deg) rotateX(60deg) rotateY(120deg)' },
           '100%': { transform: 'rotateZ(360deg) rotateX(60deg) rotateY(120deg)' },
         },
+        'pulse-slow': {
+          '50%': { opacity: '.5' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -123,6 +126,7 @@ export default {
         'orbit-1': 'orbit-1 5s linear infinite',
         'orbit-2': 'orbit-2 5s linear infinite 0.5s',
         'orbit-3': 'orbit-3 5s linear infinite 1s',
+        'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       transformStyle: {
         'preserve-3d': 'preserve-3d',
