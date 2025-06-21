@@ -23,6 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { handleGenerateDescription } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/hooks/use-auth';
+import { createProject } from '@/app/projects/actions';
 
 const formSchema = z.object({
   projectTitle: z.string().min(5, "Title must be at least 5 characters."),
@@ -36,8 +38,10 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function ProjectForm() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -84,13 +88,29 @@ export function ProjectForm() {
     }
   };
 
-  function onSubmit(values: FormValues) {
-    console.log(values);
-    toast({
-        title: "Project Submitted!",
-        description: "Your project is now live. We'll be in touch shortly.",
-    });
-    router.push('/dashboard');
+  async function onSubmit(values: FormValues) {
+    if (!user) {
+      toast({ variant: "destructive", title: "Authentication Error", description: "You must be logged in to post a project." });
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await createProject({ ...values, userId: user.uid });
+    setIsSubmitting(false);
+    
+    if (result.success) {
+      toast({
+          title: "Project Submitted!",
+          description: "Your project is now being listed.",
+      });
+      router.push('/dashboard/projects');
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: result.error,
+      });
+    }
   }
 
   return (
@@ -174,7 +194,7 @@ export function ProjectForm() {
                       This will be the main description freelancers see. You can edit the generated text.
                     </FormDescription>
                 </div>
-                <Button type="button" size="sm" onClick={onGenerate} disabled={isGenerating} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button type="button" size="sm" onClick={onGenerate} disabled={isGenerating || isSubmitting} className="bg-accent text-accent-foreground hover:bg-accent/90">
                   {isGenerating ? (
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
@@ -201,7 +221,10 @@ export function ProjectForm() {
               />
             </div>
             
-            <Button type="submit" size="lg" className="w-full text-lg">Post Project</Button>
+            <Button type="submit" size="lg" className="w-full text-lg" disabled={isSubmitting || isGenerating}>
+              {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+              Post Project
+            </Button>
           </form>
         </Form>
       </CardContent>

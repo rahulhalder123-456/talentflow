@@ -9,6 +9,8 @@ import {
   type AuthProvider as FirebaseAuthProvider,
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+
 
 // --- Firebase Configuration ---
 // IMPORTANT: These values are hardcoded for debugging purposes to resolve an
@@ -26,6 +28,8 @@ const firebaseConfig = {
 // --- Initialize Firebase ---
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getFirestore(app);
+
 
 // --- Conditionally Load Analytics ---
 const analyticsPromise: Promise<ReturnType<typeof getAnalytics> | null> =
@@ -49,9 +53,16 @@ const socialSignIn = async (provider: FirebaseAuthProvider) => {
 export {
   app,
   auth,
+  db,
   analyticsPromise,
   googleProvider,
   githubProvider,
   microsoftProvider,
   socialSignIn,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
 };
