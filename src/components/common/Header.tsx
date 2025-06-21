@@ -99,7 +99,7 @@ export function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="flex flex-col p-0 bg-background">
+          <SheetContent side="right" className="flex flex-col p-0 bg-background" aria-describedby="mobile-nav-description">
             <SheetHeader className="border-b p-4">
               <SheetTitle>
                 <Link href="/" className="flex items-center gap-2" prefetch={false}>
@@ -107,7 +107,7 @@ export function Header() {
                   <span className="font-headline text-lg font-bold">Talent Flow</span>
                 </Link>
               </SheetTitle>
-              <SheetDescription className="sr-only">
+              <SheetDescription id="mobile-nav-description" className="sr-only">
                 A mobile navigation menu with links to different sections of the website.
               </SheetDescription>
             </SheetHeader>

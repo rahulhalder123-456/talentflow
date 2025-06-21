@@ -146,11 +146,11 @@ export function PaymentsTab() {
             Add New Card
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]" aria-describedby="payment-dialog-description">
           <form onSubmit={handleAddCard}>
             <DialogHeader>
               <DialogTitle>Add a new payment method</DialogTitle>
-              <DialogDescription>
+              <DialogDescription id="payment-dialog-description">
                 Your payment information is securely handled.
               </DialogDescription>
             </DialogHeader>
