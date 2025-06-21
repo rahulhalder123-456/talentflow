@@ -106,15 +106,28 @@ export function HeroSection() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           >
-            <Image
-              src="https://storage.googleapis.com/project-spark-301511/global/images/idx_616196230_32007_17.png"
+            {/* <Image
+              src="/images/team.png"
               alt="A team of three diverse individuals collaborating around a laptop in a modern office."
               width={600}
               height={450}
-              className="rounded-lg shadow-2xl shadow-primary/20"
+              className="rounded-lg shadow-2xl shadow-primary/20 transition-transform duration-300 hover:scale-105"
               priority
               data-ai-hint="team collaboration"
+            /> */}
+            <motion.video
+              src="/videos/1anime.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="rounded-lg shadow-2xl shadow-primary/20 w-full h-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1 }}
             />
+
+
           </motion.div>
         </div>
       </div>

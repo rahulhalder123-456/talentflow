@@ -40,6 +40,7 @@ const prompt = ai.definePrompt({
   name: 'generateProjectDescriptionPrompt',
   input: {schema: GenerateProjectDescriptionInputSchema},
   output: {schema: GenerateProjectDescriptionOutputSchema},
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are an expert project description writer.
 
 You will use the following information to generate a comprehensive and appealing project description.
