@@ -77,12 +77,12 @@ export function CodeAnimation() {
 
   return (
     <motion.div
-      className="absolute inset-0 -z-10 flex items-center justify-center overflow-hidden"
+      className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
       initial={{ opacity: 0, scale: 1.2 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="w-[700px] h-[400px] transform-gpu rounded-xl bg-secondary/30 p-4 font-code text-sm text-left shadow-2xl ring-1 ring-white/10 backdrop-blur-sm [transform:perspective(1000px)_rotateX(15deg)_translateY(-20%)]">
+      <div className="w-[700px] h-[400px] transform-gpu rounded-xl bg-secondary/30 p-4 font-code text-sm text-left shadow-2xl ring-1 ring-white/10 [transform:perspective(1000px)_rotateX(15deg)_translateY(-20%)]">
         <div className="mb-2 flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-red-500"></div>
           <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
