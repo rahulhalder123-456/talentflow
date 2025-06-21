@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { CodeAnimation } from "@/components/common/CodeAnimation";
 
 const fadeInUp = {
   initial: { y: 20, opacity: 0 },
@@ -26,8 +25,6 @@ export function HeroSection() {
 
   return (
     <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
-      <CodeAnimation />
-      
       {/* Subtle grid background */}
       <div className="absolute inset-0 z-0 opacity-10">
         <div
@@ -39,11 +36,11 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="container relative z-10 mx-auto max-w-7xl px-4 md:px-6">
-        <div className="grid items-center gap-12">
-          {/* Centered content */}
+      <div className="container mx-auto max-w-7xl px-4 md:px-6">
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          {/* Left content */}
           <motion.div
-            className="flex flex-col items-center gap-6 text-center"
+            className="flex flex-col items-center gap-6 text-center md:items-start md:text-left"
             initial="initial"
             animate="animate"
             variants={staggerContainer}
@@ -129,6 +126,26 @@ export function HeroSection() {
                 </button>
               </Link>
             </motion.div>
+          </motion.div>
+
+          {/* Right: Video */}
+          <motion.div
+            className="relative order-first md:order-last"
+            initial={{ opacity: 0, x: 50, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+          >
+            <motion.video
+              src="/videos/1anime.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="rounded-lg shadow-2xl shadow-primary/20 w-full h-auto brightness-[0.7]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1 }}
+            />
           </motion.div>
         </div>
       </div>

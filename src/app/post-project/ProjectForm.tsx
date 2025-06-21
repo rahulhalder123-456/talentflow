@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -29,7 +28,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
-import { generateProjectDescription } from '@/ai/flows/generate-project-description';
+import { handleGenerateDescription } from '@/app/actions';
 
 
 const formSchema = z.object({
@@ -86,7 +85,7 @@ export function ProjectForm() {
       }
   };
 
-  const handleGenerateDescription = async () => {
+  const handleGenerateClick = async () => {
     const { projectTitle, projectBrief, desiredSkills } = form.getValues();
 
     if (!projectTitle || !projectBrief || !desiredSkills) {
@@ -100,7 +99,7 @@ export function ProjectForm() {
 
     setIsGenerating(true);
     try {
-      const result = await generateProjectDescription({
+      const result = await handleGenerateDescription({
         projectTitle,
         projectBrief,
         desiredSkills,
@@ -121,7 +120,7 @@ export function ProjectForm() {
       toast({
         variant: "destructive",
         title: "AI Generation Failed",
-        description: "Could not generate a description. Please try again.",
+        description: error instanceof Error ? error.message : "Could not generate a description. Please try again.",
       });
     } finally {
       setIsGenerating(false);
@@ -304,7 +303,7 @@ export function ProjectForm() {
                     <Button
                       type="button"
                       size="sm"
-                      onClick={handleGenerateDescription}
+                      onClick={handleGenerateClick}
                       disabled={isGenerating}
                       className="bg-accent text-accent-foreground hover:bg-accent/90"
                     >

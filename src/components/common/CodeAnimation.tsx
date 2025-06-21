@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-
 const codeLines = [
   'const App = () => {',
-  '  return (',
+ ' return (',
   '    <div className="hero">',
   '      <motion.h1',
   '        initial={{ opacity: 0, y: -20 }}',
@@ -36,7 +35,7 @@ const syntaxHighlight = (line: string) => {
 };
 
 
-export function CodeAnimation() {
+export const CodeAnimation = () => {
   const [currentLines, setCurrentLines] = useState<string[]>([]);
   const [lineIndex, setLineIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
@@ -68,7 +67,7 @@ export function CodeAnimation() {
     return () => clearTimeout(charTimeout);
 
   }, [lineIndex, charIndex]);
-
+  
 
   const displayedLines = [...currentLines];
   if(lineIndex < codeLines.length) {
@@ -98,6 +97,6 @@ export function CodeAnimation() {
           ))}
         </pre>
       </div>
-    </motion.div>
+    </motion.div> 
   );
 }
