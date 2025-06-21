@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const codeLines = [
@@ -77,7 +77,7 @@ export function CodeAnimation() {
 
   return (
     <motion.div
-      className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
+      className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden" 
       initial={{ opacity: 0, scale: 1.2 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
