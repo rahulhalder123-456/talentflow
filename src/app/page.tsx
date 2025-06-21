@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Header } from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,9 +17,11 @@ import {
   Clock,
   ShieldCheck,
   DollarSign,
+  Star,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const categories = [
   { name: 'Web Development', icon: <CodeXml className="h-8 w-8 text-primary" /> },
@@ -51,6 +54,33 @@ const whyUsBenefits = [
     icon: <ShieldCheck className="h-6 w-6" />,
   },
 ]
+
+const testimonials = [
+  {
+    quote:
+      "Talent Flow delivered a stunning website that exceeded our expectations. Their team is professional, creative, and incredibly efficient. We couldn't be happier with the result.",
+    name: 'Sarah Johnson',
+    title: 'CEO, Innovate Inc.',
+    avatar: 'SJ',
+    rating: 5,
+  },
+  {
+    quote:
+      'The marketing campaign they crafted for us was a game-changer. We saw a significant increase in engagement and leads. Highly recommend their services!',
+    name: 'Michael Chen',
+    title: 'Marketing Director, Tech Solutions',
+    avatar: 'MC',
+    rating: 5,
+  },
+  {
+    quote:
+      'From concept to final product, the process was seamless. Their communication is top-notch, and they delivered on time and on budget. A truly reliable partner.',
+    name: 'Jessica Williams',
+    title: 'Founder, Creative Co.',
+    avatar: 'JW',
+    rating: 5,
+  },
+];
 
 export default function Home() {
   return (
@@ -188,6 +218,71 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="about-us" className="bg-muted py-16 md:py-24">
+          <div className="container mx-auto max-w-7xl px-4 md:px-6">
+            <div className="grid items-center gap-12 md:grid-cols-2">
+              <div className="space-y-4">
+                <Badge variant="secondary">About Us</Badge>
+                <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">A Passionate Team of Creators</h2>
+                <p className="text-muted-foreground">
+                  We are Talent Flow, a close-knit collective of designers, developers, and strategists who are passionate about building exceptional digital experiences. We believe in the power of collaboration and bring a wealth of expertise to every project, ensuring we not only meet but exceed your expectations. Our mission is to become your trusted partner for all things digital.
+                </p>
+                <Button asChild>
+                  <Link href="#">Learn More About Our Team</Link>
+                </Button>
+              </div>
+              <div>
+                <Image
+                  src="https://placehold.co/600x400.png"
+                  alt="Talent Flow Team"
+                  width={600}
+                  height={400}
+                  className="rounded-lg shadow-lg"
+                  data-ai-hint="team collaboration"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="reviews" className="py-16 md:py-24">
+          <div className="container mx-auto max-w-7xl px-4 md:px-6">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
+                Loved by Teams Worldwide
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Don't just take our word for it. Here's what our clients have to say.
+              </p>
+            </div>
+            <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial) => (
+                <Card key={testimonial.name}>
+                  <CardHeader>
+                    <div className="flex items-center gap-4">
+                      <Avatar>
+                        <AvatarImage src={`https://placehold.co/40x40.png`} alt={testimonial.name} data-ai-hint="person portrait"/>
+                        <AvatarFallback>{testimonial.avatar}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-base font-semibold">{testimonial.name}</CardTitle>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: testimonial.rating }).map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">"{testimonial.quote}"</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="bg-primary text-primary-foreground py-16 md:py-24">
           <div className="container mx-auto max-w-7xl px-4 text-center md:px-6">
             <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
@@ -225,7 +320,7 @@ export default function Home() {
             <div>
               <h4 className="font-semibold">Company</h4>
               <ul className="mt-4 space-y-2 text-sm">
-                <li><Link href="#" className="text-muted-foreground hover:text-primary">About Us</Link></li>
+                <li><Link href="/#about-us" className="text-muted-foreground hover:text-primary">About Us</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-primary">Contact Us</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-primary">Careers</Link></li>
               </ul>
