@@ -103,13 +103,13 @@ export function ProjectForm() {
 
     } catch (error) {
       console.error("Error generating description:", error);
-      let errorMessage = "An unexpected error occurred while generating the description.";
+      let errorMessage = "An unexpected error occurred. Please check the server logs for details.";
       if (error instanceof Error) {
-        if (error.message.includes('API key not valid')) {
-            errorMessage = "The Google AI API key is missing or invalid. Please check your .env.local file and ensure the GOOGLE_API_KEY is set correctly.";
-        } else {
-             errorMessage = error.message;
-        }
+          if (error.message.includes('400 Bad Request') || error.message.includes('API key not valid')) {
+              errorMessage = "Your Google AI API key appears to be invalid or missing. Please check your .env.local file.";
+          } else if (error.message.includes('404 Not Found')) {
+              errorMessage = "The AI model was not found. This can happen if your API key is restricted to a specific region.";
+          }
       }
       toast({
         variant: "destructive",
@@ -299,7 +299,7 @@ export function ProjectForm() {
                       size="sm"
                       onClick={handleGenerateClick}
                       disabled={isGenerating}
-                      className="bg-accent text-accent-foreground hover:bg-accent/90"
+                      variant="secondary"
                     >
                       {isGenerating ? (
                         <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
