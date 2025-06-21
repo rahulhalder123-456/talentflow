@@ -13,15 +13,14 @@ import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestam
 
 
 // --- Firebase Configuration ---
-// IMPORTANT: These values are hardcoded for debugging purposes to resolve an
-// authorization issue. This is not a recommended practice for production.
+// Load config from environment variables to keep keys secure
 const firebaseConfig = {
-  apiKey: "AIzaSyA-Q26KTxW5Ysn4N6ngD5dj6W6bIIzdwr0",
-  authDomain: "my-platform-3cc40.firebaseapp.com",
-  projectId: "my-platform-3cc40",
-  storageBucket: "my-platform-3cc40.appspot.com",
-  messagingSenderId: "1027782203084",
-  appId: "1:1027782203084:web:301b8a7d91a4b3f5961469",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 
