@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -51,10 +52,7 @@ Project Brief: {{{projectBrief}}}
 Desired Skills: {{{desiredSkills}}}
 Budget: {{{budget}}}
 
-⚠️ Your response MUST be a valid JSON object like:
-{
-  "projectDescription": "Your detailed description here."
-}
+The output should be a detailed project description.
 `,
 });
 
@@ -66,18 +64,11 @@ const generateProjectDescriptionFlow = ai.defineFlow(
     outputSchema: GenerateProjectDescriptionOutputSchema,
   },
   async (input) => {
-    try {
-      const { output } = await prompt(input);
+    const { output } = await prompt(input);
 
-      if (!output || typeof output.projectDescription !== 'string') {
-        console.error("Invalid AI response:", output);
-        throw new Error("AI returned invalid format");
-      }
-
-      return output;
-    } catch (err) {
-      console.error("AI generation failed:", err);
-      throw new Error("Failed to generate project description. Please try again later.");
-    }
+    // Genkit will throw an error if the output does not match the schema,
+    // so we can be confident in the output if we reach this point.
+    // The '!' tells TypeScript we are sure `output` is not null/undefined.
+    return output!;
   }
 );
