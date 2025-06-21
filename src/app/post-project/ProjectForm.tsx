@@ -1,9 +1,9 @@
+
 "use client";
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { CalendarIcon, LoaderCircle, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
@@ -28,20 +28,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
-import { handleGenerateDescription } from '@/app/actions';
-
-
-const formSchema = z.object({
-  projectTitle: z.string().min(5, "Title must be at least 5 characters."),
-  projectBrief: z.string().min(20, "Brief must be at least 20 characters."),
-  desiredSkills: z.string().min(3, "Please list at least one skill (e.g., React, Figma)."),
-  budget: z.string().regex(/^\d+(\.\d{1,2})?$/, "Budget must be a valid number.").min(1, "Budget is required."),
-  deadline: z.date({ required_error: "A deadline for the project is required." }),
-  paymentType: z.string({ required_error: "Please select a payment type." }),
-  projectDescription: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { ProjectFormSchema, type ProjectFormValues } from '@/app/projects/types';
+import { generateProjectDescription } from '@/ai/flows/generate-project-description';
 
 export function ProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,8 +38,8 @@ export function ProjectForm() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(ProjectFormSchema),
     defaultValues: {
       projectTitle: "",
       projectBrief: "",
@@ -99,7 +87,7 @@ export function ProjectForm() {
 
     setIsGenerating(true);
     try {
-      const result = await handleGenerateDescription({
+      const result = await generateProjectDescription({
         projectTitle,
         projectBrief,
         desiredSkills,
@@ -112,7 +100,7 @@ export function ProjectForm() {
           description: "The project description has been filled in for you.",
         });
       } else {
-          throw new Error("The AI returned an empty description.")
+          throw new Error(result.error || "The AI returned an empty description.")
       }
 
     } catch (error) {
@@ -127,7 +115,7 @@ export function ProjectForm() {
     }
   };
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(values: ProjectFormValues) {
     if (!user) {
       toast({ variant: "destructive", title: "Authentication Error", description: "You must be logged in to post a project." });
       return;
