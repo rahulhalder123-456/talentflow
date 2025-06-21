@@ -36,6 +36,10 @@ export async function createProject(data: z.infer<typeof projectSchema>) {
     return { success: false, error: "Invalid project data." };
   }
 
+  if (!parsedData.data.userId) {
+    return { success: false, error: "User is not authenticated. Cannot create project." };
+  }
+
   try {
     await addDoc(collection(db, 'projects'), {
       ...parsedData.data,
