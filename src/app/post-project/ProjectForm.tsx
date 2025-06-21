@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, LoaderCircle } from 'lucide-react';
+import { CalendarIcon, LoaderCircle, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 
@@ -29,6 +29,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
+import { generateProjectDescription } from '@/ai/flows/generate-project-description';
 
 
 const formSchema = z.object({
@@ -45,6 +46,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function ProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
@@ -82,6 +84,48 @@ export function ProjectForm() {
           default:
               return 'e.g., 5000';
       }
+  };
+
+  const handleGenerateDescription = async () => {
+    const { projectTitle, projectBrief, desiredSkills } = form.getValues();
+
+    if (!projectTitle || !projectBrief || !desiredSkills) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in the Project Title, Brief, and Desired Skills before generating a description.",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const result = await generateProjectDescription({
+        projectTitle,
+        projectBrief,
+        desiredSkills,
+      });
+
+      if (result.projectDescription) {
+        form.setValue('projectDescription', result.projectDescription, { shouldValidate: true });
+        toast({
+          title: "Description Generated!",
+          description: "The project description has been filled in for you.",
+        });
+      } else {
+          throw new Error("The AI returned an empty description.")
+      }
+
+    } catch (error) {
+      console.error("Error generating description:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Generation Failed",
+        description: "Could not generate a description. Please try again.",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   async function onSubmit(values: FormValues) {
@@ -255,7 +299,23 @@ export function ProjectForm() {
               name="projectDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Description</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Project Description</FormLabel>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateDescription}
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2 h-4 w-4" />
+                      )}
+                      Generate with AI
+                    </Button>
+                  </div>
                   <FormControl>
                     <Textarea
                       placeholder="Provide a detailed description for freelancers to see..."
@@ -264,7 +324,7 @@ export function ProjectForm() {
                     />
                   </FormControl>
                    <FormDescription>
-                      This will be the main description freelancers see.
+                      This will be the main description freelancers see. You can generate one based on your brief.
                     </FormDescription>
                   <FormMessage />
                 </FormItem>
