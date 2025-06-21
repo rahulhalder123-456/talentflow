@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,14 +10,19 @@ import { Loader } from '@/components/common/Loader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Briefcase, MessageSquare, User, PlusCircle, Shield } from 'lucide-react';
+import { isAdmin } from '@/lib/admin';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/signin');
+    }
+    if (user) {
+      setIsUserAdmin(isAdmin(user.uid));
     }
   }, [user, loading, router]);
 
@@ -55,7 +60,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="container mx-auto max-w-7xl py-12 px-4 md:px-6">
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 <Card className="bg-secondary/30 border-border/50 shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">My Projects</CardTitle>
@@ -101,22 +106,30 @@ export default function DashboardPage() {
                         </Button>
                     </CardContent>
                 </Card>
-                <Card className="bg-secondary/30 border-accent/30 shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Admin Panel</CardTitle>
-                        <Shield className="h-4 w-4 text-accent" />
-                    </CardHeader>
-                    <CardContent>
-                         <div className="text-2xl font-bold">Manage</div>
-                         <p className="text-xs text-muted-foreground">
-                            Access the admin dashboard to manage all projects.
-                        </p>
-                        <Button variant="outline" size="sm" className="mt-4" asChild>
-                           <Link href="/admin/dashboard">Go to Admin</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
             </div>
+
+            {isUserAdmin && (
+              <div className="mt-12">
+                <h2 className="font-headline text-2xl font-bold tracking-tight mb-4">Admin Area</h2>
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                  <Card className="bg-secondary/30 border-accent/30 shadow-lg">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">Admin Panel</CardTitle>
+                          <Shield className="h-4 w-4 text-accent" />
+                      </CardHeader>
+                      <CardContent>
+                           <div className="text-2xl font-bold">Manage</div>
+                           <p className="text-xs text-muted-foreground">
+                              Access the admin dashboard to manage all projects.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-4" asChild>
+                             <Link href="/admin/dashboard">Go to Admin</Link>
+                          </Button>
+                      </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
         </div>
       </main>
     </div>

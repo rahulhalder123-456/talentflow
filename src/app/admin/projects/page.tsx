@@ -1,5 +1,4 @@
 
-import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -7,8 +6,6 @@ import { AllProjectsList } from "./AllProjectsList";
 
 export default function AdminProjectsPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
       <main className="flex-1 py-12">
         <div className="container mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-8">
@@ -30,6 +27,5 @@ export default function AdminProjectsPage() {
           <AllProjectsList />
         </div>
       </main>
-    </div>
   );
 }
