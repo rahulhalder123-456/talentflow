@@ -33,6 +33,7 @@ export async function sendMessage(data: z.infer<typeof messageSchema>) {
   }
 
   const { chatId, userId, text, fileUrl, fileName } = parsedData.data;
+  const clientUserId = chatId.replace('support_', '');
 
   try {
     const messagesRef = collection(db, 'chats', chatId, 'messages');
@@ -48,12 +49,32 @@ export async function sendMessage(data: z.infer<typeof messageSchema>) {
     const chatRef = doc(db, 'chats', chatId);
     await setDoc(chatRef, { 
         lastMessageAt: serverTimestamp(),
-        participants: [userId, 'support-admin'] // Assuming a support chat
+        participants: [clientUserId, 'support-admin'] 
     }, { merge: true });
 
     return { success: true };
   } catch (error) {
     console.error('Error sending message:', error);
     return { success: false, error: getFirebaseErrorMessage(error) };
+  }
+}
+
+export async function getAllChats() {
+  try {
+    const chatsRef = collection(db, 'chats');
+    const q = query(chatsRef);
+    const querySnapshot = await getDocs(q);
+    const chats = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            lastMessageAt: data.lastMessageAt?.toDate().toISOString() || new Date().toISOString(),
+        }
+    });
+    return { success: true, chats };
+  } catch (error) {
+    console.error('Error fetching all chats:', error);
+    return { success: false, error: getFirebaseErrorMessage(error), chats: [] };
   }
 }
