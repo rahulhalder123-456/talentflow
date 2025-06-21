@@ -1,21 +1,25 @@
-import { redirect } from 'next/navigation';
+
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 import { Header } from "@/components/common/Header";
 import { ProjectForm } from "./ProjectForm";
+import { Loader } from '@/components/common/Loader';
 
-// This is a placeholder for a real authentication check.
-// In a real application, you would replace this with a call to your auth provider
-// (e.g., checking for a valid session cookie or token).
-const checkIsUserAuthenticated = async (): Promise<boolean> => {
-  // For demonstration purposes, we'll assume the user is not signed in.
-  // In a real app, this would involve actual auth logic.
-  return false;
-};
+export default function PostProjectPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-export default async function PostProjectPage() {
-  const isAuthenticated = await checkIsUserAuthenticated();
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/signin');
+    }
+  }, [user, loading, router]);
 
-  if (!isAuthenticated) {
-    redirect('/signin');
+  if (loading || !user) {
+    return <Loader />;
   }
 
   return (
