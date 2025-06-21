@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { Menu, Zap, LogOut, LayoutDashboard, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/client';
@@ -107,6 +107,9 @@ export function Header() {
                   <span className="font-headline text-lg font-bold">Talent Flow</span>
                 </Link>
               </SheetTitle>
+              <SheetDescription className="sr-only">
+                A mobile navigation menu with links to different sections of the website.
+              </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto p-4">
               <nav className="grid gap-2">
