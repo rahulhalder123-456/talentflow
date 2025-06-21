@@ -24,7 +24,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CodeAnimation } from '@/components/common/CodeAnimation';
 
 const fadeInUp = {
   initial: { y: 60, opacity: 0 },
@@ -120,59 +119,74 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background overflow-hidden">
       <Header />
       <main className="flex-1">
-        <motion.section 
-          className="relative py-24 md:py-32 lg:py-40 text-center overflow-hidden"
-        >
-           <CodeAnimation />
-           <div className="absolute inset-0 z-5 backdrop-blur-sm"></div>
+        <section className="py-24 md:py-32 lg:py-40 overflow-hidden">
+          <div className="container mx-auto max-w-7xl px-4 md:px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div
+                className="flex flex-col items-center md:items-start gap-6 text-center md:text-left"
+                initial="initial"
+                animate="animate"
+                variants={staggerContainer}
+              >
+                <motion.div variants={fadeInUp}>
+                  <Badge variant="secondary" className="text-sm">Your On-Demand Creative & Technical Team</Badge>
+                </motion.div>
 
-          <motion.div 
-            className="relative z-10 container mx-auto max-w-7xl px-4 md:px-6 flex flex-col items-center gap-6"
-            initial="initial"
-            animate="animate"
-            variants={{ animate: { transition: { staggerChildren: 0.3, delayChildren: 0.2 }}}}
-          >
-            <motion.div variants={fadeInUp}>
-              <Badge variant="secondary" className="text-sm">Your On-Demand Creative & Technical Team</Badge>
-            </motion.div>
+                <motion.h1
+                  className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent"
+                  variants={headlineStagger}
+                >
+                  {"Where Great Ideas Meet Great Talent".split(" ").map((word, i) => (
+                    <span key={i} className="inline-block overflow-hidden py-1">
+                      <motion.span
+                        className="inline-block"
+                        variants={headlineWord}
+                      >
+                        {word}&nbsp;
+                      </motion.span>
+                    </span>
+                  ))}
+                </motion.h1>
 
-            <motion.h1 
-              className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent"
-              variants={headlineStagger}
-            >
-              {"Where Great Ideas Meet Great Talent".split(" ").map((word, i) => (
-                <span key={i} className="inline-block overflow-hidden py-1">
-                  <motion.span
-                    className="inline-block"
-                    variants={headlineWord}
-                  >
-                    {word}&nbsp;
-                  </motion.span>
-                </span>
-              ))}
-            </motion.h1>
-
-            <motion.p 
-              className="mx-auto max-w-3xl text-lg text-muted-foreground md:text-xl"
-              variants={fadeInUp}
-            >
-              We are your dedicated team of creative and technical experts, ready to bring your vision to life with precision and passion.
-            </motion.p>
-            <motion.div 
-              className="mt-4 flex flex-col sm:flex-row items-center gap-4"
-              variants={fadeInUp}
-            >
-              <Button asChild size="lg" className="text-base">
-                <Link href="/post-project">
-                  Post a Project <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="text-base border-primary/50 hover:bg-primary/10 hover:text-primary-foreground">
-                <Link href="#categories">Explore Services</Link>
-              </Button>
-            </motion.div>
-          </motion.div>
-        </motion.section>
+                <motion.p
+                  className="max-w-xl text-lg text-muted-foreground md:text-xl"
+                  variants={fadeInUp}
+                >
+                  We are your dedicated team of creative and technical experts, ready to bring your vision to life with precision and passion.
+                </motion.p>
+                <motion.div
+                  className="mt-4 flex flex-col sm:flex-row items-center md:items-start gap-4"
+                  variants={fadeInUp}
+                >
+                  <Button asChild size="lg" className="text-base">
+                    <Link href="/post-project">
+                      Post a Project <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="text-base border-primary/50 hover:bg-primary/10 hover:text-primary-foreground">
+                    <Link href="#categories">Explore Services</Link>
+                  </Button>
+                </motion.div>
+              </motion.div>
+              <motion.div
+                className="hidden md:block"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              >
+                <Image
+                  src="https://placehold.co/700x500.png"
+                  alt="Team working on computers"
+                  width={700}
+                  height={500}
+                  className="rounded-lg shadow-2xl shadow-primary/10"
+                  data-ai-hint="team computers"
+                  priority
+                />
+              </motion.div>
+            </div>
+          </div>
+        </section>
 
         <motion.section 
           id="categories"
