@@ -16,7 +16,10 @@ const messageSchema = z.object({
 function getFirebaseErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     if (error.message.includes('PERMISSION_DENIED')) {
-      return 'Permission Denied. Your Firestore security rules are blocking this action.';
+      if (error.message.includes('Cloud Firestore API has not been used')) {
+        return 'Firestore API is not enabled for this project. Please enable it in the Google Cloud Console and try again.';
+      }
+      return 'Permission Denied. Your Firestore security rules are blocking this action. Go to the Firebase Console > Firestore > Rules and update them.';
     }
     return error.message;
   }
