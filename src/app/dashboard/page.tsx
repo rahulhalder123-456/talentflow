@@ -56,7 +56,7 @@ export default function DashboardPage() {
 
         <div className="container mx-auto max-w-7xl py-12 px-4 md:px-6">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-secondary/30 border-border/50 shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
+                <Card className="bg-secondary/30 border-border/50 shadow-lg transition-shadow duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">My Projects</CardTitle>
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -66,10 +66,12 @@ export default function DashboardPage() {
                         <p className="text-xs text-muted-foreground">
                             View and manage your ongoing and completed projects.
                         </p>
-                        <Button variant="outline" size="sm" className="mt-4">View Projects</Button>
+                        <Button variant="outline" size="sm" className="mt-4" asChild>
+                            <Link href="/dashboard/projects">View Projects</Link>
+                        </Button>
                     </CardContent>
                 </Card>
-                <Card className="bg-secondary/30 border-border/50 shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
+                <Card className="bg-secondary/30 border-border/50 shadow-lg transition-shadow duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Messages</CardTitle>
                         <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -79,10 +81,12 @@ export default function DashboardPage() {
                          <p className="text-xs text-muted-foreground">
                             Communicate with freelancers and our support team.
                         </p>
-                        <Button variant="outline" size="sm" className="mt-4">View Messages</Button>
+                        <Button variant="outline" size="sm" className="mt-4" asChild>
+                            <Link href="/dashboard/messages">View Messages</Link>
+                        </Button>
                     </CardContent>
                 </Card>
-                 <Card className="bg-secondary/30 border-border/50 shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
+                 <Card className="bg-secondary/30 border-border/50 shadow-lg transition-shadow duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Account Settings</CardTitle>
                         <User className="h-4 w-4 text-muted-foreground" />
