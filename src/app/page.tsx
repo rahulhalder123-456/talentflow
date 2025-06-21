@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Header } from '@/components/common/Header';
-import { ServiceCard } from '@/components/freelancer/ServiceCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,7 +12,10 @@ import {
   Clapperboard,
   Megaphone,
   Music,
-  CheckCircle,
+  Users,
+  Clock,
+  ShieldCheck,
+  DollarSign,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,48 +29,28 @@ const categories = [
   { name: 'Music & Audio', icon: <Music className="h-8 w-8 text-primary" /> },
 ];
 
-const freelancers = [
+const whyUsBenefits = [
   {
-    name: 'Elena Rodriguez',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    service: 'Full-Stack Web Developer',
-    rating: 4.9,
-    reviews: 124,
-    price: 75,
-    imageUrl: 'https://placehold.co/400x250.png',
-    dataAiHint: 'developer code',
+    title: 'Expert Team',
+    description: 'A dedicated team of vetted professionals for every project.',
+    icon: <Users className="h-6 w-6" />,
   },
   {
-    name: 'Marcus Chen',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    service: 'UI/UX & Brand Designer',
-    rating: 5.0,
-    reviews: 98,
-    price: 90,
-    imageUrl: 'https://placehold.co/400x250.png',
-    dataAiHint: 'designer abstract',
+    title: 'On-Time Delivery',
+    description: 'We respect your deadlines and guarantee timely completion.',
+    icon: <Clock className="h-6 w-6" />,
   },
   {
-    name: 'Aisha Khan',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    service: 'SEO & Content Strategist',
-    rating: 4.8,
-    reviews: 210,
-    price: 60,
-    imageUrl: 'https://placehold.co/400x250.png',
-    dataAiHint: 'writer desk',
+    title: 'Transparent Pricing',
+    description: 'No hidden fees. Get a clear, upfront quote for your project.',
+    icon: <DollarSign className="h-6 w-6" />,
   },
-  {
-    name: 'Leo Petrov',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    service: 'Motion Graphics Artist',
-    rating: 4.9,
-    reviews: 76,
-    price: 85,
-    imageUrl: 'https://placehold.co/400x250.png',
-    dataAiHint: 'animation vibrant',
+    {
+    title: 'Quality Guaranteed',
+    description: "We stand by our work and ensure you're 100% satisfied.",
+    icon: <ShieldCheck className="h-6 w-6" />,
   },
-];
+]
 
 export default function Home() {
   return (
@@ -78,10 +60,10 @@ export default function Home() {
         <section className="bg-background py-20 md:py-32">
           <div className="container mx-auto max-w-7xl px-4 text-center md:px-6">
             <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Find the Perfect Freelance Services for Your Business
+              Your Expert Team for Any Project
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl">
-              Connect with top-tier independent professionals on Talent Flow. The future of work is here.
+              Partner with our dedicated team of professionals to bring your vision to life. We deliver quality, on time, every time.
             </p>
             <div className="mx-auto mt-8 flex max-w-2xl items-center gap-2">
               <div className="relative flex-1">
@@ -104,7 +86,7 @@ export default function Home() {
         <section id="categories" className="py-16 md:py-24">
           <div className="container mx-auto max-w-7xl px-4 md:px-6">
             <h2 className="font-headline text-center text-3xl font-bold tracking-tight md:text-4xl">
-              Browse by Category
+              Explore Our Services
             </h2>
             <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 md:gap-6">
               {categories.map((category) => (
@@ -129,7 +111,7 @@ export default function Home() {
                 Get Your Project Done in 3 Easy Steps
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Talent Flow makes it simple to find skilled professionals and bring your ideas to life.
+                Talent Flow makes it simple to partner with us and bring your ideas to life.
               </p>
             </div>
             <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -142,7 +124,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Create a project brief with our AI assistant. It's free, easy, and you'll get proposals from talented freelancers in minutes.
+                    Create a project brief with our AI assistant. It's free, easy, and you'll get a detailed proposal from our expert team.
                   </p>
                 </CardContent>
               </Card>
@@ -150,12 +132,12 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-primary">2</div>
-                    <span className="font-headline text-2xl">Hire Your Pro</span>
+                    <span className="font-headline text-2xl">Approve &amp; Kick-off</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Evaluate bids, review portfolios, and interview your favorite candidates. Hire the best fit and get to work.
+                    Review our comprehensive proposal. Once you approve, our dedicated team gets to work immediately.
                   </p>
                 </CardContent>
               </Card>
@@ -177,20 +159,30 @@ export default function Home() {
         </section>
 
 
-        <section id="features" className="py-16 md:py-24">
+        <section id="why-us" className="py-16 md:py-24">
           <div className="container mx-auto max-w-7xl px-4 md:px-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
-                Featured Freelancers
-              </h2>
-              <Link href="#" className="group flex items-center gap-2 text-primary">
-                <span>View All</span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+            <div className="mx-auto max-w-3xl text-center">
+                <Badge variant="secondary">Why Choose Us?</Badge>
+                <h2 className="font-headline mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                    The Talent Flow Advantage
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground">
+                    We are a curated team of experts dedicated to your success.
+                </p>
             </div>
-            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {freelancers.map((freelancer) => (
-                <ServiceCard key={freelancer.name} {...freelancer} />
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {whyUsBenefits.map((benefit) => (
+                 <Card key={benefit.title} className="text-center">
+                    <CardHeader className="items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">{benefit.icon}</div>
+                        <CardTitle className="font-headline text-xl">{benefit.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">
+                           {benefit.description}
+                        </p>
+                    </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -202,7 +194,7 @@ export default function Home() {
               Ready to bring your ideas to life?
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-primary-foreground/80">
-              Post a project today and get proposals from the best freelancers in the world.
+              Post a project today and get a proposal from our expert team.
             </p>
             <div className="mt-8">
               <Link href="/post-project">
@@ -217,25 +209,17 @@ export default function Home() {
 
       <footer className="border-t">
         <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-3">
             <div>
               <h3 className="font-headline text-lg font-bold">Talent Flow</h3>
-              <p className="mt-2 text-sm text-muted-foreground">The future of work.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Your dedicated project partner.</p>
             </div>
             <div>
               <h4 className="font-semibold">For Clients</h4>
               <ul className="mt-4 space-y-2 text-sm">
-                <li><Link href="#" className="text-muted-foreground hover:text-primary">How to Hire</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-primary">Talent Marketplace</Link></li>
+                <li><Link href="/#how-it-works" className="text-muted-foreground hover:text-primary">How It Works</Link></li>
+                <li><Link href="/#categories" className="text-muted-foreground hover:text-primary">Our Services</Link></li>
                 <li><Link href="/post-project" className="text-muted-foreground hover:text-primary">Post a Project</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold">For Talent</h4>
-              <ul className="mt-4 space-y-2 text-sm">
-                <li><Link href="#" className="text-muted-foreground hover:text-primary">How to Find Work</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-primary">Direct Contracts</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-primary">Find Freelance Jobs</Link></li>
               </ul>
             </div>
             <div>
