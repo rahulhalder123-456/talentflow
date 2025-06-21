@@ -11,6 +11,22 @@
 import { ai } from '@/ai/genkit';
 import { GenerateDescriptionInputSchema, GenerateDescriptionOutputSchema, type GenerateDescriptionInput } from '@/app/projects/types';
 
+const descriptionGeneratorPrompt = ai.definePrompt({
+    name: 'projectDescriptionGenerator',
+    input: { schema: GenerateDescriptionInputSchema },
+    output: { schema: GenerateDescriptionOutputSchema },
+    prompt: `You are an expert project manager and proposal writer. Based on the following project details, write a comprehensive and compelling project description that would be suitable for a freelance marketplace.
+
+The description should be clear, detailed, and outline the key deliverables, requirements, and scope.
+
+Project Title: {{{projectTitle}}}
+Project Brief: {{{projectBrief}}}
+Desired Skills: {{{desiredSkills}}}
+
+Generate the detailed project description now.`,
+});
+
+
 // This is the only export from this file.
 export async function generateProjectDescription(
   input: GenerateDescriptionInput
@@ -24,21 +40,6 @@ export async function generateProjectDescription(
   }
 
   try {
-    const descriptionGeneratorPrompt = ai.definePrompt({
-        name: 'projectDescriptionGenerator',
-        input: { schema: GenerateDescriptionInputSchema },
-        output: { schema: GenerateDescriptionOutputSchema },
-        prompt: `You are an expert project manager and proposal writer. Based on the following project details, write a comprehensive and compelling project description that would be suitable for a freelance marketplace.
-
-The description should be clear, detailed, and outline the key deliverables, requirements, and scope.
-
-Project Title: {{{projectTitle}}}
-Project Brief: {{{projectBrief}}}
-Desired Skills: {{{desiredSkills}}}
-
-Generate the detailed project description now.`,
-    });
-
     const { output } = await descriptionGeneratorPrompt(parsedInput.data);
     
     if (!output) {
