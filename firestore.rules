@@ -5,68 +5,66 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // --- Helper Functions ---
-    function isAuth() {
-      return request.auth != null;
+    function isUser(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    // 🔴 IMPORTANT: This must contain your actual Firebase Admin User ID (UID)
     function isAdmin() {
-      return request.auth.uid in [
-        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
+      // 🔴 Replace with your actual Firebase User IDs (UIDs)
+      let ADMIN_UIDS = [
+        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1',
       ];
-    }
-    
-    function isChatParticipant() {
-        // A user is a participant if their UID is in the participants array.
-        // Admins are also considered participants of all chats.
-        return request.auth.uid in resource.data.participants || isAdmin();
+      return request.auth != null && request.auth.uid in ADMIN_UIDS;
     }
 
-    // --- Collections ---
-
-    // User Profiles
+    // --- Users Collection ---
+    // Users can read and write their own profile.
+    // Admins can read any user profile.
     match /users/{userId} {
-      allow create: if isAuth();
-      allow read, update: if isOwner(userId);
-      // Admins can view any user's profile and list all users. This fixes the error.
-      allow get, list: if isAdmin();
-      
-      // Payment Methods (sub-collection)
+      allow read: if isUser(userId) || isAdmin();
+      allow write: if isUser(userId);
+
+      // --- Payment Methods Subcollection ---
+      // Users can manage their own payment methods.
       match /paymentMethods/{methodId} {
-        // Users can manage their own payment methods.
-        allow read, write, delete: if isOwner(userId);
+        allow read, write, delete: if isUser(userId);
       }
     }
 
-    // Projects
+    // --- Projects Collection ---
+    // Logged-in users can create projects.
+    // Owners and admins can read/update projects.
+    // Only admins can delete.
     match /projects/{projectId} {
-      allow create: if isAuth();
-      // Only the project owner can delete their project
-      allow delete: if isOwner(resource.data.userId);
-      // Owner or admin can read and update
-      allow read, update: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if request.auth != null;
+      allow read, update: if isUser(resource.data.userId) || isAdmin();
+      allow delete: if isAdmin();
     }
     
-    // Featured work for landing page
+    // --- Featured Projects (Showcase) ---
+    // Anyone can read featured projects for the landing page.
+    // Only admins can create, update, or delete them.
     match /featuredProjects/{projectId} {
-        // Anyone can read featured projects for the showcase
-        allow read: if true;
-        // Only admins can add, edit, or remove featured projects
-        allow write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
     
-    // Chat
+    // --- Chats & Messages Collection ---
+    // Users can read/write their own support chat. Admins can access any.
+    // The chat document ID is in the format `support_{userId}`.
     match /chats/{chatId} {
-      // Allow read/write access to participants of the chat, or admins
-      allow read, write: if isChatParticipant();
+      function isOwner() {
+        // Extract the userId from a chatId like "support_XXXXXXXX"
+        let ownerId = chatId.split('_')[1];
+        return isUser(ownerId);
+      }
       
-      // Messages (sub-collection)
+      // Allow access to the chat document (for timestamps) and its messages
+      // if the user is the owner of the chat or is an admin.
+      allow read, write: if isOwner() || isAdmin();
+      
       match /messages/{messageId} {
-        allow read, create: if isChatParticipant();
+        allow read, write: if isOwner() || isAdmin();
       }
     }
   }
