@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { CodeAnimation } from "@/components/common/CodeAnimation";
 
 const fadeInUp = {
   initial: { y: 20, opacity: 0 },
@@ -25,27 +26,16 @@ export function HeroSection() {
 
   return (
     <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
-      {/* Subtle grid background */}
-      <div className="absolute inset-0 z-0 opacity-10">
-        <div
-          className="absolute inset-0 bg-grid-pattern"
-          style={{
-            maskImage:
-              "linear-gradient(to bottom, white 0%, white 75%, transparent 100%)",
-          }}
-        />
-      </div>
+      <CodeAnimation />
 
-      <div className="container mx-auto max-w-7xl px-4 md:px-6">
-        <div className="grid items-center gap-12 md:grid-cols-2">
-          {/* Left content */}
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 md:px-6">
+        <div className="grid items-center">
           <motion.div
-            className="flex flex-col items-center gap-6 text-center md:items-start md:text-left"
+            className="flex flex-col items-center gap-6 text-center"
             initial="initial"
             animate="animate"
             variants={staggerContainer}
           >
-            {/* Badge */}
             <motion.div variants={fadeInUp}>
               <Badge
                 variant="secondary"
@@ -55,7 +45,6 @@ export function HeroSection() {
               </Badge>
             </motion.div>
 
-            {/* Sexy Animated Heading */}
             <motion.h1 className="font-headline text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-balance bg-gradient-to-br from-white via-gray-200 to-zinc-300 bg-clip-text text-transparent leading-tight">
               {headlineWords.map((word, i) => (
                 <span key={i} className="inline-block overflow-hidden px-[2px] py-1">
@@ -78,7 +67,6 @@ export function HeroSection() {
               ))}
             </motion.h1>
 
-            {/* Elegant Subtitle */}
             <motion.p
               className="max-w-3xl text-lg text-muted-foreground/80 md:text-xl tracking-normal leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
@@ -98,14 +86,12 @@ export function HeroSection() {
               demand.
             </motion.p>
 
-            {/* CTA Buttons */}
             <motion.div
               className="mt-4 flex flex-col sm:flex-row items-center gap-4"
               variants={fadeInUp}
             >
-              {/* Magic CTA */}
               <Link href="/post-project" className="group relative inline-block w-full sm:w-auto">
-                <div className="relative p-[2px] rounded-2xl bg-gradient-to-r from-[#8e2de2] via-[#4a00e0] to-[#8e2de2] transition-transform duration-300 ease-out group-hover:scale-105 group-hover:-rotate-1 shadow-[0_10px_30px_rgba(138,43,226,0.3)]">
+                <div className="relative p-[2px] rounded-2xl bg-gradient-to-r from-primary/80 to-accent/80 transition-transform duration-300 ease-out group-hover:scale-105 group-hover:-rotate-1 shadow-[0_10px_30px_rgba(138,43,226,0.3)]">
                   <span className="absolute -top-3 -right-3 text-2xl animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                     ✨
                   </span>
@@ -119,33 +105,12 @@ export function HeroSection() {
                 </div>
               </Link>
 
-              {/* Explore Button */}
               <Link href="#categories">
                 <button className="text-base bg-background/50 border border-primary/50 hover:bg-primary/10 hover:text-primary-foreground backdrop-blur-sm text-white font-medium rounded-xl px-6 py-3 transition-all duration-300">
                   Explore Services
                 </button>
               </Link>
             </motion.div>
-          </motion.div>
-
-          {/* Right: Video */}
-          <motion.div
-            className="relative order-first md:order-last"
-            initial={{ opacity: 0, x: 50, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-          >
-            <motion.video
-              src="/videos/1anime.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="rounded-lg shadow-2xl shadow-primary/20 w-full h-auto brightness-[0.7]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1 }}
-            />
           </motion.div>
         </div>
       </div>

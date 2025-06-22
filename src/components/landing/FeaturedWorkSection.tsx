@@ -1,12 +1,11 @@
-
 "use client";
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, AppWindow, Apple, Play } from 'lucide-react';
+import { Link as LinkIcon, Apple, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { FeaturedProject } from '@/features/landing/types';
 
@@ -32,10 +31,17 @@ interface FeaturedWorkSectionProps {
 const MotionCard = motion(Card);
 
 export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
+  const getSanitizedImageUrl = (url: string | undefined) => {
+    if (!url || url.includes('chatgpt.com')) {
+      return 'https://placehold.co/600x400.png';
+    }
+    return url;
+  };
+
   return (
     <motion.section
       id="featured-work"
-      className="py-16 md:py-24"
+      className="py-16 md:py-24 bg-secondary/20"
       variants={staggerContainer}
       initial="initial"
       whileInView="animate"
@@ -43,7 +49,7 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
     >
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <motion.div variants={fadeInUp} className="mx-auto max-w-3xl text-center mb-12">
-          <Badge variant="secondary" className="mb-4">Our Work</Badge>
+          <Badge variant="default" className="mb-4 shadow-lg shadow-primary/20">Our Work</Badge>
           <h2 className="font-headline text-3xl font-bold tracking-tight md:text-4xl">
             Proudly Built by Talent Flow
           </h2>
@@ -58,53 +64,59 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
               <MotionCard
                 key={project.id}
                 variants={fadeInUp}
-                className="flex h-full flex-col overflow-hidden bg-secondary/30 border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-2"
+                className="flex h-full flex-col overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-2 group"
               >
-                <Image
-                  src={project.imageUrl || 'https://placehold.co/600x400.png'}
-                  alt={project.title}
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-cover aspect-[16/10]"
-                  data-ai-hint="SaaS dashboard"
-                />
-                <CardHeader>
-                  <CardTitle>{project.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-muted-foreground">{project.description}</p>
-                </CardContent>
-                <CardFooter>
-                    <div className="flex flex-wrap gap-2 w-full">
-                        {project.projectUrl && (
-                           <Button asChild variant="outline" className="flex-1">
-                             <Link href={project.projectUrl} target="_blank">
-                               <AppWindow className="mr-2 h-4 w-4" /> Visit Website
-                             </Link>
-                           </Button>
-                        )}
-                        {project.appStoreUrl && (
-                           <Button asChild variant="outline" className="flex-1">
-                             <Link href={project.appStoreUrl} target="_blank">
-                               <Apple className="mr-2 h-4 w-4" /> App Store
-                             </Link>
-                           </Button>
-                        )}
-                        {project.playStoreUrl && (
-                           <Button asChild variant="outline" className="flex-1">
-                             <Link href={project.playStoreUrl} target="_blank">
-                               <Play className="mr-2 h-4 w-4" /> Play Store
-                             </Link>
-                           </Button>
-                        )}
-                    </div>
-                </CardFooter>
+                <div className="relative overflow-hidden">
+                    <Image
+                      src={getSanitizedImageUrl(project.imageUrl)}
+                      alt={project.title}
+                      width={600}
+                      height={400}
+                      className="w-full h-auto object-cover aspect-[16/10] transition-transform duration-500 group-hover:scale-105"
+                      data-ai-hint="SaaS dashboard app"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <Badge variant="secondary" className="absolute top-4 left-4 capitalize">{project.projectType}</Badge>
+                </div>
+                
+                <div className="flex flex-col flex-1 p-6">
+                    <CardTitle>{project.title}</CardTitle>
+                    <CardContent className="p-0 pt-2 flex-1">
+                      <p className="text-muted-foreground line-clamp-3">{project.description}</p>
+                    </CardContent>
+                    <CardFooter className="p-0 pt-6">
+                        <div className="flex flex-wrap gap-2 w-full">
+                            {project.projectUrl && (
+                               <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
+                                 <Link href={project.projectUrl} target="_blank">
+                                   <LinkIcon className="mr-2 h-4 w-4" /> Website
+                                 </Link>
+                               </Button>
+                            )}
+                            {project.appStoreUrl && (
+                               <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
+                                 <Link href={project.appStoreUrl} target="_blank">
+                                   <Apple className="mr-2 h-4 w-4" /> App Store
+                                 </Link>
+                               </Button>
+                            )}
+                            {project.playStoreUrl && (
+                               <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
+                                 <Link href={project.playStoreUrl} target="_blank">
+                                   <Play className="mr-2 h-4 w-4" /> Play Store
+                                 </Link>
+                               </Button>
+                            )}
+                        </div>
+                    </CardFooter>
+                </div>
               </MotionCard>
             ))}
           </div>
         ) : (
-          <motion.div variants={fadeInUp} className="text-center py-12 text-muted-foreground">
-            <p>Our featured work will be displayed here soon. Check back later!</p>
+          <motion.div variants={fadeInUp} className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg">
+            <h3 className="text-xl font-semibold">Showcase Coming Soon</h3>
+            <p className="mt-2">An admin can add featured projects from the dashboard.</p>
           </motion.div>
         )}
       </div>
