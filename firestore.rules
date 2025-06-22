@@ -3,59 +3,71 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user is an admin.
-    // NOTE: This relies on a field `isAdmin` in the user's profile document.
-    // This is more secure than hardcoding UIDs in client-side code.
-    function isAppAdmin(userId) {
-      return exists(/databases/$(database)/documents/users/$(userId)) &&
-             get(/databases/$(database)/documents/users/$(userId)).data.isAdmin == true;
+
+    // --- Helper Functions ---
+    function isAuth() {
+      return request.auth != null;
     }
 
-    // --- Users Collection ---
-    // Users can read/write their own profile data.
-    // Admins can read all user profiles.
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null && isAppAdmin(request.auth.uid);
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // 🔴 IMPORTANT: This must contain your actual Firebase Admin User ID (UID)
+    function isAdmin() {
+      return request.auth.uid in [
+        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
+      ];
+    }
+    
+    function isChatParticipant() {
+        // A user is a participant if their UID is in the participants array.
+        // Admins are also considered participants of all chats.
+        return request.auth.uid in resource.data.participants || isAdmin();
+    }
 
-      // --- Payment Methods Subcollection ---
-      // Users can manage their own payment methods.
+    // --- Collections ---
+
+    // User Profiles
+    match /users/{userId} {
+      allow create: if isAuth();
+      allow read, update: if isOwner(userId);
+      // Admins can view any user's profile and list all users. This fixes the error.
+      allow get, list: if isAdmin();
+      
+      // Payment Methods (sub-collection)
       match /paymentMethods/{methodId} {
-        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+        // Users can manage their own payment methods.
+        allow read, write, delete: if isOwner(userId);
       }
     }
 
-    // --- Projects Collection ---
-    // Logged-in users can create projects.
-    // Project owners can read/write their own projects.
-    // Admins can read/write all projects.
+    // Projects
     match /projects/{projectId} {
-      allow create: if request.auth != null;
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow read, write: if request.auth != null && isAppAdmin(request.auth.uid);
-    }
-
-    // --- Featured Projects Collection ---
-    // Everyone can read the list of featured projects.
-    // Only admins can write to featured projects.
-    match /featuredProjects/{projectId} {
-        allow read;
-        allow write: if request.auth != null && isAppAdmin(request.auth.uid);
+      allow create: if isAuth();
+      // Only the project owner can delete their project
+      allow delete: if isOwner(resource.data.userId);
+      // Owner or admin can read and update
+      allow read, update: if isOwner(resource.data.userId) || isAdmin();
     }
     
-    // --- Chats Collection ---
-    // Chat is identified by `support_{userId}`.
-    // A user can read/write to their own chat document (`support_...`).
-    // An admin can read/write to any chat document.
+    // Featured work for landing page
+    match /featuredProjects/{projectId} {
+        // Anyone can read featured projects for the showcase
+        allow read: if true;
+        // Only admins can add, edit, or remove featured projects
+        allow write: if isAdmin();
+    }
+    
+    // Chat
     match /chats/{chatId} {
-        allow read, write: if request.auth != null && (request.auth.uid == chatId.split('_')[1] || isAppAdmin(request.auth.uid));
-
-        // --- Messages Subcollection ---
-        // Participants of a chat (the client or an admin) can read/write messages.
-        match /messages/{messageId} {
-            allow read, write: if request.auth != null && (request.auth.uid == chatId.split('_')[1] || isAppAdmin(request.auth.uid));
-        }
+      // Allow read/write access to participants of the chat, or admins
+      allow read, write: if isChatParticipant();
+      
+      // Messages (sub-collection)
+      match /messages/{messageId} {
+        allow read, create: if isChatParticipant();
+      }
     }
   }
 }
