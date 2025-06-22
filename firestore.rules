@@ -3,90 +3,83 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check if a user is an admin
+  
+    // --- Helper Functions ---
     function isAdmin() {
-      // 🔴 IMPORTANT: Replace with your actual Firebase User ID (UID)
-      return request.auth.uid in ['ToBDMq0KVIgnLQCEeFzxLzB4HUj1'];
+      // 🔴 Replace with your actual Firebase Admin User ID (UID)
+      return request.auth.uid in [
+        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
+      ];
+    }
+  
+    function isAuthenticated() {
+      return request.auth != null;
     }
     
-    // Helper function to check if a user owns the document
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
-    // --- Users ---
-    // Users can read/write their own profile document.
+    
+    // --- USERS Collection ---
+    // Users can read/update their own profile.
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, update: if isOwner(userId);
+      allow create: if isAuthenticated();
+      
+      // Payment methods are private to the user
+      match /paymentMethods/{methodId} {
+        allow read, create, delete: if isOwner(userId);
+      }
     }
     
-    // Admins can read all user profiles.
-    match /users/{userId} {
-      allow get, list: if isAdmin();
-    }
-    
-    // --- Payment Methods (Subcollection of Users) ---
-    // Users can manage their own payment methods.
-    match /users/{userId}/paymentMethods/{methodId} {
-        allow read, write, delete: if isOwner(userId);
-    }
-
-    // --- Projects ---
-    // Users can create projects.
-    // Owners can read and update their own projects.
+    // --- PROJECTS Collection ---
     match /projects/{projectId} {
-      allow create: if request.auth != null;
-      allow read, update: if isOwner(request.resource.data.userId);
-    }
-    
-    // Admins can read, update, and delete any project.
-    match /projects/{projectId} {
-        allow get, list, update, delete: if isAdmin();
-    }
+      // Any authenticated user can create a project, but must be for themselves.
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
 
-    // --- Time Entries (Subcollection of Projects) ---
-    // Admins can create, read, update, delete time entries.
-    match /projects/{projectId}/timeEntries/{entryId} {
-        allow read, write, delete: if isAdmin();
+      // Only the project owner or an admin can read the project details.
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only the project owner or an admin can update a project.
+      allow update: if isOwner(resource.data.userId) || isAdmin();
+
+      // Time Entries sub-collection
+      match /timeEntries/{entryId} {
+        // Owner and admin can read. Admin can write.
+        allow read: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.userId) || isAdmin();
+        allow write: if isAdmin();
+      }
     }
     
-    // --- Chats ---
-    // Chat documents are named `support_{userId}`.
-    // Participants can read/write their chat document.
+    // --- CHATS Collection ---
     match /chats/{chatId} {
-        allow read, write: if request.auth.uid in resource.data.participants || isAdmin();
+      // The user who owns the chat, or an admin, can read/write the parent chat doc.
+      // chatId is expected to be 'support_{userId}'
+      allow read, write: if isOwner(chatId.split('_')[1]) || isAdmin();
+      
+      // Messages sub-collection
+      match /messages/{messageId} {
+        // The user who owns the chat, or an admin, can read messages.
+        allow read: if isOwner(chatId.split('_')[1]) || isAdmin();
         
-        match /messages/{messageId} {
-            // A user can only read messages if they are a participant of the parent chat.
-            allow read: if request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isAdmin();
-            
-            // A user can only create messages in their own designated chat channel. Admins can create in any.
-            allow create: if (chatId == 'support_' + request.auth.uid) || isAdmin();
-        }
-    }
-    
-    // --- Featured Projects ---
-    // Public can read featured projects for the showcase.
-    // Admins can create, update, delete featured projects.
-    match /featuredProjects/{projectId} {
-        allow get, list: if true;
-        allow write, delete: if isAdmin();
+        // The user who owns the chat, or an admin, can create messages.
+        allow create: if isOwner(chatId.split('_')[1]) || isAdmin();
+      }
     }
 
-    // --- Reviews ---
-    // Public can read reviews for the testimonials section.
+    // --- REVIEWS Collection ---
+    // Anyone can read reviews (for the homepage).
     match /reviews/{reviewId} {
-      allow get, list: if true;
+      allow read: if true;
+      // Only the user who owns the review can create it.
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
     }
     
-    // Users can only create a review if they are the owner of the associated project
-    // and the project status is 'Closed'.
-    match /reviews/{reviewId} {
-        allow create: if request.auth.uid != null
-            && isOwner(request.resource.data.userId)
-            && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.status == 'Closed';
+    // --- FEATURED PROJECTS Collection ---
+    // Publicly readable. Only admins can modify.
+    match /featuredProjects/{projectId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
-    
