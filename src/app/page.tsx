@@ -4,6 +4,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { CategoriesSection } from '@/components/landing/CategoriesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { WhyUsSection } from '@/components/landing/WhyUsSection';
+import { FeaturedWorkSection } from '@/components/landing/FeaturedWorkSection';
 import { AboutUsSection } from '@/components/landing/AboutUsSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { CtaSection } from '@/components/landing/CtaSection';
@@ -17,6 +18,7 @@ export default function Home() {
         <CategoriesSection />
         <HowItWorksSection />
         <WhyUsSection />
+        <FeaturedWorkSection />
         <AboutUsSection />
         <TestimonialsSection />
         <CtaSection />

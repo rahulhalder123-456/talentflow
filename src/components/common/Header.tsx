@@ -44,6 +44,9 @@ export function Header() {
           <Link href="/#how-it-works" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
             How It Works
           </Link>
+          <Link href="/#featured-work" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
+            Our Work
+          </Link>
            <Link href="/#about-us" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
             About Us
           </Link>
@@ -129,6 +132,11 @@ export function Header() {
                 <SheetClose asChild>
                   <Link href="/#how-it-works" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
                     How It Works
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link href="/#featured-work" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                    Our Work
                   </Link>
                 </SheetClose>
                 <SheetClose asChild>
