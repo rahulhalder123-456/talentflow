@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -29,7 +28,6 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectFormSchema, type ProjectFormValues } from '@/app/projects/types';
 import { generateProjectDescription } from '@/ai/flows/generate-project-description';
-import { revalidateProjectAndDashboardPaths } from '@/app/projects/actions';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
 
 export function ProjectForm() {
@@ -140,13 +138,11 @@ export function ProjectForm() {
             createdAt: serverTimestamp(),
         });
 
-        await revalidateProjectAndDashboardPaths();
-
         toast({
             title: "Project Submitted!",
             description: "Your project is now being listed.",
         });
-        router.push('/dashboard/projects');
+        router.push('/dashboard');
 
     } catch (error) {
         console.error('Error creating project:', error);

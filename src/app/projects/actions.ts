@@ -18,11 +18,6 @@ function getFirebaseErrorMessage(error: unknown): string {
   return 'An unknown error occurred.';
 }
 
-export async function revalidateProjectAndDashboardPaths() {
-  revalidatePath('/dashboard/projects');
-  revalidatePath('/dashboard');
-}
-
 export async function getProjectsByUserId(userId: string) {
   if (!userId) {
     return { success: false, error: 'User ID is required.', projects: [] };
