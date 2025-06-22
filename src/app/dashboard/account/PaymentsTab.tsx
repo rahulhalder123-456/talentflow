@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { getPaymentMethods } from "./actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db, collection, addDoc, serverTimestamp, doc, deleteDoc } from '@/lib/firebase/client';
-import { revalidatePath } from "next/cache";
 
 
 type PaymentMethod = {
@@ -47,7 +46,7 @@ export function PaymentsTab() {
     if (user) {
       fetchMethods();
     }
-  }, [user, toast]);
+  }, [user]);
 
   const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault();
