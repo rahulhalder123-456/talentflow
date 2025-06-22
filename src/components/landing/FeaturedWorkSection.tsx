@@ -30,13 +30,68 @@ interface FeaturedWorkSectionProps {
 
 const MotionCard = motion(Card);
 
-export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
-  const getSanitizedImageUrl = (url: string | undefined) => {
+const getSanitizedImageUrl = (url: string | undefined) => {
     if (!url || url.includes('chatgpt.com')) {
       return 'https://placehold.co/600x400.png';
     }
     return url;
-  };
+};
+
+// A smaller card component for the grid
+const ProjectCard = ({ project }: { project: FeaturedProject }) => (
+    <MotionCard
+        variants={fadeInUp}
+        className="flex h-full flex-col overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 group"
+    >
+        <div className="relative overflow-hidden">
+            <Image
+                src={getSanitizedImageUrl(project.imageUrl)}
+                alt={project.title}
+                width={600}
+                height={400}
+                className="w-full h-auto object-cover aspect-[16/10] transition-transform duration-500 group-hover:scale-105"
+                data-ai-hint="SaaS dashboard app"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <Badge variant="secondary" className="absolute top-4 left-4 capitalize">{project.projectType}</Badge>
+        </div>
+        
+        <div className="flex flex-col flex-1 p-6">
+            <CardTitle>{project.title}</CardTitle>
+            <CardContent className="p-0 pt-2 flex-1">
+                <p className="text-muted-foreground line-clamp-2 text-sm">{project.description}</p>
+            </CardContent>
+            <CardFooter className="p-0 pt-4 mt-auto">
+                <div className="flex flex-wrap gap-2 w-full">
+                    {project.projectUrl && (
+                       <Button asChild variant="outline" size="sm">
+                         <Link href={project.projectUrl} target="_blank">
+                           <LinkIcon className="mr-2 h-4 w-4" /> Website
+                         </Link>
+                       </Button>
+                    )}
+                    {project.appStoreUrl && (
+                       <Button asChild variant="outline" size="sm">
+                         <Link href={project.appStoreUrl} target="_blank">
+                           <Apple className="mr-2 h-4 w-4" /> App Store
+                         </Link>
+                       </Button>
+                    )}
+                    {project.playStoreUrl && (
+                       <Button asChild variant="outline" size="sm">
+                         <Link href={project.playStoreUrl} target="_blank">
+                           <Play className="mr-2 h-4 w-4" /> Play Store
+                         </Link>
+                       </Button>
+                    )}
+                </div>
+            </CardFooter>
+        </div>
+    </MotionCard>
+);
+
+export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
+  const [heroProject, ...otherProjects] = projects;
 
   return (
     <motion.section
@@ -59,59 +114,62 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
         </motion.div>
         
         {projects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <MotionCard
-                key={project.id}
-                variants={fadeInUp}
-                className="flex h-full flex-col overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-2 group"
-              >
-                <div className="relative overflow-hidden">
-                    <Image
-                      src={getSanitizedImageUrl(project.imageUrl)}
-                      alt={project.title}
-                      width={600}
-                      height={400}
-                      className="w-full h-auto object-cover aspect-[16/10] transition-transform duration-500 group-hover:scale-105"
-                      data-ai-hint="SaaS dashboard app"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <Badge variant="secondary" className="absolute top-4 left-4 capitalize">{project.projectType}</Badge>
+          <div className="space-y-16">
+            {/* Hero Project */}
+            {heroProject && (
+              <motion.div variants={fadeInUp} className="group">
+                  <Card className="grid md:grid-cols-2 overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-xl transition-all duration-300 hover:shadow-primary/20">
+                      <div className="relative overflow-hidden">
+                          <Image
+                              src={getSanitizedImageUrl(heroProject.imageUrl)}
+                              alt={heroProject.title}
+                              width={800}
+                              height={600}
+                              className="w-full h-full object-cover aspect-video md:aspect-auto transition-transform duration-500 group-hover:scale-105"
+                              data-ai-hint="SaaS dashboard"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+                      </div>
+                      <div className="flex flex-col p-8 md:p-12">
+                          <Badge variant="secondary" className="capitalize w-fit mb-4">{heroProject.projectType}</Badge>
+                          <h3 className="font-headline text-3xl font-bold">{heroProject.title}</h3>
+                          <p className="mt-4 text-muted-foreground flex-grow line-clamp-4">{heroProject.description}</p>
+                          <div className="flex flex-wrap gap-3 mt-6">
+                              {heroProject.projectUrl && (
+                                 <Button asChild variant="outline">
+                                   <Link href={heroProject.projectUrl} target="_blank">
+                                     <LinkIcon className="mr-2 h-4 w-4" /> View Website
+                                   </Link>
+                                 </Button>
+                              )}
+                              {heroProject.appStoreUrl && (
+                                 <Button asChild variant="outline">
+                                   <Link href={heroProject.appStoreUrl} target="_blank">
+                                     <Apple className="mr-2 h-4 w-4" /> App Store
+                                   </Link>
+                                 </Button>
+                              )}
+                              {heroProject.playStoreUrl && (
+                                 <Button asChild variant="outline">
+                                   <Link href={heroProject.playStoreUrl} target="_blank">
+                                     <Play className="mr-2 h-4 w-4" /> Play Store
+                                   </Link>
+                                 </Button>
+                              )}
+                          </div>
+                      </div>
+                  </Card>
+              </motion.div>
+            )}
+
+            {/* Other Projects Grid */}
+            {otherProjects.length > 0 && (
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    {otherProjects.map((project) => (
+                      <ProjectCard key={project.id} project={project} />
+                    ))}
                 </div>
-                
-                <div className="flex flex-col flex-1 p-6">
-                    <CardTitle>{project.title}</CardTitle>
-                    <CardContent className="p-0 pt-2 flex-1">
-                      <p className="text-muted-foreground line-clamp-3">{project.description}</p>
-                    </CardContent>
-                    <CardFooter className="p-0 pt-6">
-                        <div className="flex flex-wrap gap-2 w-full">
-                            {project.projectUrl && (
-                               <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
-                                 <Link href={project.projectUrl} target="_blank">
-                                   <LinkIcon className="mr-2 h-4 w-4" /> Website
-                                 </Link>
-                               </Button>
-                            )}
-                            {project.appStoreUrl && (
-                               <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
-                                 <Link href={project.appStoreUrl} target="_blank">
-                                   <Apple className="mr-2 h-4 w-4" /> App Store
-                                 </Link>
-                               </Button>
-                            )}
-                            {project.playStoreUrl && (
-                               <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
-                                 <Link href={project.playStoreUrl} target="_blank">
-                                   <Play className="mr-2 h-4 w-4" /> Play Store
-                                 </Link>
-                               </Button>
-                            )}
-                        </div>
-                    </CardFooter>
-                </div>
-              </MotionCard>
-            ))}
+            )}
           </div>
         ) : (
           <motion.div variants={fadeInUp} className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg">
