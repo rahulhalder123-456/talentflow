@@ -146,19 +146,19 @@ export function AllProjectsList() {
     const totalClients = groupedProjects.length;
 
     return (
-        <Card className="bg-secondary/20 border-border/50 shadow-lg">
-            <CardHeader>
+        <Card className="bg-transparent border-none shadow-none">
+            <CardHeader className="px-0">
                 <CardTitle>Project Overview</CardTitle>
                 <CardDescription>
                     {totalProjects} project(s) found across {totalClients} client(s).
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0">
                 {groupedProjects.length > 0 ? (
                     <Accordion type="multiple" className="w-full space-y-4">
                         {groupedProjects.map(({ user, projects }) => (
-                            <AccordionItem value={user.id} key={user.id} className="border border-border/50 rounded-lg bg-secondary/30 px-4">
-                                <AccordionTrigger className="hover:no-underline">
+                            <AccordionItem value={user.id} key={user.id} className="border border-border/50 rounded-lg bg-secondary overflow-hidden">
+                                <AccordionTrigger className="hover:no-underline px-6 py-4 data-[state=open]:border-b data-[state=open]:border-border/50">
                                     <div className="flex items-center gap-3 w-full">
                                         <Avatar>
                                             <AvatarFallback>{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</AvatarFallback>
@@ -169,29 +169,29 @@ export function AllProjectsList() {
                                         </div>
                                     </div>
                                 </AccordionTrigger>
-                                <AccordionContent className="bg-background/30 -mx-4 -mb-4 rounded-b-lg">
+                                <AccordionContent className="px-0 pt-0 pb-0">
                                     <div className="overflow-x-auto">
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead>Title</TableHead>
+                                                    <TableHead className="pl-6">Title</TableHead>
                                                     <TableHead>Status</TableHead>
                                                     <TableHead>Budget</TableHead>
                                                     <TableHead>Deadline</TableHead>
-                                                    <TableHead className="text-right">Actions</TableHead>
+                                                    <TableHead className="text-right pr-6">Actions</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {projects.map(project => (
-                                                    <TableRow key={project.id} className="border-border/50">
-                                                        <TableCell className="font-medium">{project.projectTitle}</TableCell>
+                                                    <TableRow key={project.id}>
+                                                        <TableCell className="font-medium pl-6">{project.projectTitle}</TableCell>
                                                         <TableCell>
                                                             <Badge variant={project.status === 'Open' ? 'secondary' : 'default'}>{project.status}</Badge>
                                                         </TableCell>
                                                         <TableCell>${project.budget}</TableCell>
                                                         <TableCell>{format(new Date(project.deadline), 'PP')}</TableCell>
-                                                        <TableCell className="text-right">
-                                                            <Button asChild variant="outline" size="sm">
+                                                        <TableCell className="text-right pr-6">
+                                                            <Button asChild variant="secondary" size="sm">
                                                                 <Link href={`/projects/${project.id}`}>
                                                                     View Details
                                                                 </Link>
