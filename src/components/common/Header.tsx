@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Menu, Zap, LogOut, LayoutDashboard, PlusCircle, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/client';
@@ -44,8 +44,8 @@ export function Header() {
           <Link href="/#how-it-works" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
             How It Works
           </Link>
-          <Link href="/#featured-work" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
-            Our Work
+          <Link href="/showcase" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
+            Showcase
           </Link>
            <Link href="/#about-us" className="font-medium text-muted-foreground transition-colors hover:text-primary" prefetch={false}>
             About Us
@@ -135,8 +135,8 @@ export function Header() {
                   </Link>
                 </SheetClose>
                 <SheetClose asChild>
-                  <Link href="/#featured-work" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
-                    Our Work
+                  <Link href="/showcase" className="block py-2 text-base font-medium text-muted-foreground hover:text-primary" prefetch={false}>
+                    Showcase
                   </Link>
                 </SheetClose>
                 <SheetClose asChild>

@@ -9,35 +9,8 @@ import { FeaturedWorkSection } from '@/components/landing/FeaturedWorkSection';
 import { AboutUsSection } from '@/components/landing/AboutUsSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { CtaSection } from '@/components/landing/CtaSection';
-import { db, collection, getDocs, query, orderBy } from "@/lib/firebase/client";
+import { getFeaturedProjects } from '@/features/landing/actions';
 import type { FeaturedProject } from '@/features/landing/types';
-
-
-async function getFeaturedProjects(): Promise<FeaturedProject[]> {
-    try {
-        const projectsRef = collection(db, "featuredProjects");
-        const q = query(projectsRef, orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                title: data.title,
-                description: data.description,
-                imageUrl: data.imageUrl || 'https://placehold.co/600x400.png', // Fallback to placeholder
-                projectType: data.projectType,
-                projectUrl: data.projectUrl,
-                appStoreUrl: data.appStoreUrl,
-                playStoreUrl: data.playStoreUrl,
-                createdAt: data.createdAt.toDate().toISOString(),
-            };
-        }) as FeaturedProject[];
-    } catch (error) {
-        console.error("Error fetching featured projects for homepage:", error);
-        return [];
-    }
-}
 
 
 export default async function Home() {
