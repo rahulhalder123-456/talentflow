@@ -1,71 +1,107 @@
-
 rules_version = '2';
+
+// Helper function to check if a user is an admin
+function isAdmin(userId) {
+  // 🔴 IMPORTANT: Replace with your actual Firebase User IDs (UIDs)
+  return userId in {
+    'ToBDMq0KVIgnLQCEeFzxLzB4HUj1': true
+  };
+}
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
-    function isUser(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    function isAdmin() {
-      // 🔴 Replace with your actual Firebase User IDs (UIDs)
-      let ADMIN_UIDS = [
-        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1',
-      ];
-      return request.auth != null && request.auth.uid in ADMIN_UIDS;
-    }
-
-    // --- Users Collection ---
-    // Users can read and write their own profile.
-    // Admins can read any user profile.
+    // Rules for user profiles
     match /users/{userId} {
-      allow read: if isUser(userId) || isAdmin();
-      allow write: if isUser(userId);
+      // Allow users to create their own profile document
+      allow create: if request.auth != null && request.auth.uid == userId;
 
-      // --- Payment Methods Subcollection ---
-      // Users can manage their own payment methods.
-      match /paymentMethods/{methodId} {
-        allow read, write, delete: if isUser(userId);
-      }
+      // Allow users to read and update their own profile
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow admins to read any user's profile
+      allow get: if request.auth != null && isAdmin(request.auth.uid);
+      allow list: if request.auth != null && isAdmin(request.auth.uid);
+    }
+    
+    // Rules for user payment methods (subcollection)
+    match /users/{userId}/paymentMethods/{methodId} {
+        // Users can manage their own payment methods
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // --- Projects Collection ---
-    // Logged-in users can create projects.
-    // Owners and admins can read/update projects.
-    // Only admins can delete.
+    // Rules for projects
     match /projects/{projectId} {
-      allow create: if request.auth != null;
-      allow read, update: if isUser(resource.data.userId) || isAdmin();
-      allow delete: if isAdmin();
+      // Anyone authenticated can read project details
+      allow get: if request.auth != null;
+      // Authenticated users can list projects (e.g., for dashboards)
+      allow list: if request.auth != null;
+
+      // A user can create a project if:
+      // 1. They are authenticated.
+      // 2. The project's userId matches their own UID.
+      // 3. The initial status is 'Open'.
+      allow create: if request.auth != null 
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'Open';
+
+      // A user can update their own project status (e.g., funding a project)
+      // Admins can update any project status (e.g., closing a project)
+      allow update: if request.auth != null 
+                     && (
+                       (resource.data.userId == request.auth.uid) ||
+                       isAdmin(request.auth.uid)
+                     );
     }
     
-    // --- Featured Projects (Showcase) ---
-    // Anyone can read featured projects for the landing page.
-    // Only admins can create, update, or delete them.
+    // Rules for featured projects (admin-only)
     match /featuredProjects/{projectId} {
-      allow read: if true;
-      allow write: if isAdmin();
+        // Anyone can view the featured projects for the landing page
+        allow get, list: if true;
+
+        // Only admins can create, update, or delete featured projects
+        allow write, delete, create: if request.auth != null && isAdmin(request.auth.uid);
     }
     
-    // --- Chats & Messages Collection ---
-    // Users can read/write their own support chat. Admins can access any.
-    // The chat document ID is in the format `support_{userId}`.
+    // Rules for chat messages
     match /chats/{chatId} {
-      function isOwner() {
-        // Extract the userId from a chatId like "support_XXXXXXXX"
-        let ownerId = chatId.split('_')[1];
-        return isUser(ownerId);
-      }
-      
-      // Allow access to the chat document (for timestamps) and its messages
-      // if the user is the owner of the chat or is an admin.
-      allow read, write: if isOwner() || isAdmin();
-      
-      match /messages/{messageId} {
-        allow read, write: if isOwner() || isAdmin();
-      }
+        // Allow read/write access if the user is a participant in the chat
+        // Admins can access any chat
+        allow read, write: if request.auth != null && (request.auth.uid in resource.data.participants || isAdmin(request.auth.uid));
+        
+        match /messages/{messageId} {
+             // Allow read/write access if the user is a participant in the parent chat
+             // Admins can access any message
+             allow read, write: if request.auth != null && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isAdmin(request.auth.uid));
+        }
     }
+    
+    // Rules for reviews
+    match /reviews/{reviewId} {
+      // Anyone can read reviews for the public testimonials section
+      allow list, get: if true;
+      
+      // A user can create a review if:
+      // 1. They are authenticated.
+      // 2. The userId on the review matches their UID.
+      // 3. The project they are reviewing belongs to them.
+      // 4. The project's status is 'Closed'.
+      // 5. The incoming data is valid (rating between 1-5, etc.).
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.userId == request.auth.uid
+                    && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.status == 'Closed'
+                    && request.resource.data.rating is number
+                    && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+                    && request.resource.data.comment is string
+                    && request.resource.data.comment.size() > 10;
+
+      // Admins can delete reviews if needed for moderation
+      allow delete: if request.auth != null && isAdmin(request.auth.uid);
+      
+      // Reviews are immutable
+      allow update: if false;
+    }
+
   }
 }

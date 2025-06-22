@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -9,7 +8,7 @@ import { Header } from "@/components/common/Header";
 import { Loader } from '@/components/common/Loader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, MessageSquare, User, PlusCircle, Shield, Sparkles } from 'lucide-react';
+import { Briefcase, MessageSquare, User, PlusCircle, Shield, Sparkles, Star } from 'lucide-react';
 import { isAdmin } from '@/lib/admin';
 import { db, collection, query, where, onSnapshot } from '@/lib/firebase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -142,6 +141,21 @@ export default function DashboardPage() {
                         </p>
                         <Button variant="outline" size="sm" className="mt-4" asChild>
                             <Link href="/chatbot">Start Chat</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+                <Card className="bg-secondary/30 border-border/50 shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">My Reviews</CardTitle>
+                        <Star className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">Feedback</div>
+                        <p className="text-xs text-muted-foreground">
+                            Leave feedback on your completed projects.
+                        </p>
+                        <Button variant="outline" size="sm" className="mt-4" asChild>
+                            <Link href="/dashboard/reviews">Leave a Review</Link>
                         </Button>
                     </CardContent>
                 </Card>
