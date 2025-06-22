@@ -9,7 +9,7 @@ import {
   type AuthProvider as FirebaseAuthProvider,
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, doc, getDoc, setDoc, deleteDoc, onSnapshot, orderBy, updateDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, doc, getDoc, setDoc, deleteDoc, onSnapshot, orderBy, updateDoc, limit } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
@@ -77,5 +77,6 @@ export {
   deleteDoc,
   onSnapshot,
   orderBy,
-  updateDoc
+  updateDoc,
+  limit
 };
