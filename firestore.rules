@@ -1,0 +1,58 @@
+rules_version = '2';
+
+// Helper function to check if a user is an admin.
+// 🔴 IMPORTANT: This list must match the UIDs in `src/lib/admin.ts`.
+function isAdmin() {
+  return request.auth.uid in [
+    'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
+    // Add other admin UIDs here as strings
+  ];
+}
+
+// Helper function to check if user is authenticated
+function isSignedIn() {
+  return request.auth != null;
+}
+
+// Helper function to check if user is the owner of a document with a `userId` field
+function isResourceOwner() {
+  return isSignedIn() && request.auth.uid == resource.data.userId;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users Collection:
+    // - Users can read/write their own profile.
+    // - Admins can read any user profile.
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+
+      // Users can manage their own payment methods.
+      match /paymentMethods/{paymentMethodId} {
+        allow read, write, delete: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // Projects Collection:
+    // - Users can create projects for themselves.
+    // - Users can read their own projects.
+    // - Admins can read all projects.
+    match /projects/{projectId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isResourceOwner() || isAdmin();
+    }
+    
+    // Chats Collection (for support):
+    // - The chat document ID is 'support_{userId}'.
+    // - Users can access their own support chat.
+    // - Admins can access any support chat.
+    match /chats/support_{userId} {
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      
+      match /messages/{messageId} {
+        allow read, create: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      }
+    }
+  }
+}
