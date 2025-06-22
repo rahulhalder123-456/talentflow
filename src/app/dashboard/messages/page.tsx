@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Paperclip, Send, File as FileIcon, LoaderCircle } from "lucide-react";
-import { collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, serverTimestamp, doc, setDoc, writeBatch } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "@/lib/firebase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -96,20 +96,27 @@ export default function MessagesPage() {
 
     setIsSending(true);
     try {
-        const messagesRef = collection(db, 'chats', chatId, 'messages');
-        await addDoc(messagesRef, {
+        const batch = writeBatch(db);
+
+        // 1. Define the new message document reference
+        const messageRef = doc(collection(db, 'chats', chatId, 'messages'));
+        batch.set(messageRef, {
             senderId: user.uid,
             text: content.text || null,
             fileUrl: content.fileUrl || null,
             fileName: content.fileName || null,
             createdAt: serverTimestamp(),
         });
-
+        
+        // 2. Define the update for the parent chat document
         const chatRef = doc(db, 'chats', chatId);
-        await setDoc(chatRef, { 
+        batch.set(chatRef, { 
             lastMessageAt: serverTimestamp(),
             participants: [user.uid, 'support-admin'] 
         }, { merge: true });
+
+        // Atomically commit both operations
+        await batch.commit();
 
         if (content.text) {
             setNewMessage("");
