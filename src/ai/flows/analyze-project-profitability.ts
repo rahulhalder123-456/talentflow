@@ -4,50 +4,18 @@
  * @fileOverview An AI flow to analyze projects for profitability potential.
  *
  * - analyzeProjectsForProfit - A function that takes open projects and returns a ranked analysis.
- * - ProjectAnalysisInput - The input type for the analysis flow.
- * - ProjectAnalysisOutput - The return type for the analysis flow.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
+import {
+  ProjectAnalysisInputSchema,
+  ProjectAnalysisOutputSchema,
+  type ProjectAnalysisInput,
+  type ProjectAnalysisOutput,
+} from '@/features/projects/types';
 
-// Input schema for a single project
-const ProjectInputSchema = z.object({
-  id: z.string(),
-  projectTitle: z.string(),
-  projectBrief: z.string(),
-  budget: z.string(),
-  desiredSkills: z.string(),
-});
-
-// Input schema for the flow (an array of projects)
-export const ProjectAnalysisInputSchema = z.array(ProjectInputSchema);
-export type ProjectAnalysisInput = z.infer<typeof ProjectAnalysisInputSchema>;
-
-// Output schema for a single analyzed project
-const AnalyzedProjectSchema = z.object({
-  id: z.string().describe('The original ID of the project.'),
-  projectTitle: z.string().describe('The original title of the project.'),
-  profitabilityScore: z
-    .number()
-    .min(0)
-    .max(100)
-    .describe(
-      'A score from 0 to 100 representing the profit potential for the platform. Higher is better.'
-    ),
-  justification: z
-    .string()
-    .describe(
-      'A brief justification for the assigned score, highlighting key factors like budget, clarity, and skill demand.'
-    ),
-});
-
-// Output schema for the flow (an array of analyzed projects)
-export const ProjectAnalysisOutputSchema = z.object({
-  analysis: z.array(AnalyzedProjectSchema),
-});
-export type ProjectAnalysisOutput = z.infer<typeof ProjectAnalysisOutputSchema>;
 
 // The main exported function that React components will call.
 export async function analyzeProjectsForProfit(

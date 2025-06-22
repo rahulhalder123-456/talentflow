@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { getProfitabilityAnalysis } from './actions';
-import type { ProjectAnalysisOutput } from '@/ai/flows/analyze-project-profitability';
+import type { ProjectAnalysisOutput } from '@/features/projects/types';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 

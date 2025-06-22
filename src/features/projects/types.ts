@@ -39,3 +39,43 @@ export const GenerateDescriptionOutputSchema = z.object({
     projectDescription: z.string().describe('The generated detailed project description.'),
 });
 export type GenerateDescriptionOutput = z.infer<typeof GenerateDescriptionOutputSchema>;
+
+
+// --- Profitability Analysis Schemas & Types ---
+
+// Input schema for a single project for analysis
+const ProjectAnalysisInputItemSchema = z.object({
+  id: z.string(),
+  projectTitle: z.string(),
+  projectBrief: z.string(),
+  budget: z.string(),
+  desiredSkills: z.string(),
+});
+
+// Input schema for the flow (an array of projects)
+export const ProjectAnalysisInputSchema = z.array(ProjectAnalysisInputItemSchema);
+export type ProjectAnalysisInput = z.infer<typeof ProjectAnalysisInputSchema>;
+
+// Output schema for a single analyzed project
+const AnalyzedProjectSchema = z.object({
+  id: z.string().describe('The original ID of the project.'),
+  projectTitle: z.string().describe('The original title of the project.'),
+  profitabilityScore: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe(
+      'A score from 0 to 100 representing the profit potential for the platform. Higher is better.'
+    ),
+  justification: z
+    .string()
+    .describe(
+      'A brief justification for the assigned score, highlighting key factors like budget, clarity, and skill demand.'
+    ),
+});
+
+// Output schema for the flow (an array of analyzed projects)
+export const ProjectAnalysisOutputSchema = z.object({
+  analysis: z.array(AnalyzedProjectSchema),
+});
+export type ProjectAnalysisOutput = z.infer<typeof ProjectAnalysisOutputSchema>;

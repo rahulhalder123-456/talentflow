@@ -2,11 +2,8 @@
 'use server';
 
 import { db, collection, query, where, getDocs } from '@/lib/firebase/client';
-import {
-  analyzeProjectsForProfit,
-  type ProjectAnalysisInput,
-  type ProjectAnalysisOutput,
-} from '@/ai/flows/analyze-project-profitability';
+import { analyzeProjectsForProfit } from '@/ai/flows/analyze-project-profitability';
+import type { ProjectAnalysisInput, ProjectAnalysisOutput } from '@/features/projects/types';
 
 /**
  * Fetches open projects from Firestore, runs them through the AI profitability
