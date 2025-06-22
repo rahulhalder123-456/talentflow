@@ -3,83 +3,74 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // --- Helper Functions ---
+    
+    // Helper function to check if the user is an admin
     function isAdmin() {
-      // 🔴 Replace with your actual Firebase Admin User ID (UID)
       return request.auth.uid in [
         'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
       ];
     }
-  
-    function isAuthenticated() {
-      return request.auth != null;
-    }
     
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    // --- USERS Collection ---
-    // Users can read/update their own profile.
+    // --- Users Collection ---
+    // Users can only read/write their own profile data.
+    // Admins can read any user's profile.
     match /users/{userId} {
-      allow read, update: if isOwner(userId);
-      allow create: if isAuthenticated();
-      
-      // Payment methods are private to the user
-      match /paymentMethods/{methodId} {
-        allow read, create, delete: if isOwner(userId);
-      }
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if request.auth.uid == userId;
     }
     
-    // --- PROJECTS Collection ---
+    // --- Projects Collection ---
+    // Logged-in users can create projects.
+    // They can only read/update/delete projects they own.
+    // Admins can read/write any project.
     match /projects/{projectId} {
-      // Any authenticated user can create a project, but must be for themselves.
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-
-      // Only the project owner or an admin can read the project details.
-      allow read: if isOwner(resource.data.userId) || isAdmin();
-      
-      // Only the project owner or an admin can update a project.
-      allow update: if isOwner(resource.data.userId) || isAdmin();
-
-      // Time Entries sub-collection
-      match /timeEntries/{entryId} {
-        // Owner and admin can read. Admin can write.
-        allow read: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.userId) || isAdmin();
-        allow write: if isAdmin();
-      }
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.resource.data.userId == request.auth.uid || isAdmin();
     }
     
-    // --- CHATS Collection ---
+    // --- Chat Collection ---
     match /chats/{chatId} {
-      // The user who owns the chat, or an admin, can read/write the parent chat doc.
-      // chatId is expected to be 'support_{userId}'
-      allow read, write: if isOwner(chatId.split('_')[1]) || isAdmin();
+      // Admins can read any chat document
+      allow read: if isAdmin();
+      // Users can create/update their own chat document
+      allow create, update: if request.auth.uid != null && chatId == 'support_' + request.auth.uid;
       
-      // Messages sub-collection
+      // Messages Subcollection
       match /messages/{messageId} {
-        // The user who owns the chat, or an admin, can read messages.
-        allow read: if isOwner(chatId.split('_')[1]) || isAdmin();
-        
-        // The user who owns the chat, or an admin, can create messages.
-        allow create: if isOwner(chatId.split('_')[1]) || isAdmin();
+        // Admins can read/write any message
+        allow read, write: if isAdmin();
+        // Users can read/write messages in their own chat
+        allow read: if request.auth.uid != null && chatId == 'support_' + request.auth.uid;
+        // User must be writing to their own chat channel. This rule works even if the parent chat doc doesn't exist yet.
+        allow write: if request.auth.uid != null && request.resource.data.senderId == request.auth.uid && chatId == 'support_' + request.auth.uid;
       }
     }
+    
+    // --- Featured Projects Collection ---
+    // Public can read, Admins can write
+    match /featuredProjects/{projectId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
 
-    // --- REVIEWS Collection ---
-    // Anyone can read reviews (for the homepage).
+    // --- Reviews Collection ---
+    // Public can read, authenticated users can write their own review
     match /reviews/{reviewId} {
-      allow read: if true;
-      // Only the user who owns the review can create it.
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
+        allow read: if true;
+        allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAdmin();
+    }
+
+    // --- Payment Methods Subcollection ---
+    // Users can manage their own payment methods.
+    match /users/{userId}/paymentMethods/{paymentMethodId} {
+        allow read, write, delete: if request.auth.uid == userId;
     }
     
-    // --- FEATURED PROJECTS Collection ---
-    // Publicly readable. Only admins can modify.
-    match /featuredProjects/{projectId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    // --- Time Entries Subcollection ---
+    // Admins can manage time entries for any project.
+    match /projects/{projectId}/timeEntries/{timeEntryId} {
+        allow read, write: if isAdmin();
     }
   }
 }
