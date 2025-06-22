@@ -62,6 +62,12 @@ const chatbotFlow = ai.defineFlow(
       role: msg.role === 'user' ? 'user' : 'model' as 'user' | 'model',
       content: [{ text: msg.text }],
     }));
+    
+    // The Gemini API requires the history to start with a user message.
+    // If the first message in our history is from the model (e.g., our initial greeting), we remove it.
+    if (geminiHistory.length > 0 && geminiHistory[0].role === 'model') {
+      geminiHistory.shift();
+    }
 
     // Call the AI model using the ai.generate() API
     const result = await ai.generate({
