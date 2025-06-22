@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllChats } from "@/app/dashboard/messages/actions";
+import { useAuth } from "@/hooks/use-auth";
+import { db, collection, query, onSnapshot } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -18,28 +19,49 @@ type Chat = {
 };
 
 export function AllChatsList() {
+    const { user } = useAuth();
     const [chats, setChats] = useState<Chat[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
     useEffect(() => {
-        const fetchChats = async () => {
-            setLoading(true);
-            const result = await getAllChats();
-            if (result.success) {
-                const sortedChats = result.chats.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
-                setChats(sortedChats as Chat[]);
-            } else {
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        const chatsRef = collection(db, "chats");
+        const q = query(chatsRef);
+
+        const unsubscribe = onSnapshot(q, 
+            (querySnapshot) => {
+                const chatsData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        lastMessageAt: data.lastMessageAt?.toDate().toISOString() || new Date().toISOString(),
+                    } as Chat;
+                });
+                
+                const sortedChats = chatsData.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+                setChats(sortedChats);
+                setLoading(false);
+            },
+            (error) => {
+                console.error("Error fetching all chats:", error);
                 toast({
                     variant: "destructive",
                     title: "Failed to load chats",
-                    description: result.error || "An unknown error occurred. This is often due to Firestore security rules.",
+                    description: "An error occurred fetching chats. This is likely a security rules issue.",
                 });
+                setLoading(false);
             }
-            setLoading(false);
-        };
-        fetchChats();
-    }, [toast]);
+        );
+
+        return () => unsubscribe();
+    }, [user, toast]);
+
 
     if (loading) {
         return <Loader />;

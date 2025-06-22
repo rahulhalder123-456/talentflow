@@ -1,29 +1,9 @@
 
 'use server';
 
-import { db, collection, getDocs } from '@/lib/firebase/client';
+// This file is intentionally left blank.
+// The user fetching logic has been moved to the client-side component
+// `AllUsersList.tsx` to ensure proper authentication context is passed
+// to Firestore, resolving the "Permission Denied" errors that occur
+// when fetching data from a server action without auth context.
 
-function getFirebaseErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    if (error.message.includes('PERMISSION_DENIED')) {
-      return 'Permission Denied. Your Firestore security rules are blocking this action. Go to the Firebase Console > Firestore > Rules and update them.';
-    }
-    return error.message;
-  }
-  return 'An unknown error occurred.';
-}
-
-export async function getAllUsers() {
-  try {
-    const usersRef = collection(db, 'users');
-    const querySnapshot = await getDocs(usersRef);
-    const users = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    return { success: true, users };
-  } catch (error) {
-    console.error('Error fetching all users:', error);
-    return { success: false, error: getFirebaseErrorMessage(error), users: [] };
-  }
-}

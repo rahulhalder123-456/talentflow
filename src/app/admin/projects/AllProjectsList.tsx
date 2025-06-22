@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllProjects } from "@/app/projects/actions";
+import { useAuth } from "@/hooks/use-auth";
+import { db, collection, query, onSnapshot } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -22,28 +23,51 @@ type Project = {
 };
 
 export function AllProjectsList() {
+    const { user } = useAuth();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
     useEffect(() => {
-        const fetchProjects = async () => {
-            setLoading(true);
-            const result = await getAllProjects();
-            if (result.success) {
-                const sortedProjects = result.projects.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                setProjects(sortedProjects as Project[]);
-            } else {
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        const projectsRef = collection(db, "projects");
+        const q = query(projectsRef);
+
+        const unsubscribe = onSnapshot(q, 
+            (querySnapshot) => {
+                const projectsData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+                        deadline: data.deadline?.toDate().toISOString() || new Date().toISOString(),
+                    } as Project;
+                });
+
+                const sortedProjects = projectsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                setProjects(sortedProjects);
+                setLoading(false);
+            },
+            (error) => {
+                console.error("Error fetching all projects:", error);
                 toast({
                     variant: "destructive",
                     title: "Failed to load projects",
-                    description: result.error || "An unknown error occurred. This is often due to Firestore security rules.",
+                    description: "An error occurred fetching projects. This is likely a security rules issue.",
                 });
+                setLoading(false);
             }
-            setLoading(false);
-        };
-        fetchProjects();
-    }, [toast]);
+        );
+
+        // Cleanup subscription on component unmount
+        return () => unsubscribe();
+    }, [user, toast]);
 
     if (loading) {
         return <Loader />;

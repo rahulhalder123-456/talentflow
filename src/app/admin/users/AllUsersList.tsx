@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllUsers } from "./actions";
+import { useAuth } from "@/hooks/use-auth";
+import { db, collection, query, onSnapshot } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -17,27 +18,43 @@ type UserProfile = {
 };
 
 export function AllUsersList() {
+    const { user } = useAuth();
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            setLoading(true);
-            const result = await getAllUsers();
-            if (result.success) {
-                setUsers(result.users as UserProfile[]);
-            } else {
-                 toast({
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        const usersRef = collection(db, "users");
+        const q = query(usersRef);
+
+        const unsubscribe = onSnapshot(q, 
+            (querySnapshot) => {
+                const usersData = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as UserProfile[];
+                setUsers(usersData);
+                setLoading(false);
+            }, 
+            (error) => {
+                console.error("Error fetching all users:", error);
+                toast({
                     variant: "destructive",
                     title: "Failed to load users",
-                    description: result.error || "An unknown error occurred. This is often due to Firestore security rules.",
+                    description: "An error occurred fetching users. This is likely a security rules issue.",
                 });
+                setLoading(false);
             }
-            setLoading(false);
-        };
-        fetchUsers();
-    }, [toast]);
+        );
+
+        return () => unsubscribe();
+    }, [user, toast]);
 
     if (loading) {
         return <Loader />;
