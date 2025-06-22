@@ -31,6 +31,7 @@ interface FeaturedWorkSectionProps {
 const MotionCard = motion(Card);
 
 const getSanitizedImageUrl = (url: string | undefined) => {
+    // If the URL is missing or points to a chatgpt conversation, use a placeholder.
     if (!url || url.includes('chatgpt.com')) {
       return 'https://placehold.co/600x400.png';
     }
@@ -91,13 +92,12 @@ const ProjectCard = ({ project }: { project: FeaturedProject }) => (
 );
 
 export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
-  // Determine which layout to use based on the number of projects.
-  // Use the special hero layout only if there are 4 or more projects.
+  // Determine which layout to use. Switch to hero layout if there are 4 or more projects.
   const useHeroLayout = projects.length >= 4;
 
   const heroProject = useHeroLayout ? projects[0] : null;
   // If using hero layout, show the rest. Otherwise, show all projects in the grid.
-  const gridProjects = useHeroLayout ? projects.slice(1) : projects;
+  const gridProjects = useHeroLayout ? projects.slice(1, 4) : projects;
 
   return (
     <motion.section
