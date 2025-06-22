@@ -109,6 +109,8 @@ export function ProjectForm() {
               errorMessage = "Your Google AI API key appears to be invalid or missing. Please check your .env.local file and restart the server.";
           } else if (error.message.includes('404 Not Found') || error.message.includes('is not found for API version')) {
               errorMessage = "The AI model was not found. This can happen if the model name is incorrect or your API key is restricted to a specific region.";
+          } else if (error.message.includes('NOT_FOUND')) {
+              errorMessage = "The specified AI model was not found by Genkit. Check the model name in the flow file."
           }
       }
       toast({
