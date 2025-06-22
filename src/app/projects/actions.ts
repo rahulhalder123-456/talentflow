@@ -18,6 +18,16 @@ function getFirebaseErrorMessage(error: unknown): string {
   return 'An unknown error occurred.';
 }
 
+/**
+ * Revalidates the cache for the dashboard and projects pages.
+ * This is called after a new project is created to ensure the UI updates.
+ */
+export async function revalidateProjectPaths() {
+    revalidatePath('/dashboard');
+    revalidatePath('/dashboard/projects');
+}
+
+
 export async function getProjectsByUserId(userId: string) {
   if (!userId) {
     return { success: false, error: 'User ID is required.', projects: [] };

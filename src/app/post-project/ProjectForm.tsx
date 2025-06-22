@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -29,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ProjectFormSchema, type ProjectFormValues } from '@/app/projects/types';
 import { generateProjectDescription } from '@/ai/flows/generate-project-description';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
+import { revalidateProjectPaths } from '@/app/projects/actions';
 
 export function ProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,12 +139,15 @@ export function ProjectForm() {
             status: 'Open',
             createdAt: serverTimestamp(),
         });
+        
+        // After successful creation, revalidate the cache on the server
+        await revalidateProjectPaths();
 
         toast({
             title: "Project Submitted!",
             description: "Your project is now being listed.",
         });
-        router.push('/dashboard');
+        router.push('/dashboard/projects');
 
     } catch (error) {
         console.error('Error creating project:', error);
