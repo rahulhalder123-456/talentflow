@@ -191,7 +191,7 @@ export function AllProjectsList() {
                                                         <TableCell>${project.budget}</TableCell>
                                                         <TableCell>{format(new Date(project.deadline), 'PP')}</TableCell>
                                                         <TableCell className="text-right pr-6">
-                                                            <Button asChild variant="ghost" size="sm">
+                                                            <Button asChild variant="ghost" size="sm" className="px-0 text-primary hover:bg-primary/10 hover:text-primary">
                                                                 <Link href={`/projects/${project.id}`}>
                                                                     View Details
                                                                 </Link>
