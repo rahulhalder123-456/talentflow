@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Paperclip, Send, File as FileIcon, LoaderCircle } from "lucide-react";
-import { collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, serverTimestamp, doc, setDoc, writeBatch } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "@/lib/firebase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,9 +31,12 @@ const BLOCKED_EXTENSIONS = [
   '.run', '.wsh', '.sh', '.dll', '.scr', '.jar'
 ];
 
-function getFirebaseErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.includes('PERMISSION_DENIED')) {
-    return 'Permission Denied. Your Firestore security rules are blocking this action.';
+function getFirebaseErrorMessage(error: any): string {
+  const errorMessage = error?.message?.toLowerCase() || '';
+  const errorCode = error?.code?.toLowerCase() || '';
+
+  if (errorMessage.includes('permission') || errorCode.includes('permission')) {
+    return 'Permission Denied. Your Firestore security rules might be blocking this action.';
   }
   return 'Could not send message. Please try again.';
 }
@@ -93,20 +96,27 @@ export default function MessagesPage() {
 
     setIsSending(true);
     try {
-        const messagesRef = collection(db, 'chats', chatId, 'messages');
-        await addDoc(messagesRef, {
+        const batch = writeBatch(db);
+
+        // 1. Define the new message document reference
+        const messageRef = doc(collection(db, 'chats', chatId, 'messages'));
+        batch.set(messageRef, {
             senderId: user.uid,
             text: content.text || null,
             fileUrl: content.fileUrl || null,
             fileName: content.fileName || null,
             createdAt: serverTimestamp(),
         });
-
+        
+        // 2. Define the update for the parent chat document
         const chatRef = doc(db, 'chats', chatId);
-        await setDoc(chatRef, { 
+        batch.set(chatRef, { 
             lastMessageAt: serverTimestamp(),
             participants: [user.uid, 'support-admin'] 
         }, { merge: true });
+
+        // Atomically commit both operations
+        await batch.commit();
 
         if (content.text) {
             setNewMessage("");
@@ -163,8 +173,8 @@ export default function MessagesPage() {
   return (
     <div className="flex h-screen flex-col bg-background">
       <Header />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="container mx-auto max-w-4xl px-4 md:px-6 flex-1 flex flex-col py-8">
+      <main className="flex-1 overflow-hidden">
+        <div className="container mx-auto max-w-4xl px-4 md:px-6 h-full flex flex-col py-8">
             <div className="mb-4">
                 <Button variant="ghost" asChild>
                     <Link href="/dashboard">
