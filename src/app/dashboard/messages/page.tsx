@@ -173,8 +173,8 @@ export default function MessagesPage() {
   return (
     <div className="flex h-screen flex-col bg-background">
       <Header />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="container mx-auto max-w-4xl px-4 md:px-6 flex-1 flex flex-col py-8">
+      <main className="flex-1 overflow-hidden">
+        <div className="container mx-auto max-w-4xl px-4 md:px-6 h-full flex flex-col py-8">
             <div className="mb-4">
                 <Button variant="ghost" asChild>
                     <Link href="/dashboard">
