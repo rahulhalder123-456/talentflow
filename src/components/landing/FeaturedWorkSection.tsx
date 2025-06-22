@@ -91,7 +91,13 @@ const ProjectCard = ({ project }: { project: FeaturedProject }) => (
 );
 
 export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
-  const [heroProject, ...otherProjects] = projects;
+  // Determine which layout to use based on the number of projects.
+  // Use the special hero layout only if there are 4 or more projects.
+  const useHeroLayout = projects.length >= 4;
+
+  const heroProject = useHeroLayout ? projects[0] : null;
+  // If using hero layout, show the rest. Otherwise, show all projects in the grid.
+  const gridProjects = useHeroLayout ? projects.slice(1) : projects;
 
   return (
     <motion.section
@@ -115,7 +121,7 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
         
         {projects.length > 0 ? (
           <div className="space-y-16">
-            {/* Hero Project */}
+            {/* Hero Project (only if there are enough projects) */}
             {heroProject && (
               <motion.div variants={fadeInUp} className="group">
                   <Card className="grid md:grid-cols-2 overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-xl transition-all duration-300 hover:shadow-primary/20">
@@ -163,9 +169,9 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
             )}
 
             {/* Other Projects Grid */}
-            {otherProjects.length > 0 && (
+            {gridProjects.length > 0 && (
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    {otherProjects.map((project) => (
+                    {gridProjects.map((project) => (
                       <ProjectCard key={project.id} project={project} />
                     ))}
                 </div>
