@@ -1,58 +1,60 @@
+
 rules_version = '2';
-
-// Helper function to check if a user is an admin.
-// 🔴 IMPORTANT: This list must match the UIDs in `src/lib/admin.ts`.
-function isAdmin() {
-  return request.auth.uid in [
-    'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
-    // Add other admin UIDs here as strings
-  ];
-}
-
-// Helper function to check if user is authenticated
-function isSignedIn() {
-  return request.auth != null;
-}
-
-// Helper function to check if user is the owner of a document with a `userId` field
-function isResourceOwner() {
-  return isSignedIn() && request.auth.uid == resource.data.userId;
-}
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users Collection:
-    // - Users can read/write their own profile.
-    // - Admins can read any user profile.
+    // Helper function to check for admin UIDs.
+    function isAdmin() {
+      // 🔴 IMPORTANT: Replace with your actual Firebase User IDs (UIDs).
+      return request.auth.uid in [
+        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
+        // Add other admin UIDs here
+      ];
+    }
+
+    // --- User Profile Rules ---
     match /users/{userId} {
-      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-
-      // Users can manage their own payment methods.
-      match /paymentMethods/{paymentMethodId} {
-        allow read, write, delete: if isSignedIn() && request.auth.uid == userId;
-      }
-    }
-
-    // Projects Collection:
-    // - Users can create projects for themselves.
-    // - Users can read their own projects.
-    // - Admins can read all projects.
-    match /projects/{projectId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isResourceOwner() || isAdmin();
-    }
-    
-    // Chats Collection (for support):
-    // - The chat document ID is 'support_{userId}'.
-    // - Users can access their own support chat.
-    // - Admins can access any support chat.
-    match /chats/support_{userId} {
-      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if request.auth.uid == userId;
+      allow read, update: if request.auth.uid == userId || isAdmin();
       
-      match /messages/{messageId} {
-        allow read, create: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      // Admins can list all users. This is required for the admin dashboard.
+      allow list: if isAdmin();
+
+      // --- Payment Methods Subcollection ---
+      match /paymentMethods/{methodId} {
+        // Users can manage their own payment methods.
+        allow read, create, delete: if request.auth.uid == userId;
       }
+    }
+
+    // --- Project Rules ---
+    match /projects/{projectId} {
+      allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.userId;
+      allow read: if request.auth != null;
+      allow update, delete: if isAdmin() || (request.auth.uid != null && request.auth.uid == resource.data.userId);
+    }
+    // Any authenticated user can see the list of all projects.
+    match /projects {
+      allow list: if request.auth != null;
+    }
+
+    // --- Chat Rules ---
+    match /chats/{chatId} {
+      // Admins can read/write to any chat.
+      // Users can read/write if they are a participant.
+      allow read, write: if isAdmin() || (request.auth.uid != null && request.auth.uid in resource.data.participants);
+
+      // --- Messages Subcollection ---
+      match /messages/{messageId} {
+        // Admins can read/create messages in any chat.
+        // Users can read/create messages if they are a participant in the parent chat.
+        allow read, create: if isAdmin() || (request.auth.uid != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
+      }
+    }
+    // Admins can list all chats for the admin dashboard.
+    match /chats {
+        allow list: if isAdmin();
     }
   }
 }
