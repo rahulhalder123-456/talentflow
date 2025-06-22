@@ -47,6 +47,7 @@ export function ProjectForm() {
       desiredSkills: "",
       budget: "",
       projectDescription: "",
+      paymentType: 'fixed',
     },
   });
 
@@ -66,11 +67,11 @@ export function ProjectForm() {
   const getBudgetPlaceholder = () => {
       switch (paymentType) {
           case 'hourly':
-              return 'e.g., 50';
+              return 'e.g., 1500';
           case 'daily':
-              return 'e.g., 400';
+              return 'e.g., 12000';
           default:
-              return 'e.g., 5000';
+              return 'e.g., 50000';
       }
   };
 

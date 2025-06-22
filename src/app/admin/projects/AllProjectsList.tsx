@@ -188,7 +188,7 @@ export function AllProjectsList() {
                                                         <TableCell>
                                                             <Badge variant={project.status === 'Open' ? 'secondary' : 'default'}>{project.status}</Badge>
                                                         </TableCell>
-                                                        <TableCell>Rs. {project.budget}</TableCell>
+                                                        <TableCell>Rs. {project.budget}{project.paymentType !== 'fixed' ? ` / ${project.paymentType.replace('ly', '')}` : ''}</TableCell>
                                                         <TableCell>{format(new Date(project.deadline), 'PP')}</TableCell>
                                                         <TableCell className="text-right pr-6">
                                                             <Button asChild size="sm" className="bg-primary/20 text-primary-foreground/90 hover:bg-primary/30">

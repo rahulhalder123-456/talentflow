@@ -283,7 +283,7 @@ export default function ProjectDetailsPage() {
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-lg mb-2 border-b pb-2">Project Details</h3>
                                 <div className="space-y-3 text-sm">
-                                    <div className="flex items-center gap-3"><IndianRupee className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">Rs. {project.budget}</span></span></div>
+                                    <div className="flex items-center gap-3"><IndianRupee className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">Rs. {project.budget}{project.paymentType !== 'fixed' ? ` / ${project.paymentType.replace('ly', '')}` : ''}</span></span></div>
                                     <div className="flex items-center gap-3 capitalize"><Briefcase className="h-5 w-5 text-primary" /><span>Payment: <span className="font-bold text-foreground">{project.paymentType}</span></span></div>
                                     <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{project.deadline ? format(project.deadline, 'PPP') : ''}</span></span></div>
                                 </div>
@@ -300,14 +300,14 @@ export default function ProjectDetailsPage() {
                             <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
                                 {project.status === 'Open' ? (
                                     <>
-                                        <p className="text-sm text-muted-foreground">Ready to start?</p>
+                                        <p className="text-sm text-muted-foreground">{project.paymentType === 'fixed' ? 'Ready to start?' : 'Make initial payment to begin.'}</p>
                                         <Button onClick={handleRazorpayPayment} disabled={isPaying} size="lg">
                                             {isPaying ? (
                                                 <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
                                             ) : (
                                                 <CreditCard className="mr-2 h-5 w-5" />
                                             )}
-                                            {isPaying ? 'Processing...' : 'Fund & Start Project'}
+                                            {isPaying ? 'Processing...' : project.paymentType === 'fixed' ? 'Fund & Start Project' : 'Fund First Milestone'}
                                         </Button>
                                     </>
                                 ) : (
