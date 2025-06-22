@@ -57,17 +57,26 @@ const chatbotFlow = ai.defineFlow(
     // System prompt to define the chatbot's persona
     const systemPrompt = `You are TalentBot, a friendly and helpful AI assistant for the Talent Flow freelance marketplace. Your goal is to assist users, answer their questions about the platform, and guide them through its features. Be concise, friendly, and professional. The current time is ${new Date().toString()}.`;
     
-    // Convert the 'ai' role to 'model' for compatibility with the Gemini API
-    const geminiHistory = history.map(msg => ({
+    // Combine the existing history with the new user message.
+    const fullConversationHistory = [...history, { role: 'user' as const, text: message }];
+
+    // Convert the 'ai' role to 'model' and format for the Gemini API.
+    const geminiMessages = fullConversationHistory.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model' as 'user' | 'model',
       content: [{ text: msg.text }],
     }));
-    
-    // Call the AI model using the ai.generate() API
+
+    // The Gemini API requires the conversation to start with a 'user' role.
+    // Our initial message is from the 'ai', so we remove it if it's the first message.
+    if (geminiMessages.length > 1 && geminiMessages[0].role === 'model') {
+      geminiMessages.shift(); // Remove the initial AI greeting
+    }
+
+    // Call the AI model using the ai.generate() API with the `messages` property.
+    // The previous code was using `prompt` and `history` which are invalid for this use case.
     const result = await ai.generate({
       model: googleAI.model('gemini-1.5-flash'),
-      prompt: message,
-      history: geminiHistory,
+      messages: geminiMessages,
       system: systemPrompt,
     });
 
