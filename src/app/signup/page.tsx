@@ -77,7 +77,7 @@ export default function SignUpPage() {
           firstName: data.firstName, 
           lastName: data.lastName, 
           email: user.email 
-      });
+      }, { merge: true });
 
       toast({
         title: "Account Created!",
@@ -116,7 +116,7 @@ export default function SignUpPage() {
             firstName: firstName,
             lastName: lastName,
             email: user.email,
-        });
+        }, { merge: true });
       }
 
       toast({
