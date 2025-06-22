@@ -1,7 +1,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Users, ArrowLeft, MessageSquare } from "lucide-react";
+import { Briefcase, Users, ArrowLeft, MessageSquare, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboardPage() {
@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2">
             <Card className="bg-secondary/30 border-border/50 shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">All Projects</CardTitle>
@@ -67,6 +67,20 @@ export default function AdminDashboardPage() {
                     </p>
                     <Button variant="outline" size="sm" className="mt-4" asChild>
                         <Link href="/admin/messages">View Messages</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+            <Card className="bg-secondary/30 border-accent/30 shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Profit Optimizer</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-accent" />
+                </CardHeader>
+                <CardContent>
+                    <p className="text-xs text-muted-foreground pt-4">
+                        Use AI to analyze projects and identify high-value opportunities.
+                    </p>
+                    <Button variant="outline" size="sm" className="mt-4" asChild>
+                        <Link href="/admin/profit-optimizer">Launch Tool</Link>
                     </Button>
                 </CardContent>
             </Card>
