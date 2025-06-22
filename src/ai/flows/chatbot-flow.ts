@@ -63,22 +63,11 @@ const chatbotFlow = ai.defineFlow(
       content: [{ text: msg.text }],
     }));
     
-    // The Gemini API requires the history to start with a user message.
-    // If the first message in our history is from the model (e.g., our initial greeting), we remove it.
-    if (geminiHistory.length > 0 && geminiHistory[0].role === 'model') {
-      geminiHistory.shift();
-    }
-    
-    // Combine the existing history with the new user message into a single array.
-    const messagesForApi = [
-        ...geminiHistory,
-        { role: 'user' as const, content: [{ text: message }] },
-    ];
-
     // Call the AI model using the ai.generate() API
     const result = await ai.generate({
       model: googleAI.model('gemini-1.5-flash'),
-      messages: messagesForApi,
+      prompt: message,
+      history: geminiHistory,
       system: systemPrompt,
     });
 
