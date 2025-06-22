@@ -3,65 +3,54 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // --- Users ---
-    // Users can only read/write their own user document.
-    match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
-    }
 
-    // --- Projects ---
-    // Authenticated users can read any project.
-    // Users can only create projects for themselves.
-    // Users can only update their own projects, but admins can update any project.
-    match /projects/{projectId} {
-       allow read: if request.auth != null;
-       allow create: if request.auth.uid == request.resource.data.userId;
-       allow update: if (request.auth.uid == resource.data.userId) || isAdmin();
-    }
-    
-    // --- Featured Projects (Admin Only for write, public for read) ---
+    // Allow public read on featured projects for the homepage showcase
     match /featuredProjects/{projectId} {
-        allow read; // Anyone can read
-        allow create, update, delete: if isAdmin();
+      allow read: if true;
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
     }
-
-    // --- Payment Methods (User Specific) ---
+    
+    // Users can create/update their own profile
+    match /users/{userId} {
+      allow read, update, create: if request.auth != null && request.auth.uid == userId;
+      allow list: if request.auth != null && isAdmin(request.auth.uid);
+    }
+    
+    // Users can manage their own payment methods
     match /users/{userId}/paymentMethods/{methodId} {
-      allow read, create, delete: if request.auth.uid == userId;
-    }
-    
-    // --- Reviews ---
-    // Anyone can read reviews (for the public testimonials section).
-    // Users can only create reviews for their own projects that are "Closed".
-    match /reviews/{reviewId} {
-      allow read;
-      allow create: if request.auth.uid == request.resource.data.userId &&
-                     get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.userId == request.auth.uid &&
-                     get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.status == 'Closed';
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // --- Chat ---
-    // Users can only access their own chat document (e.g., support_their-uid).
-    // Admins can access any chat document.
+    // Projects can be created by any authenticated user.
+    // They can only be read/updated by their owner or an admin.
+    match /projects/{projectId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin(request.auth.uid));
+      allow list: if request.auth != null && isAdmin(request.auth.uid);
+    }
+    
+    // Chat messages can be read/written by participants. Admins can access all chats.
     match /chats/{chatId} {
-        allow read, write: if (request.auth.uid != null && chatId == 'support_' + request.auth.uid) || isAdmin();
-
-        // Messages can be read/written by chat participants or an admin.
-        match /messages/{messageId} {
-            allow read, write: if (request.auth.uid != null && exists(/databases/$(database)/documents/chats/$(chatId))) &&
-                                  (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants ||
-                                   isAdmin());
-        }
+       allow read, write: if request.auth != null && (request.auth.uid in resource.data.participants || isAdmin(request.auth.uid));
+       
+       match /messages/{messageId} {
+         allow read, create: if request.auth != null && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants || isAdmin(request.auth.uid));
+       }
     }
     
-    // Helper function for admin check
-    function isAdmin() {
-      // 🔴 IMPORTANT: Replace with your actual Firebase User IDs (UIDs)
-      let ADMIN_UIDS = [
-        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1',
+    // Reviews can be created by authenticated users for their own completed projects.
+    // They can be read by anyone.
+    match /reviews/{reviewId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if true;
+    }
+
+    // Helper function to check for admin UIDs
+    function isAdmin(userId) {
+      // 🔴 IMPORTANT: Replace with your actual Firebase User ID (UID)
+      return userId in [
+        'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
       ];
-      return request.auth.uid in ADMIN_UIDS;
     }
   }
 }
