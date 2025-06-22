@@ -9,9 +9,8 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, PlusCircle, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { getPaymentMethods } from "./actions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db, collection, addDoc, serverTimestamp, doc, deleteDoc } from '@/lib/firebase/client';
+import { db, collection, addDoc, serverTimestamp, doc, deleteDoc, query, onSnapshot, getDocs } from '@/lib/firebase/client';
 
 
 type PaymentMethod = {
@@ -30,23 +29,35 @@ export function PaymentsTab() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchMethods = async () => {
-    if (!user) return;
-    setLoading(true);
-    const result = await getPaymentMethods(user.uid);
-    if (result.success) {
-      setPaymentMethods(result.methods as PaymentMethod[]);
-    } else {
-      toast({ variant: "destructive", title: "Error", description: result.error });
-    }
-    setLoading(false);
-  };
-
+  // Fetching payment methods is now done on the client-side
   useEffect(() => {
-    if (user) {
-      fetchMethods();
-    }
-  }, [user]);
+    if (!user) {
+        setLoading(false);
+        return;
+    };
+    
+    setLoading(true);
+    const paymentMethodsRef = collection(db, 'users', user.uid, 'paymentMethods');
+    const q = query(paymentMethodsRef);
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const methods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PaymentMethod[];
+        setPaymentMethods(methods);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching payment methods: ", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not fetch payment methods. Your security rules might be blocking this."
+        });
+        setLoading(false);
+    });
+    
+    return () => unsubscribe();
+
+  }, [user, toast]);
+
 
   const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,8 +78,6 @@ export function PaymentsTab() {
         const paymentMethodsRef = collection(db, 'users', user.uid, 'paymentMethods');
         await addDoc(paymentMethodsRef, { ...newCard, createdAt: serverTimestamp() });
         
-        await fetchMethods(); // Re-fetch to update the list
-        
         setIsDialogOpen(false);
         toast({
             title: "Card Added",
@@ -88,7 +97,6 @@ export function PaymentsTab() {
     try {
         const methodRef = doc(db, 'users', user.uid, 'paymentMethods', methodId);
         await deleteDoc(methodRef);
-        setPaymentMethods(prev => prev.filter(m => m.id !== methodId));
         toast({
             title: "Card Removed",
             description: "The payment method has been deleted.",

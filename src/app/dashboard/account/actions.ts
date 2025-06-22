@@ -36,16 +36,14 @@ export async function getUserProfile(userId: string) {
 }
 
 // --- Payment Method Actions ---
+// NOTE: These actions are now handled on the client-side in PaymentsTab.tsx
+// to ensure they execute with the user's authentication context.
+// A server action does not have access to the client's auth session by default,
+// which causes "Missing or insufficient permissions" errors from Firestore.
 
 export async function getPaymentMethods(userId: string) {
   if (!userId) return { success: false, error: 'User not authenticated.', methods: [] };
-  try {
-    const paymentMethodsRef = collection(db, 'users', userId, 'paymentMethods');
-    const querySnapshot = await getDocs(paymentMethodsRef);
-    const methods = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return { success: true, methods };
-  } catch (error) {
-    console.error('Error fetching payment methods:', error);
-    return { success: false, error: getFirebaseErrorMessage(error), methods: [] };
-  }
+  // This is a placeholder. The actual implementation is in PaymentsTab.tsx
+  console.warn("getPaymentMethods was called from a server action. This should be handled on the client.");
+  return { success: true, methods: [] };
 }

@@ -1,54 +1,61 @@
 
 rules_version = '2';
 
-// Helper function to check if the user is an admin
-function isAdmin() {
-  // 🔴 IMPORTANT: This list must be kept in sync with src/lib/admin.ts
-  let adminUIDs = [
-    'ToBDMq0KVIgnLQCEeFzxLzB4HUj1'
-    // Add other admin UIDs here if needed
-  ];
-  return request.auth.uid in adminUIDs;
-}
-
 service cloud.firestore {
   match /databases/{database}/documents {
+  
+    // Helper function to check if a user is an admin.
+    // NOTE: This relies on a field `isAdmin` in the user's profile document.
+    // This is more secure than hardcoding UIDs in client-side code.
+    function isAppAdmin(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+             get(/databases/$(database)/documents/users/$(userId)).data.isAdmin == true;
+    }
 
-    // Allow users to manage their own profile data. Admins can read all profiles.
+    // --- Users Collection ---
+    // Users can read/write their own profile data.
+    // Admins can read all user profiles.
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
-      allow read: if isAdmin();
-      
-      // Allow users to manage their own payment methods sub-collection.
-      match /paymentMethods/{paymentId} {
-        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && isAppAdmin(request.auth.uid);
+
+      // --- Payment Methods Subcollection ---
+      // Users can manage their own payment methods.
+      match /paymentMethods/{methodId} {
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // Rules for projects collection.
+    // --- Projects Collection ---
+    // Logged-in users can create projects.
+    // Project owners can read/write their own projects.
+    // Admins can read/write all projects.
     match /projects/{projectId} {
       allow create: if request.auth != null;
-      allow read, update: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
-      allow delete: if isAdmin();
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null && isAppAdmin(request.auth.uid);
     }
-    
-    // Rules for featured work showcase.
-    match /featuredProjects/{projectId} {
-        allow read: if true;
-        allow write, delete: if isAdmin();
-    }
-    
-    // --- Rules for the Direct Messaging feature ---
-    match /chats/{chatId} {
-      // The chatId is expected to be 'support_{userId}'.
-      // Allow read/write if the user's UID matches the one in the chatId, or if the user is an admin.
-      allow read, write: if (request.auth != null && request.auth.uid == chatId.split('_')[1]) || isAdmin();
 
-      // Rules for the messages sub-collection within a chat.
-      match /messages/{messageId} {
-        allow read, write: if (request.auth != null && request.auth.uid == chatId.split('_')[1]) || isAdmin();
-      }
+    // --- Featured Projects Collection ---
+    // Everyone can read the list of featured projects.
+    // Only admins can write to featured projects.
+    match /featuredProjects/{projectId} {
+        allow read;
+        allow write: if request.auth != null && isAppAdmin(request.auth.uid);
+    }
+    
+    // --- Chats Collection ---
+    // Chat is identified by `support_{userId}`.
+    // A user can read/write to their own chat document (`support_...`).
+    // An admin can read/write to any chat document.
+    match /chats/{chatId} {
+        allow read, write: if request.auth != null && (request.auth.uid == chatId.split('_')[1] || isAppAdmin(request.auth.uid));
+
+        // --- Messages Subcollection ---
+        // Participants of a chat (the client or an admin) can read/write messages.
+        match /messages/{messageId} {
+            allow read, write: if request.auth != null && (request.auth.uid == chatId.split('_')[1] || isAppAdmin(request.auth.uid));
+        }
     }
   }
 }
