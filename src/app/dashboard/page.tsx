@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -12,10 +13,12 @@ import { Briefcase, MessageSquare, User, PlusCircle, Shield, Sparkles, Star } fr
 import { isAdmin } from '@/lib/admin';
 import { db, collection, query, where, onSnapshot } from '@/lib/firebase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [projectCount, setProjectCount] = useState<number | null>(null);
 
@@ -36,6 +39,11 @@ export default function DashboardPage() {
         }, 
         (error) => {
           console.error("Error fetching project count in real-time:", error);
+          toast({
+            variant: "destructive",
+            title: "Could Not Load Projects",
+            description: "A permissions error occurred. Please ensure your Firestore security rules are up-to-date in the Firebase Console.",
+          });
           setProjectCount(0);
         }
       );
@@ -43,7 +51,7 @@ export default function DashboardPage() {
       // Unsubscribe from the listener when the component unmounts
       return () => unsubscribe();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, toast]);
 
   if (loading || !user) {
     return (
