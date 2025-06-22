@@ -59,8 +59,8 @@ const chatbotFlow = ai.defineFlow(
     
     // Convert the 'ai' role to 'model' for compatibility with the Gemini API
     const geminiHistory = history.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }],
+      role: msg.role === 'user' ? 'user' : 'model' as 'user' | 'model',
+      content: [{ text: msg.text }],
     }));
 
     // Call the AI model using the ai.generate() API
