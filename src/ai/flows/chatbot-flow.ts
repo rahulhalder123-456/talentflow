@@ -68,12 +68,17 @@ const chatbotFlow = ai.defineFlow(
     if (geminiHistory.length > 0 && geminiHistory[0].role === 'model') {
       geminiHistory.shift();
     }
+    
+    // Combine the existing history with the new user message into a single array.
+    const messagesForApi = [
+        ...geminiHistory,
+        { role: 'user' as const, content: [{ text: message }] },
+    ];
 
     // Call the AI model using the ai.generate() API
     const result = await ai.generate({
       model: googleAI.model('gemini-1.5-flash'),
-      prompt: message,
-      history: geminiHistory,
+      messages: messagesForApi,
       system: systemPrompt,
     });
 
