@@ -4,12 +4,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Lightbulb, LoaderCircle, TrendingUp, Sparkles } from 'lucide-react';
+import { db, collection, query, where, getDocs } from '@/lib/firebase/client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { getProfitabilityAnalysis } from './actions';
-import type { ProjectAnalysisOutput } from '@/features/projects/types';
+import type { ProjectAnalysisOutput, ProjectAnalysisInput } from '@/features/projects/types';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
@@ -23,25 +24,64 @@ export default function ProfitOptimizerPage() {
         setIsLoading(true);
         setAnalysis(null);
         try {
-            const result = await getProfitabilityAnalysis();
-            setAnalysis(result);
-            if (result.analysis.length === 0) {
-                 toast({
+            // 1. Fetch "Open" projects directly from the client component
+            const projectsRef = collection(db, 'projects');
+            const q = query(projectsRef, where('status', '==', 'Open'));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                setAnalysis({ analysis: [] });
+                toast({
                     title: "No Open Projects",
                     description: "There are no open projects to analyze right now.",
                 });
-            } else {
-                 toast({
-                    title: "Analysis Complete!",
-                    description: "Projects have been ranked by profitability potential.",
-                });
+                setIsLoading(false);
+                return;
             }
+
+            // 2. Format the data for the server action.
+            const projectsToAnalyze: ProjectAnalysisInput = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    projectTitle: data.projectTitle || '',
+                    projectBrief: data.projectBrief || '',
+                    budget: data.budget || '0',
+                    desiredSkills: data.desiredSkills || '',
+                };
+            });
+            
+            // 3. Call the server action with the fetched data
+            const result = await getProfitabilityAnalysis(projectsToAnalyze);
+            setAnalysis(result);
+
+            toast({
+                title: "Analysis Complete!",
+                description: "Projects have been ranked by profitability potential.",
+            });
+            
         } catch (error: any) {
             console.error("Analysis failed:", error);
+            
+            let errorMessage = "An unexpected error occurred. Please try again.";
+            // Check for specific error messages that might come from the AI flow
+            if (error.message) {
+                if (error.message.includes('API key') || error.message.includes('API_KEY')) {
+                    errorMessage = "Your Google AI API key is invalid, expired, or missing. Please check your .env.local file and restart the server.";
+                } else if (error.message.includes('404') || error.message.includes('Not Found') || error.message.includes('NOT_FOUND')) {
+                    errorMessage = "The AI model was not found. This can happen if the model name is incorrect or not available in your region.";
+                } else if (error.message.includes('Permission Denied') || error.message.includes('insufficient permissions')) {
+                    errorMessage = "Permission Denied. Please ensure your Firestore security rules allow you to read the projects collection."
+                }
+                else {
+                    errorMessage = error.message;
+                }
+            }
+            
             toast({
                 variant: "destructive",
                 title: "Analysis Failed",
-                description: error.message || "An unexpected error occurred.",
+                description: errorMessage,
             });
         } finally {
             setIsLoading(false);

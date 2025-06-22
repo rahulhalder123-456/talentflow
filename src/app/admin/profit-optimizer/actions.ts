@@ -1,49 +1,35 @@
 
 'use server';
 
-import { db, collection, query, where, getDocs } from '@/lib/firebase/client';
 import { analyzeProjectsForProfit } from '@/ai/flows/analyze-project-profitability';
 import type { ProjectAnalysisInput, ProjectAnalysisOutput } from '@/features/projects/types';
 
 /**
- * Fetches open projects from Firestore, runs them through the AI profitability
- * analysis flow, and returns the results.
+ * Runs the fetched open projects through the AI profitability analysis flow and returns the results.
+ * The data fetching is now done on the client to ensure proper authentication context.
+ * @param projectsToAnalyze The array of projects to be analyzed.
  */
-export async function getProfitabilityAnalysis(): Promise<ProjectAnalysisOutput> {
+export async function getProfitabilityAnalysis(
+  projectsToAnalyze: ProjectAnalysisInput
+): Promise<ProjectAnalysisOutput> {
   try {
-    // 1. Fetch all "Open" projects from Firestore.
-    const projectsRef = collection(db, 'projects');
-    const q = query(projectsRef, where('status', '==', 'Open'));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-        return { analysis: [] };
+    // If there are no projects, return an empty analysis immediately.
+    if (!projectsToAnalyze || projectsToAnalyze.length === 0) {
+      return { analysis: [] };
     }
-
-    // 2. Format the data for the AI flow.
-    const projectsToAnalyze: ProjectAnalysisInput = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            projectTitle: data.projectTitle || '',
-            projectBrief: data.projectBrief || '',
-            budget: data.budget || '0',
-            desiredSkills: data.desiredSkills || '',
-        };
-    });
-
-    // 3. Call the AI flow.
+    
+    // Call the AI flow with the projects provided by the client.
     const analysisResult = await analyzeProjectsForProfit(projectsToAnalyze);
     
     return analysisResult;
 
   } catch (error) {
-    console.error("Error in getProfitabilityAnalysis:", error);
-    // In a real app, you might have more robust error handling
-    // For now, we'll throw the error to be caught by the client component.
+    console.error("Error in getProfitabilityAnalysis server action:", error);
     if (error instanceof Error) {
-        throw new Error(`Analysis failed: ${error.message}`);
+        // Re-throw the error to be caught by the client component's try-catch block.
+        // This allows for specific error messages (like API key issues) to be shown.
+        throw error;
     }
-    throw new Error('An unknown error occurred during analysis.');
+    throw new Error('An unknown error occurred during the AI analysis.');
   }
 }
