@@ -12,7 +12,7 @@ import { Loader } from '@/components/common/Loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, DollarSign, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle } from 'lucide-react';
+import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
 import type { Project } from '@/features/projects/types';
@@ -247,7 +247,7 @@ export default function ProjectDetailsPage() {
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-lg mb-2 border-b pb-2">Project Details</h3>
                                 <div className="space-y-3 text-sm">
-                                    <div className="flex items-center gap-3"><DollarSign className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">${project.budget}</span></span></div>
+                                    <div className="flex items-center gap-3"><IndianRupee className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">Rs. {project.budget}</span></span></div>
                                     <div className="flex items-center gap-3 capitalize"><Briefcase className="h-5 w-5 text-primary" /><span>Payment: <span className="font-bold text-foreground">{project.paymentType}</span></span></div>
                                     <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{project.deadline ? format(project.deadline, 'PPP') : ''}</span></span></div>
                                 </div>

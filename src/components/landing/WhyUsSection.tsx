@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion } from 'framer-motion';
@@ -6,7 +7,7 @@ import {
   Users,
   Clock,
   ShieldCheck,
-  DollarSign,
+  IndianRupee,
 } from 'lucide-react';
 
 const fadeInUp = {
@@ -38,7 +39,7 @@ const whyUsBenefits = [
   {
     title: 'Transparent Pricing',
     description: 'No surprises. We provide clear, upfront pricing to ensure you know exactly what to expect.',
-    icon: <DollarSign className="h-7 w-7" />,
+    icon: <IndianRupee className="h-7 w-7" />,
   },
     {
     title: 'Unmatched Quality',

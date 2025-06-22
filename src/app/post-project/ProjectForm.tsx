@@ -55,11 +55,11 @@ export function ProjectForm() {
   const getBudgetLabel = () => {
     switch (paymentType) {
         case 'hourly':
-            return 'Hourly Rate (USD)';
+            return 'Hourly Rate (INR)';
         case 'daily':
-            return 'Daily Rate (USD)';
+            return 'Daily Rate (INR)';
         default:
-            return 'Fixed Budget (USD)';
+            return 'Fixed Budget (INR)';
     }
   };
 
