@@ -114,23 +114,25 @@ export default function ProjectsPage() {
                     ) : projects.length > 0 ? (
                         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                             {projects.map((project) => (
-                                <Card key={project.id} className="flex flex-col bg-secondary/20 border-border/50 shadow-lg transition-transform duration-300 hover:-translate-y-1">
-                                    <CardHeader>
-                                        <CardTitle>{project.projectTitle}</CardTitle>
-                                        <Badge variant={project.status === 'Open' ? 'secondary' : 'default'} className="w-fit">{project.status}</Badge>
-                                    </CardHeader>
-                                    <CardContent className="flex-grow">
-                                        <p className="text-muted-foreground line-clamp-3">
-                                            {project.projectDescription || "No description provided."}
-                                        </p>
-                                    </CardContent>
-                                    <CardFooter className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground border-t border-border/50 pt-4 mt-4">
-                                        <div>Budget: <span className="font-semibold text-foreground">${project.budget}</span></div>
-                                        <div>Payment: <span className="font-semibold text-foreground capitalize">{project.paymentType}</span></div>
-                                        <div>Posted: <span className="font-semibold text-foreground">{formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}</span></div>
-                                        <div>Deadline: <span className="font-semibold text-foreground">{format(new Date(project.deadline), 'PP')}</span></div>
-                                    </CardFooter>
-                                </Card>
+                                <Link href={`/projects/${project.id}`} key={project.id}>
+                                    <Card className="flex h-full flex-col cursor-pointer bg-secondary/20 border-border/50 shadow-lg transition-transform duration-300 hover:-translate-y-1">
+                                        <CardHeader>
+                                            <CardTitle>{project.projectTitle}</CardTitle>
+                                            <Badge variant={project.status === 'Open' ? 'secondary' : 'default'} className="w-fit">{project.status}</Badge>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <p className="text-muted-foreground line-clamp-3">
+                                                {project.projectDescription || "No description provided."}
+                                            </p>
+                                        </CardContent>
+                                        <CardFooter className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground border-t border-border/50 pt-4 mt-4">
+                                            <div>Budget: <span className="font-semibold text-foreground">${project.budget}</span></div>
+                                            <div>Payment: <span className="font-semibold text-foreground capitalize">{project.paymentType}</span></div>
+                                            <div>Posted: <span className="font-semibold text-foreground">{formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}</span></div>
+                                            <div>Deadline: <span className="font-semibold text-foreground">{format(new Date(project.deadline), 'PP')}</span></div>
+                                        </CardFooter>
+                                    </Card>
+                                </Link>
                             ))}
                         </div>
                     ) : (
