@@ -126,7 +126,7 @@ export default function ProjectsPage() {
                                             </p>
                                         </CardContent>
                                         <CardFooter className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground border-t border-border/50 pt-4 mt-4">
-                                            <div>Budget: <span className="font-semibold text-foreground">${project.budget}</span></div>
+                                            <div>Budget: <span className="font-semibold text-foreground">Rs. {project.budget}</span></div>
                                             <div>Payment: <span className="font-semibold text-foreground capitalize">{project.paymentType}</span></div>
                                             <div>Posted: <span className="font-semibold text-foreground">{formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}</span></div>
                                             <div>Deadline: <span className="font-semibold text-foreground">{format(new Date(project.deadline), 'PP')}</span></div>
