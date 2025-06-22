@@ -11,8 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getUserProfile } from "./actions";
-import { db, doc, setDoc } from '@/lib/firebase/client';
+import { db, doc, setDoc, getDoc } from '@/lib/firebase/client';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -38,35 +37,47 @@ export function ProfileForm() {
 
   useEffect(() => {
     if (user) {
-      // Set email from auth
+      // Set email from auth, which is always up-to-date
       form.setValue('email', user.email || "");
 
-      // Fetch profile from Firestore
+      // Fetch profile from Firestore on the client
       const fetchProfile = async () => {
-        const result = await getUserProfile(user.uid);
-        if (result.success && result.profile) {
-          const profile = result.profile as ProfileFormValues;
-          form.reset({
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            email: user.email || "",
-          });
-        } else {
-          // Fallback to display name if no profile in DB
-          const displayName = user.displayName || "";
-          const nameParts = displayName.split(" ");
-          const firstName = nameParts[0] || "";
-          const lastName = nameParts.slice(1).join(" ") || "";
-          form.reset({
-            firstName: firstName,
-            lastName: lastName,
-            email: user.email || "",
-          });
+        try {
+            const userRef = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(userRef);
+
+            if (docSnap.exists()) {
+                const profile = docSnap.data() as ProfileFormValues;
+                 form.reset({
+                    firstName: profile.firstName,
+                    lastName: profile.lastName,
+                    email: user.email || "",
+                });
+            } else {
+                // Fallback to display name if no profile in DB
+                const displayName = user.displayName || "";
+                const nameParts = displayName.split(" ");
+                const firstName = nameParts[0] || "";
+                const lastName = nameParts.slice(1).join(" ") || "";
+                form.reset({
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: user.email || "",
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            toast({
+                variant: "destructive",
+                title: "Load Failed",
+                description: "Could not load your profile. Please check your Firestore rules.",
+            });
         }
       };
+      
       fetchProfile();
     }
-  }, [user, form]);
+  }, [user, form, toast]);
 
 
   const onSubmit = async (data: ProfileFormValues) => {
