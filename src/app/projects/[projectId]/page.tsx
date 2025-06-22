@@ -16,7 +16,6 @@ import { ArrowLeft, DollarSign, Clock, User, Calendar, Briefcase, CreditCard, Lo
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
 import type { Project } from '@/features/projects/types';
-import { updateProjectStatus } from '@/features/projects/actions';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectDetailsPage() {
@@ -82,28 +81,87 @@ export default function ProjectDetailsPage() {
         fetchProject();
     }, [projectId, user, authLoading, router]);
 
-    const handlePayment = async () => {
+    const handleRazorpayPayment = async () => {
         if (!project) return;
         setIsPaying(true);
 
-        const result = await updateProjectStatus(project.id, 'In Progress');
-
-        if (result.success) {
-            toast({
-                title: "Payment Successful!",
-                description: "The project is now 'In Progress'. Our team will be in touch shortly.",
+        try {
+            const response = await fetch('/api/create-razorpay-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: project.budget })
             });
-            // Update state locally for an immediate UI response
-            setProject(prev => prev ? { ...prev, status: 'In Progress' } : null);
-        } else {
+
+            if (!response.ok) {
+                throw new Error('Failed to create Razorpay order');
+            }
+
+            const order = await response.json();
+
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: "Talent Flow",
+                description: `Funding for project: ${project.projectTitle}`,
+                order_id: order.id,
+                handler: async function (response: any) {
+                    const verifyRes = await fetch('/api/verify-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            projectId: project.id,
+                        })
+                    });
+
+                    const result = await verifyRes.json();
+
+                    if (result.success) {
+                        toast({
+                            title: "Payment Successful!",
+                            description: "The project is now 'In Progress'.",
+                        });
+                        setProject(prev => prev ? { ...prev, status: 'In Progress' } : null);
+                    } else {
+                        toast({
+                            variant: 'destructive',
+                            title: "Payment Verification Failed",
+                            description: result.error || 'Invalid payment signature.',
+                        });
+                    }
+                },
+                prefill: {
+                    name: user?.displayName || '',
+                    email: user?.email || '',
+                },
+                theme: {
+                    color: "#6666FF"
+                }
+            };
+            
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', function (response: any){
+                toast({
+                    variant: 'destructive',
+                    title: 'Payment Failed',
+                    description: response.error.description,
+                });
+            });
+            rzp.open();
+
+        } catch (err) {
+            console.error("Payment initiation failed:", err);
             toast({
-                variant: "destructive",
+                variant: 'destructive',
                 title: "Payment Failed",
-                description: result.error || "An unexpected error occurred. Please try again.",
+                description: 'Could not initiate payment. Please try again.'
             });
+        } finally {
+            setIsPaying(false);
         }
-
-        setIsPaying(false);
     };
 
     if (loading || authLoading) {
@@ -165,7 +223,7 @@ export default function ProjectDetailsPage() {
                                 <div>
                                     <CardTitle className="font-headline text-3xl">{project.projectTitle}</CardTitle>
                                     <CardDescription className="pt-2">
-                                        Posted on {format(project.createdAt, 'PPP')}
+                                        Posted on {project.createdAt ? format(project.createdAt, 'PPP') : ''}
                                     </CardDescription>
                                 </div>
                                 <Badge variant={project.status === 'Open' ? 'secondary' : 'default'} className="text-sm h-fit">{project.status}</Badge>
@@ -191,7 +249,7 @@ export default function ProjectDetailsPage() {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex items-center gap-3"><DollarSign className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">${project.budget}</span></span></div>
                                     <div className="flex items-center gap-3 capitalize"><Briefcase className="h-5 w-5 text-primary" /><span>Payment: <span className="font-bold text-foreground">{project.paymentType}</span></span></div>
-                                    <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{format(project.deadline, 'PPP')}</span></span></div>
+                                    <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{project.deadline ? format(project.deadline, 'PPP') : ''}</span></span></div>
                                 </div>
                                 {isUserAdmin && (
                                     <>
@@ -207,7 +265,7 @@ export default function ProjectDetailsPage() {
                                 {project.status === 'Open' ? (
                                     <>
                                         <p className="text-sm text-muted-foreground">Ready to start?</p>
-                                        <Button onClick={handlePayment} disabled={isPaying} size="lg">
+                                        <Button onClick={handleRazorpayPayment} disabled={isPaying} size="lg">
                                             {isPaying ? (
                                                 <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
                                             ) : (
