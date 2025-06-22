@@ -1,9 +1,7 @@
 
 'use server';
 
-import { z } from 'zod';
-import { db, collection, addDoc, query, where, getDocs, serverTimestamp } from '@/lib/firebase/client';
-import { type ProjectFormValues, ProjectFormSchema } from '@/app/projects/types';
+import { db, collection, query, where, getDocs } from '@/lib/firebase/client';
 import { revalidatePath } from 'next/cache';
 
 // A helper to provide more specific error messages
@@ -20,33 +18,9 @@ function getFirebaseErrorMessage(error: unknown): string {
   return 'An unknown error occurred.';
 }
 
-export async function createProject(values: ProjectFormValues, userId: string) {
-  if (!userId) {
-    return { success: false, error: 'User not authenticated.' };
-  }
-
-  const validatedFields = ProjectFormSchema.safeParse(values);
-  if (!validatedFields.success) {
-    return { success: false, error: 'Invalid project data.' };
-  }
-
-  try {
-    await addDoc(collection(db, 'projects'), {
-      ...validatedFields.data,
-      userId: userId,
-      status: 'Open',
-      createdAt: serverTimestamp(),
-      deadline: validatedFields.data.deadline,
-    });
-
-    revalidatePath('/dashboard');
-    revalidatePath('/dashboard/projects');
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error creating project:', error);
-    return { success: false, error: getFirebaseErrorMessage(error) };
-  }
+export async function revalidateProjectAndDashboardPaths() {
+  revalidatePath('/dashboard/projects');
+  revalidatePath('/dashboard');
 }
 
 export async function getProjectsByUserId(userId: string) {

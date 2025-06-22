@@ -29,7 +29,8 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectFormSchema, type ProjectFormValues } from '@/app/projects/types';
 import { generateProjectDescription } from '@/ai/flows/generate-project-description';
-import { createProject } from '@/app/projects/actions';
+import { revalidateProjectAndDashboardPaths } from '@/app/projects/actions';
+import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
 
 export function ProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,22 +132,31 @@ export function ProjectForm() {
 
     setIsSubmitting(true);
     
-    const result = await createProject(values, user.uid);
+    try {
+        await addDoc(collection(db, 'projects'), {
+            ...values,
+            userId: user.uid,
+            status: 'Open',
+            createdAt: serverTimestamp(),
+        });
 
-    setIsSubmitting(false);
+        await revalidateProjectAndDashboardPaths();
 
-    if (result.success) {
         toast({
             title: "Project Submitted!",
             description: "Your project is now being listed.",
         });
         router.push('/dashboard/projects');
-    } else {
+
+    } catch (error) {
+        console.error('Error creating project:', error);
         toast({
             variant: "destructive",
             title: "Submission Failed",
-            description: result.error || "Could not submit your project. Please try again.",
+            description: "Could not submit your project. Please ensure your Firestore security rules are configured correctly.",
         });
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
