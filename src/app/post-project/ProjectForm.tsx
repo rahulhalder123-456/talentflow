@@ -27,9 +27,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
 import { ProjectFormSchema, type ProjectFormValues } from '@/app/projects/types';
 import { generateProjectDescription } from '@/ai/flows/generate-project-description';
+import { createProject } from '@/app/projects/actions';
 
 export function ProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,9 +105,9 @@ export function ProjectForm() {
       console.error("Error generating description:", error);
       let errorMessage = "An unexpected error occurred. Please check the server logs.";
       if (error.message) {
-          if (error.message.includes('API key not valid') || error.message.includes('API_KEY_INVALID')) {
-              errorMessage = "Your Google AI API key is invalid or missing. Please check your .env.local file and restart the server.";
-          } else if (error.message.includes('404 Not Found') || error.message.includes('NOT_FOUND')) {
+          if (error.message.includes('API key') || error.message.includes('API_KEY')) {
+              errorMessage = "Your Google AI API key is invalid, expired, or missing. Please check your .env.local file and restart the server.";
+          } else if (error.message.includes('404') || error.message.includes('Not Found') || error.message.includes('NOT_FOUND')) {
               errorMessage = "The AI model was not found. This can happen if the model name is incorrect or not available in your region.";
           } else {
               errorMessage = error.message;
@@ -130,30 +130,23 @@ export function ProjectForm() {
     }
 
     setIsSubmitting(true);
-    try {
-        await addDoc(collection(db, 'projects'), {
-            ...values,
-            userId: user.uid,
-            status: 'Open',
-            createdAt: serverTimestamp(),
-            deadline: values.deadline,
-        });
+    
+    const result = await createProject(values, user.uid);
 
+    setIsSubmitting(false);
+
+    if (result.success) {
         toast({
             title: "Project Submitted!",
             description: "Your project is now being listed.",
         });
         router.push('/dashboard/projects');
-
-    } catch (error) {
-        console.error('Error creating project:', error);
+    } else {
         toast({
             variant: "destructive",
             title: "Submission Failed",
-            description: "Could not submit your project. Please try again.",
+            description: result.error || "Could not submit your project. Please try again.",
         });
-    } finally {
-        setIsSubmitting(false);
     }
   }
 
