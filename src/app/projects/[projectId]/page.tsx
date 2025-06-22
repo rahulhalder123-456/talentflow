@@ -92,19 +92,20 @@ export default function ProjectDetailsPage() {
                 body: JSON.stringify({ amount: project.budget })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to create Razorpay order');
-            }
+            const orderData = await response.json();
 
-            const order = await response.json();
+            if (!response.ok) {
+                // If the response is not OK, the 'error' property from the API route will be in orderData.
+                throw new Error(orderData.error || 'Failed to create Razorpay order');
+            }
 
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-                amount: order.amount,
-                currency: order.currency,
+                amount: orderData.amount,
+                currency: orderData.currency,
                 name: "Talent Flow",
                 description: `Funding for project: ${project.projectTitle}`,
-                order_id: order.id,
+                order_id: orderData.id,
                 handler: async function (response: any) {
                     const verifyRes = await fetch('/api/verify-payment', {
                         method: 'POST',
@@ -157,7 +158,7 @@ export default function ProjectDetailsPage() {
             toast({
                 variant: 'destructive',
                 title: "Payment Failed",
-                description: 'Could not initiate payment. Please try again.'
+                description: err instanceof Error ? err.message : 'Could not initiate payment. Please try again.'
             });
         } finally {
             setIsPaying(false);

@@ -11,10 +11,21 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+  
+  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    console.error("Razorpay API keys are not set in environment variables.");
+    return NextResponse.json(
+      { error: "Server configuration error: Razorpay API keys are not configured. Please check your .env.local file and restart the server." },
+      { status: 500 }
+    );
+  }
 
   const razorpay = new Razorpay({
-    key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    key_id: keyId,
+    key_secret: keySecret,
   });
 
   const options = {
@@ -28,8 +39,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(order);
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
+    const errorMessage = error instanceof Error ? error.message : "Could not create order";
     return NextResponse.json(
-      { error: "Could not create order" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
