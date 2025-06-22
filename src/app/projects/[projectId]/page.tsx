@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, DollarSign, Clock, Tag, User, Calendar, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
-import type { Project } from '../_lib/types';
+import type { Project } from '@/features/projects/types';
 
 export default function ProjectDetailsPage() {
     const { user, loading: authLoading } = useAuth();
@@ -54,7 +54,7 @@ export default function ProjectDetailsPage() {
                         id: docSnap.id,
                         projectTitle: data.projectTitle,
                         projectDescription: data.projectDescription,
-                        projectBrief: data.projectBrief, // Assuming this field exists
+                        projectBrief: data.projectBrief,
                         budget: data.budget,
                         status: data.status,
                         createdAt: data.createdAt?.toDate(),

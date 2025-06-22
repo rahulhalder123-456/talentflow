@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to generate a project description using AI.
@@ -9,7 +10,7 @@ import {
   GenerateDescriptionOutputSchema,
   type GenerateDescriptionInput,
   type GenerateDescriptionOutput,
-} from '@/app/projects/_lib/types';
+} from '@/features/projects/types';
 import { googleAI } from '@genkit-ai/googleai';
 
 const descriptionGeneratorPrompt = ai.definePrompt({

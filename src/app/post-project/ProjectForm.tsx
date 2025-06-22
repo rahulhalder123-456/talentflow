@@ -27,10 +27,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ProjectFormSchema, type ProjectFormValues } from '@/app/projects/_lib/types';
+import { ProjectFormSchema, type ProjectFormValues } from '@/features/projects/types';
 import { generateProjectDescription } from '@/ai/flows/generate-project-description';
 import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
-import { revalidateProjectPaths } from '@/app/projects/_lib/actions';
+import { revalidateProjectPaths } from '@/features/projects/actions';
 
 export function ProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
