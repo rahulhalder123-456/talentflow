@@ -12,10 +12,11 @@ import { Loader } from '@/components/common/Loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle } from 'lucide-react';
+import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
 import type { Project } from '@/features/projects/types';
+import { updateProjectStatus } from '@/features/projects/actions';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectDetailsPage() {
@@ -30,6 +31,7 @@ export default function ProjectDetailsPage() {
     const [isUserAdmin, setIsUserAdmin] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
 
     useEffect(() => {
         if (authLoading) return;
@@ -95,7 +97,6 @@ export default function ProjectDetailsPage() {
             const orderData = await response.json();
 
             if (!response.ok) {
-                // If the response is not OK, the 'error' property from the API route will be in orderData.
                 throw new Error(orderData.error || 'Failed to create Razorpay order');
             }
 
@@ -165,11 +166,36 @@ export default function ProjectDetailsPage() {
         }
     };
 
+    const handleCloseProject = async () => {
+        if (!project) return;
+        setIsClosing(true);
+        try {
+            const result = await updateProjectStatus(project.id, 'Closed');
+            if (result.success) {
+                toast({
+                    title: "Project Closed",
+                    description: "The project has been marked as complete.",
+                });
+                setProject(prev => prev ? { ...prev, status: 'Closed' } : null);
+            } else {
+                throw new Error(result.error || 'Failed to close project.');
+            }
+        } catch (err) {
+            console.error("Failed to close project:", err);
+            toast({
+                variant: 'destructive',
+                title: "Update Failed",
+                description: err instanceof Error ? err.message : 'Could not close the project.',
+            });
+        } finally {
+            setIsClosing(false);
+        }
+    };
+
     if (loading || authLoading) {
         return <Loader />;
     }
     
-    // Security check: only project owner or admin can view
     if (project && project.userId !== user?.uid && !isUserAdmin) {
         return (
            <div className="flex min-h-screen flex-col bg-background">
@@ -227,7 +253,7 @@ export default function ProjectDetailsPage() {
                                         Posted on {project.createdAt ? format(project.createdAt, 'PPP') : ''}
                                     </CardDescription>
                                 </div>
-                                <Badge variant={project.status === 'Open' ? 'secondary' : 'default'} className="text-sm h-fit">{project.status}</Badge>
+                                <Badge variant={project.status === 'Open' || project.status === 'In Progress' ? 'secondary' : 'default'} className="text-sm h-fit">{project.status}</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="p-6 grid md:grid-cols-3 gap-8">
@@ -278,6 +304,20 @@ export default function ProjectDetailsPage() {
                                 ) : (
                                     <p className="text-sm text-muted-foreground">This project is currently {project.status}.</p>
                                 )}
+                            </CardFooter>
+                        )}
+
+                        {isUserAdmin && project.status !== 'Closed' && (
+                            <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">Admin Action:</p>
+                                <Button onClick={handleCloseProject} disabled={isClosing} variant="destructive">
+                                    {isClosing ? (
+                                        <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <CheckCircle className="mr-2 h-5 w-5" />
+                                    )}
+                                    {isClosing ? 'Closing...' : 'Mark as Complete & Close'}
+                                </Button>
                             </CardFooter>
                         )}
                     </Card>
