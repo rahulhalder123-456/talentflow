@@ -1,23 +1,13 @@
 
 import { z } from 'zod';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
 export const FeaturedProjectSchema = z.object({
   projectType: z.enum(['website', 'mobile'], {
     required_error: "You must select a project type.",
   }),
   title: z.string().min(3, "Title must be at least 3 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  imageFile: z
-    .instanceof(File, { message: "An image file is required." })
-    .refine((file) => file.size > 0, "An image file is required.")
-    .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-    .refine(
-      (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
-      ".jpg, .jpeg, .png and .webp files are accepted."
-    ),
+  imageUrl: z.string().url("Please provide a valid, direct image URL (e.g., ending in .png or .jpg)."),
   projectUrl: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
   appStoreUrl: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
   playStoreUrl: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
