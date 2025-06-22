@@ -15,19 +15,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, DollarSign, Clock, Tag, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
-
-type Project = {
-    id: string;
-    projectTitle: string;
-    projectDescription: string;
-    budget: string;
-    status: 'Open' | 'In Progress' | 'Closed';
-    createdAt: Date;
-    deadline: Date;
-    paymentType: string;
-    desiredSkills: string;
-    userId: string;
-};
+import type { Project } from '../_lib/types';
 
 export default function ProjectDetailsPage() {
     const { user, loading: authLoading } = useAuth();

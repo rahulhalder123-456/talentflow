@@ -9,7 +9,7 @@ import {
   GenerateDescriptionOutputSchema,
   type GenerateDescriptionInput,
   type GenerateDescriptionOutput,
-} from '@/app/projects/types';
+} from '@/app/projects/_lib/types';
 import { googleAI } from '@genkit-ai/googleai';
 
 const descriptionGeneratorPrompt = ai.definePrompt({

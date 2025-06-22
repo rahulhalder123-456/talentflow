@@ -13,6 +13,20 @@ export const ProjectFormSchema = z.object({
 
 export type ProjectFormValues = z.infer<typeof ProjectFormSchema>;
 
+export type Project = {
+    id: string;
+    projectTitle: string;
+    projectDescription: string;
+    budget: string;
+    status: 'Open' | 'In Progress' | 'Closed';
+    createdAt: Date;
+    deadline: Date;
+    paymentType: string;
+    desiredSkills: string;
+    userId: string;
+};
+
+
 export const GenerateDescriptionInputSchema = z.object({
   projectTitle: z.string(),
   projectBrief: z.string(),
