@@ -32,9 +32,12 @@ interface AdminChatInterfaceProps {
     chatId: string;
 }
 
-function getFirebaseErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.includes('PERMISSION_DENIED')) {
-    return 'Permission Denied. Your Firestore security rules are blocking this action.';
+function getFirebaseErrorMessage(error: any): string {
+  const errorMessage = error?.message?.toLowerCase() || '';
+  const errorCode = error?.code?.toLowerCase() || '';
+  
+  if (errorMessage.includes('permission') || errorCode.includes('permission')) {
+    return 'Permission Denied. Ensure your account has admin rights and check your Firestore security rules.';
   }
   return 'Could not send message. Please try again.';
 }
