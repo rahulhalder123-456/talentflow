@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { db, collection, query, onSnapshot } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
@@ -12,25 +12,40 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-type Chat = {
+// Define UserProfile type
+type UserProfile = {
     id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+};
+
+// Updated Chat type to include user details
+type Chat = {
+    id: string; // The chat document ID (e.g., support_userId)
     lastMessageAt: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
 };
 
 export function AllChatsList() {
     const { user } = useAuth();
-    const [chats, setChats] = useState<Chat[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [rawChats, setRawChats] = useState<{ id: string; lastMessageAt: string }[]>([]);
+    const [users, setUsers] = useState<UserProfile[]>([]);
+    const [loadingChats, setLoadingChats] = useState(true);
+    const [loadingUsers, setLoadingUsers] = useState(true);
     const { toast } = useToast();
 
+    // Effect to fetch all chats
     useEffect(() => {
         if (!user) {
-            setLoading(false);
+            setLoadingChats(false);
             return;
         }
 
-        setLoading(true);
         const chatsRef = collection(db, "chats");
         const q = query(chatsRef);
 
@@ -41,12 +56,12 @@ export function AllChatsList() {
                     return {
                         id: doc.id,
                         lastMessageAt: data.lastMessageAt?.toDate().toISOString() || new Date().toISOString(),
-                    } as Chat;
+                    };
                 });
                 
                 const sortedChats = chatsData.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
-                setChats(sortedChats);
-                setLoading(false);
+                setRawChats(sortedChats);
+                setLoadingChats(false);
             },
             (error) => {
                 console.error("Error fetching all chats:", error);
@@ -55,13 +70,65 @@ export function AllChatsList() {
                     title: "Failed to load chats",
                     description: "An error occurred fetching chats. This is likely a security rules issue.",
                 });
-                setLoading(false);
+                setLoadingChats(false);
             }
         );
 
         return () => unsubscribe();
     }, [user, toast]);
 
+    // Effect to fetch all users
+    useEffect(() => {
+        if (!user) {
+            setLoadingUsers(false);
+            return;
+        }
+
+        const usersQuery = query(collection(db, "users"));
+        const unsubscribe = onSnapshot(usersQuery,
+            (snapshot) => {
+                const usersData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as UserProfile[];
+                setUsers(usersData);
+                setLoadingUsers(false);
+            },
+            (error) => {
+                console.error("Error fetching users:", error);
+                toast({ variant: "destructive", title: "Failed to load users", description: "This might be a permission issue." });
+                setLoadingUsers(false);
+            }
+        );
+        return () => unsubscribe();
+    }, [user, toast]);
+    
+    // Combine chat and user data
+    const chats = useMemo((): Chat[] => {
+        if (loadingChats || loadingUsers) return [];
+
+        const userMap = new Map(users.map(u => [u.id, u]));
+
+        return rawChats.map(chat => {
+            const userId = chat.id.replace('support_', '');
+            const userProfile = userMap.get(userId);
+            
+            const firstName = userProfile?.firstName || '';
+            const lastName = userProfile?.lastName || '';
+            const userName = `${firstName} ${lastName}`.trim();
+            
+            return {
+                ...chat,
+                userId,
+                userName: userName || 'Client Profile Pending',
+                userAvatar: `${firstName.charAt(0)}${lastName.charAt(0)}`
+            };
+        });
+
+    }, [rawChats, users, loadingChats, loadingUsers]);
+
+
+    const loading = loadingChats || loadingUsers;
 
     if (loading) {
         return <Loader />;
@@ -79,7 +146,7 @@ export function AllChatsList() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Client ID</TableHead>
+                            <TableHead>Client</TableHead>
                             <TableHead>Last Update</TableHead>
                             <TableHead className="text-right">Action</TableHead>
                         </TableRow>
@@ -88,7 +155,17 @@ export function AllChatsList() {
                         {chats.length > 0 ? (
                             chats.map((chat) => (
                                 <TableRow key={chat.id}>
-                                    <TableCell className="font-mono text-xs">{chat.id.replace('support_', '')}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <Avatar>
+                                                <AvatarFallback>{chat.userAvatar}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{chat.userName}</span>
+                                              <span className="text-xs text-muted-foreground font-mono">{chat.userId}</span>
+                                            </div>
+                                        </div>
+                                    </TableCell>
                                     <TableCell>{formatDistanceToNow(new Date(chat.lastMessageAt), { addSuffix: true })}</TableCell>
                                     <TableCell className="text-right">
                                         <Button asChild variant="outline" size="sm">
