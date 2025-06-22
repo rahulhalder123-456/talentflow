@@ -19,10 +19,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { LoaderCircle, PlusCircle } from "lucide-react";
-import { addFeaturedProject } from "./actions";
+import { revalidateFeaturedWorkPaths } from "./actions";
 import { FeaturedProjectSchema, type FeaturedProjectFormValues } from "@/features/landing/types";
 import { useRouter } from "next/navigation";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
 
 
 export function FeaturedWorkForm() {
@@ -48,14 +49,20 @@ export function FeaturedWorkForm() {
     const onSubmit = async (values: FeaturedProjectFormValues) => {
         setIsSubmitting(true);
         try {
-            await addFeaturedProject(values);
+            // Perform the database write on the client side to ensure auth context
+            await addDoc(collection(db, 'featuredProjects'), {
+                ...values,
+                createdAt: serverTimestamp(),
+            });
+            
+            // Trigger a server-side cache revalidation
+            await revalidateFeaturedWorkPaths();
+
             toast({
                 title: "Project Added!",
                 description: "The new project has been added to your showcase.",
             });
             form.reset();
-            // In a real app, you'd likely want to refresh the list of projects shown above the form
-            // For simplicity, we just reload the page to show the new project.
             router.refresh();
 
         } catch (error) {

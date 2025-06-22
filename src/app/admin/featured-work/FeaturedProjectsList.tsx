@@ -7,9 +7,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Trash2, Link as LinkIcon, AppWindow, Apple, Play } from 'lucide-react';
 import type { FeaturedProject } from '@/features/landing/types';
-import { deleteFeaturedProject } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { revalidateFeaturedWorkPaths } from './actions';
+import { db, doc, deleteDoc } from '@/lib/firebase/client';
+
 
 interface FeaturedProjectsListProps {
     projects: FeaturedProject[];
@@ -21,7 +23,13 @@ export function FeaturedProjectsList({ projects: initialProjects }: FeaturedProj
 
     const handleDelete = async (id: string) => {
         try {
-            await deleteFeaturedProject(id);
+            // Perform delete on the client side to ensure auth context
+            const projectRef = doc(db, 'featuredProjects', id);
+            await deleteDoc(projectRef);
+
+            // Revalidate paths on the server
+            await revalidateFeaturedWorkPaths();
+
             setProjects(projects.filter(p => p.id !== id));
             toast({
                 title: "Project Removed",
