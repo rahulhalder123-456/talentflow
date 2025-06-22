@@ -12,21 +12,25 @@ import { Loader } from '@/components/common/Loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, DollarSign, Clock, Tag, User, Calendar, Briefcase } from 'lucide-react';
+import { ArrowLeft, DollarSign, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
 import type { Project } from '@/features/projects/types';
+import { updateProjectStatus } from '@/features/projects/actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectDetailsPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const params = useParams();
     const projectId = params.projectId as string;
+    const { toast } = useToast();
 
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [isUserAdmin, setIsUserAdmin] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isPaying, setIsPaying] = useState(false);
 
     useEffect(() => {
         if (authLoading) return;
@@ -77,6 +81,30 @@ export default function ProjectDetailsPage() {
 
         fetchProject();
     }, [projectId, user, authLoading, router]);
+
+    const handlePayment = async () => {
+        if (!project) return;
+        setIsPaying(true);
+
+        const result = await updateProjectStatus(project.id, 'In Progress');
+
+        if (result.success) {
+            toast({
+                title: "Payment Successful!",
+                description: "The project is now 'In Progress'. Our team will be in touch shortly.",
+            });
+            // Update state locally for an immediate UI response
+            setProject(prev => prev ? { ...prev, status: 'In Progress' } : null);
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Payment Failed",
+                description: result.error || "An unexpected error occurred. Please try again.",
+            });
+        }
+
+        setIsPaying(false);
+    };
 
     if (loading || authLoading) {
         return <Loader />;
@@ -173,10 +201,29 @@ export default function ProjectDetailsPage() {
                                 )}
                             </div>
                         </CardContent>
+                        
+                        {project.userId === user?.uid && (
+                            <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
+                                {project.status === 'Open' ? (
+                                    <>
+                                        <p className="text-sm text-muted-foreground">Ready to start?</p>
+                                        <Button onClick={handlePayment} disabled={isPaying} size="lg">
+                                            {isPaying ? (
+                                                <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                                            ) : (
+                                                <CreditCard className="mr-2 h-5 w-5" />
+                                            )}
+                                            {isPaying ? 'Processing...' : 'Fund & Start Project'}
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">This project is currently {project.status}.</p>
+                                )}
+                            </CardFooter>
+                        )}
                     </Card>
                 </div>
             </main>
         </div>
     );
 }
-
