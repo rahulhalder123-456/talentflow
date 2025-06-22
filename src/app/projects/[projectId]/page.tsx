@@ -163,7 +163,7 @@ export default function ProjectDetailsPage() {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex items-center gap-3"><DollarSign className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">${project.budget}</span></span></div>
                                     <div className="flex items-center gap-3 capitalize"><Briefcase className="h-5 w-5 text-primary" /><span>Payment: <span className="font-bold text-foreground">{project.paymentType}</span></span></div>
-                                    <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{format(project.deadline, 'PPP')}</span></div>
+                                    <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{format(project.deadline, 'PPP')}</span></span></div>
                                 </div>
                                 {isUserAdmin && (
                                     <>
