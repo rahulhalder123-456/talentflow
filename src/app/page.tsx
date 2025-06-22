@@ -1,3 +1,4 @@
+
 import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { HeroSection } from '@/components/landing/HeroSection';
@@ -8,8 +9,33 @@ import { FeaturedWorkSection } from '@/components/landing/FeaturedWorkSection';
 import { AboutUsSection } from '@/components/landing/AboutUsSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { CtaSection } from '@/components/landing/CtaSection';
+import { db, collection, getDocs, query, orderBy } from "@/lib/firebase/client";
+import type { FeaturedProject } from '@/features/landing/types';
 
-export default function Home() {
+async function getFeaturedProjects() {
+    try {
+        const projectsRef = collection(db, "featuredProjects");
+        const q = query(projectsRef, orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        // Note: Firestore Timestamp objects are not serializable for Client Components.
+        // We are not passing timestamps to the client here, so it's safe.
+        // If we were, we would need to convert them to strings or numbers.
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as FeaturedProject[];
+    } catch (error) {
+        console.error("Error fetching featured projects for homepage:", error);
+        // Return an empty array if there's an error (e.g., Firestore not set up yet)
+        return [];
+    }
+}
+
+
+export default async function Home() {
+  const featuredProjects = await getFeaturedProjects();
+
   return (
     <div className="flex min-h-screen flex-col bg-background overflow-hidden">
       <Header />
@@ -18,7 +44,7 @@ export default function Home() {
         <CategoriesSection />
         <HowItWorksSection />
         <WhyUsSection />
-        <FeaturedWorkSection />
+        <FeaturedWorkSection projects={featuredProjects} />
         <AboutUsSection />
         <TestimonialsSection />
         <CtaSection />
