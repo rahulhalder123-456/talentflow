@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { Header } from '@/components/common/Header';
 import { Loader } from '@/components/common/Loader';
@@ -16,7 +16,7 @@ import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, L
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
 import type { Project } from '@/features/projects/types';
-import { updateProjectStatus } from '@/features/projects/actions';
+import { revalidateOnStatusUpdate } from '@/features/projects/actions';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectDetailsPage() {
@@ -170,22 +170,31 @@ export default function ProjectDetailsPage() {
         if (!project) return;
         setIsClosing(true);
         try {
-            const result = await updateProjectStatus(project.id, 'Closed');
-            if (result.success) {
-                toast({
-                    title: "Project Closed",
-                    description: "The project has been marked as complete.",
-                });
-                setProject(prev => prev ? { ...prev, status: 'Closed' } : null);
-            } else {
-                throw new Error(result.error || 'Failed to close project.');
+            // Perform the database write on the client-side to ensure auth context
+            const projectRef = doc(db, 'projects', project.id);
+            await updateDoc(projectRef, {
+                status: 'Closed',
+            });
+
+            // Trigger server-side revalidation
+            const result = await revalidateOnStatusUpdate(project.id);
+            if (!result.success) {
+                 throw new Error(result.error || 'Failed to revalidate paths.');
             }
+
+            toast({
+                title: "Project Closed",
+                description: "The project has been marked as complete.",
+            });
+            setProject(prev => prev ? { ...prev, status: 'Closed' } : null);
+
         } catch (err) {
             console.error("Failed to close project:", err);
+            const errorMessage = err instanceof Error ? err.message : 'Could not close the project.';
             toast({
                 variant: 'destructive',
                 title: "Update Failed",
-                description: err instanceof Error ? err.message : 'Could not close the project.',
+                description: errorMessage.includes('permission') ? 'Permission Denied. Check Firestore rules.' : errorMessage,
             });
         } finally {
             setIsClosing(false);
@@ -197,7 +206,7 @@ export default function ProjectDetailsPage() {
     }
     
     if (project && project.userId !== user?.uid && !isUserAdmin) {
-        return (
+       return (
            <div className="flex min-h-screen flex-col bg-background">
                <Header />
                <main className="flex-1 py-12">

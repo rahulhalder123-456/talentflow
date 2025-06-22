@@ -2,13 +2,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { db, doc, updateDoc } from '@/lib/firebase/client';
-import type { Project } from './types';
-
 
 /**
- * Revalidates the cache for the dashboard and projects pages.
- * This is called after a new project is created to ensure the UI updates.
+ * Revalidates the cache for the dashboard and projects pages after creation.
  */
 export async function revalidateProjectPaths() {
     revalidatePath('/dashboard');
@@ -16,32 +12,21 @@ export async function revalidateProjectPaths() {
     revalidatePath('/admin/projects');
 }
 
-
 /**
- * Updates the status of a project in Firestore.
- * In a real app, this would be part of a larger payment processing flow.
+ * Revalidates a specific project page and its related list views after a status update.
+ * This is intended to be called from the client after a successful database write.
  * @param projectId The ID of the project to update.
- * @param newStatus The new status for the project.
  */
-export async function updateProjectStatus(
+export async function revalidateOnStatusUpdate(
     projectId: string, 
-    newStatus: Project['status']
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
-        await updateDoc(projectRef, {
-            status: newStatus,
-        });
-
-        // After successful update, revalidate all relevant paths
         revalidatePath('/dashboard/projects');
         revalidatePath(`/projects/${projectId}`);
         revalidatePath('/admin/projects');
-        
         return { success: true };
     } catch (error) {
-        console.error("Error updating project status:", error);
-        // In a real app, you might want more specific error handling
-        return { success: false, error: "Failed to update project status." };
+        console.error("Error revalidating paths:", error);
+        return { success: false, error: "Failed to revalidate project status." };
     }
 }
