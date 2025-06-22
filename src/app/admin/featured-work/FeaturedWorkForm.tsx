@@ -145,7 +145,7 @@ export function FeaturedWorkForm() {
                                     />
                                 </FormControl>
                                 <FormDescription>
-                                    Upload a showcase image for the project (PNG, JPG, or WEBP, max 5MB).
+                                    Click 'Choose File' to upload an image directly from your computer. Please do not use web links.
                                 </FormDescription>
                                 <FormMessage />
                                 </FormItem>
