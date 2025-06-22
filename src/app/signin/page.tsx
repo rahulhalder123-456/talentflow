@@ -61,7 +61,25 @@ export default function SignInPage() {
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      // Check for and create profile for existing users on login
+      const userRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userRef);
+      if (!docSnap.exists()) {
+        const displayName = user.displayName || '';
+        const nameParts = displayName.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        await setDoc(userRef, {
+            firstName: firstName,
+            lastName: lastName,
+            email: user.email,
+        }, { merge: true });
+      }
+      
       toast({
         title: "Success!",
         description: "You have successfully signed in.",
