@@ -8,15 +8,28 @@ import { db, collection, getDocs, query, orderBy } from "@/lib/firebase/client";
 import type { FeaturedProject } from "@/features/landing/types";
 
 
-async function getFeaturedProjects() {
+async function getFeaturedProjects(): Promise<FeaturedProject[]> {
     try {
         const projectsRef = collection(db, "featuredProjects");
         const q = query(projectsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as FeaturedProject[];
+        
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title,
+                description: data.description,
+                imageUrl: data.imageUrl,
+                projectType: data.projectType,
+                projectUrl: data.projectUrl,
+                appStoreUrl: data.appStoreUrl,
+                playStoreUrl: data.playStoreUrl,
+                // Timestamps are not serializable, so convert to a string
+                createdAt: data.createdAt.toDate().toISOString(),
+            };
+        }) as FeaturedProject[];
+
     } catch (error) {
         console.error("Error fetching featured projects:", error);
         // In a real app, you might want more robust error handling.

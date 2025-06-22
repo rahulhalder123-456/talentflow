@@ -12,19 +12,27 @@ import { CtaSection } from '@/components/landing/CtaSection';
 import { db, collection, getDocs, query, orderBy } from "@/lib/firebase/client";
 import type { FeaturedProject } from '@/features/landing/types';
 
-async function getFeaturedProjects() {
+async function getFeaturedProjects(): Promise<FeaturedProject[]> {
     try {
         const projectsRef = collection(db, "featuredProjects");
         const q = query(projectsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         
-        // Note: Firestore Timestamp objects are not serializable for Client Components.
-        // We are not passing timestamps to the client here, so it's safe.
-        // If we were, we would need to convert them to strings or numbers.
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as FeaturedProject[];
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title,
+                description: data.description,
+                imageUrl: data.imageUrl,
+                projectType: data.projectType,
+                projectUrl: data.projectUrl,
+                appStoreUrl: data.appStoreUrl,
+                playStoreUrl: data.playStoreUrl,
+                // Timestamps are not serializable, so convert to a string
+                createdAt: data.createdAt.toDate().toISOString(),
+            };
+        }) as FeaturedProject[];
     } catch (error) {
         console.error("Error fetching featured projects for homepage:", error);
         // Return an empty array if there's an error (e.g., Firestore not set up yet)

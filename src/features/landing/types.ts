@@ -42,5 +42,5 @@ export type FeaturedProject = {
   appStoreUrl?: string;
   playStoreUrl?: string;
   projectType: 'website' | 'mobile';
-  createdAt: any; // Firestore timestamp
+  createdAt: string;
 };
