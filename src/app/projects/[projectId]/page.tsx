@@ -5,19 +5,23 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, addDoc, serverTimestamp, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { Header } from '@/components/common/Header';
 import { Loader } from '@/components/common/Loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle, CheckCircle, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
-import type { Project } from '@/features/projects/types';
+import type { Project, TimeEntry } from '@/features/projects/types';
 import { revalidateOnStatusUpdate } from '@/features/projects/actions';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
 
 export default function ProjectDetailsPage() {
     const { user, loading: authLoading } = useAuth();
@@ -32,6 +36,12 @@ export default function ProjectDetailsPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
+
+    // State for time tracking
+    const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
+    const [isLoggingTime, setIsLoggingTime] = useState(false);
+    const [logAmount, setLogAmount] = useState('');
+    const [logDescription, setLogDescription] = useState('');
 
     useEffect(() => {
         if (authLoading) return;
@@ -79,9 +89,52 @@ export default function ProjectDetailsPage() {
                 setLoading(false);
             }
         };
-
+        
         fetchProject();
+        
+        // Subscribe to time entries
+        const timeEntriesRef = collection(db, 'projects', projectId, 'timeEntries');
+        const q = query(timeEntriesRef, orderBy('loggedAt', 'desc'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const entries = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                loggedAt: doc.data().loggedAt?.toDate(),
+            })) as TimeEntry[];
+            setTimeEntries(entries);
+        });
+
+        return () => unsubscribe();
+
     }, [projectId, user, authLoading, router]);
+
+    const handleLogTime = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!project || !logAmount || !logDescription) {
+            toast({ variant: 'destructive', title: 'Missing fields', description: 'Please fill out all fields to log time.' });
+            return;
+        }
+        setIsLoggingTime(true);
+        try {
+            const timeEntriesRef = collection(db, 'projects', project.id, 'timeEntries');
+            await addDoc(timeEntriesRef, {
+                amount: parseFloat(logAmount),
+                description: logDescription,
+                loggedAt: serverTimestamp(),
+                status: 'pending', // Can be 'pending', 'approved', 'paid'
+                loggerId: user?.uid,
+            });
+            toast({ title: "Time Logged", description: "The work has been successfully logged." });
+            setLogAmount('');
+            setLogDescription('');
+        } catch (error) {
+            console.error("Error logging time:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not log time. Check permissions.' });
+        } finally {
+            setIsLoggingTime(false);
+        }
+    };
 
     const handleRazorpayPayment = async () => {
         if (!project) return;
@@ -238,12 +291,14 @@ export default function ProjectDetailsPage() {
             </div>
         );
     }
+    
+    const totalLoggedAmount = timeEntries.reduce((acc, entry) => acc + entry.amount, 0);
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
             <Header />
             <main className="flex-1 py-12">
-                <div className="container mx-auto max-w-4xl px-4 md:px-6">
+                <div className="container mx-auto max-w-4xl px-4 md:px-6 space-y-8">
                     <div className="mb-8">
                         <Button variant="ghost" asChild>
                             <Link href={isUserAdmin ? "/admin/projects" : "/dashboard/projects"}>
@@ -330,8 +385,85 @@ export default function ProjectDetailsPage() {
                             </CardFooter>
                         )}
                     </Card>
+
+                    {/* Time Tracking Section - Visible to Admins for active, non-fixed projects */}
+                    {isUserAdmin && project.status === 'In Progress' && project.paymentType !== 'fixed' && (
+                        <Card className="bg-secondary/20 border-border/50 shadow-lg">
+                            <CardHeader>
+                                <CardTitle>Time Tracking</CardTitle>
+                                <CardDescription>Log hours or days worked on this project.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleLogTime} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                    <div className="md:col-span-1 space-y-2">
+                                        <Label htmlFor="logAmount" className="capitalize">{project.paymentType.replace('ly', 's')}</Label>
+                                        <Input
+                                            id="logAmount"
+                                            type="number"
+                                            placeholder={`e.g., 8`}
+                                            value={logAmount}
+                                            onChange={(e) => setLogAmount(e.target.value)}
+                                            disabled={isLoggingTime}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <Label htmlFor="logDescription">Description of Work</Label>
+                                        <Textarea
+                                            id="logDescription"
+                                            placeholder="What was accomplished?"
+                                            value={logDescription}
+                                            onChange={(e) => setLogDescription(e.target.value)}
+                                            disabled={isLoggingTime}
+                                            className="min-h-0"
+                                            rows={1}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="md:col-span-1">
+                                        <Button type="submit" className="w-full" disabled={isLoggingTime}>
+                                            {isLoggingTime ? <LoaderCircle className="animate-spin" /> : <PlusCircle />}
+                                            {isLoggingTime ? 'Logging...' : 'Log Work'}
+                                        </Button>
+                                    </div>
+                                </form>
+                                <Separator className="my-6" />
+                                <h4 className="font-medium mb-4">Logged Entries</h4>
+                                {timeEntries.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead className="capitalize text-right">{project.paymentType.replace('ly', 's')}</TableHead>
+                                                <TableHead>Description</TableHead>
+                                                <TableHead>Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {timeEntries.map(entry => (
+                                                <TableRow key={entry.id}>
+                                                    <TableCell>{format(entry.loggedAt, 'PPP')}</TableCell>
+                                                    <TableCell className="text-right">{entry.amount}</TableCell>
+                                                    <TableCell>{entry.description}</TableCell>
+                                                    <TableCell><Badge variant="outline" className="capitalize">{entry.status}</Badge></TableCell>
+                                                </TableRow>
+                                            ))}
+                                            <TableRow className="bg-secondary/50 font-bold">
+                                                <TableCell colSpan={1}>Total Logged</TableCell>
+                                                <TableCell className="text-right">{totalLoggedAmount}</TableCell>
+                                                <TableCell colSpan={2}></TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-muted-foreground text-sm text-center py-4">No time has been logged for this project yet.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </main>
         </div>
     );
 }
+

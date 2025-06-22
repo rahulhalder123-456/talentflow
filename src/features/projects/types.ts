@@ -27,6 +27,23 @@ export type Project = {
     userId: string;
 };
 
+// --- Time Tracking ---
+export const TimeEntrySchema = z.object({
+  amount: z.number().positive("Amount must be positive."),
+  description: z.string().min(5, "Description must be at least 5 characters."),
+  loggedAt: z.date(),
+  status: z.enum(['pending', 'approved', 'paid']),
+  loggerId: z.string(),
+});
+export type TimeEntry = {
+    id: string;
+    amount: number;
+    description: string;
+    loggedAt: Date;
+    status: 'pending' | 'approved' | 'paid';
+    loggerId: string;
+};
+
 
 export const GenerateDescriptionInputSchema = z.object({
   projectTitle: z.string(),
@@ -79,3 +96,4 @@ export const ProjectAnalysisOutputSchema = z.object({
   analysis: z.array(AnalyzedProjectSchema),
 });
 export type ProjectAnalysisOutput = z.infer<typeof ProjectAnalysisOutputSchema>;
+
