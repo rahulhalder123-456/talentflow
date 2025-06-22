@@ -1,75 +1,41 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
-    // Checks if the requesting user's UID is in the hardcoded ADMIN_UIDS list.
-    // In a production app, this would likely check a 'roles' field in the user's document.
     function isAdmin() {
-      // 🔴 IMPORTANT: This UID must match the one in `src/lib/admin.ts`
-      // You can find your UID after signing in by checking the browser's developer console.
+      // 🔴 IMPORTANT: Replace with your actual Admin UIDs
       return request.auth.uid in ['ToBDMq0KVIgnLQCEeFzxLzB4HUj1'];
     }
 
-    // --- User Profiles ---
     match /users/{userId} {
-      // A user can create their own profile, read it, and update it.
       allow read, update, create: if request.auth.uid == userId;
-
-      // An admin can read any user's profile and list all users.
-      // NOTE: `list` is required for the admin dashboard server action to fetch all users.
-      // In a production app, you might use the Firebase Admin SDK to bypass these rules
-      // for server-side operations, which is more secure than this broad read access.
       allow get, list: if isAdmin();
     }
 
-    // --- Payment Methods (subcollection of users) ---
     match /users/{userId}/paymentMethods/{methodId} {
-      // A user can manage their own payment methods.
       allow read, create, delete: if request.auth.uid == userId;
     }
 
-    // --- Projects ---
     match /projects/{projectId} {
-      // A user can create a project if they are logged in and the project's `userId`
-      // matches their own `uid`. This is a critical security measure.
-      allow create: if request.auth.uid == request.resource.data.userId;
-
-      // Any authenticated user can view the details of a single project.
+      // Allow project creation if the user ID is present
+      allow create: if request.resource.data.userId != null && request.auth.uid == request.resource.data.userId;
       allow get: if request.auth != null;
-
-      // An admin can list all projects for the admin dashboard.
-      // See the note under User Profiles about why this rule is structured this way.
       allow list: if isAdmin();
-
-      // A user can only update or delete their own projects.
       allow update, delete: if request.auth.uid == resource.data.userId;
     }
 
-    // --- Support Chats ---
     match /chats/{chatId} {
-      // Checks if the user is a participant OR if they are an admin.
-      // This allows admins to join any support chat.
-       function isParticipantOrAdmin() {
-         return request.auth.uid in resource.data.participants || isAdmin();
-       }
-
-      // A user can only read/write to a chat if they are a participant or an admin.
+      function isParticipantOrAdmin() {
+        return request.auth.uid in resource.data.participants || isAdmin();
+      }
       allow read, write: if isParticipantOrAdmin();
-      // Admins need list access to show all conversations on their dashboard.
       allow list: if isAdmin();
     }
 
-    // --- Chat Messages (subcollection of chats) ---
     match /chats/{chatId}/messages/{messageId} {
-      // A user can read or create messages in a chat they are a part of (or if they are an admin).
       allow read, create: if exists(/databases/$(database)/documents/chats/$(chatId)) &&
-        (
-          get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid])
-          || isAdmin()
-        );
+        (get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]) || isAdmin());
     }
   }
 }
