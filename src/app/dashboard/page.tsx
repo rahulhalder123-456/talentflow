@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Briefcase, MessageSquare, User, PlusCircle, Shield } from 'lucide-react';
 import { isAdmin } from '@/lib/admin';
-import { getProjectsByUserId } from '@/app/projects/actions';
+import { db, collection, query, where, onSnapshot } from '@/lib/firebase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
@@ -23,19 +23,26 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/signin');
+      return;
     }
+
     if (user) {
       setIsUserAdmin(isAdmin(user.uid));
+
+      const q = query(collection(db, "projects"), where("userId", "==", user.uid));
       
-      const fetchProjectCount = async () => {
-        const result = await getProjectsByUserId(user.uid);
-        if (result.success) {
-          setProjectCount(result.projects.length);
-        } else {
+      const unsubscribe = onSnapshot(q, 
+        (querySnapshot) => {
+          setProjectCount(querySnapshot.size);
+        }, 
+        (error) => {
+          console.error("Error fetching project count in real-time:", error);
           setProjectCount(0);
         }
-      };
-      fetchProjectCount();
+      );
+
+      // Unsubscribe from the listener when the component unmounts
+      return () => unsubscribe();
     }
   }, [user, loading, router]);
 
