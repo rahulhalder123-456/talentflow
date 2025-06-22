@@ -22,6 +22,7 @@ import { LoaderCircle, PlusCircle } from "lucide-react";
 import { addFeaturedProject } from "./actions";
 import { FeaturedProjectSchema, type FeaturedProjectFormValues } from "@/features/landing/types";
 import { useRouter } from "next/navigation";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 
 export function FeaturedWorkForm() {
@@ -32,6 +33,7 @@ export function FeaturedWorkForm() {
     const form = useForm<FeaturedProjectFormValues>({
         resolver: zodResolver(FeaturedProjectSchema),
         defaultValues: {
+            projectType: undefined,
             title: "",
             description: "",
             imageUrl: "",
@@ -40,6 +42,8 @@ export function FeaturedWorkForm() {
             playStoreUrl: "",
         },
     });
+
+    const projectType = form.watch("projectType");
 
     const onSubmit = async (values: FeaturedProjectFormValues) => {
         setIsSubmitting(true);
@@ -119,47 +123,89 @@ export function FeaturedWorkForm() {
                                 </FormItem>
                             )}
                         />
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                             <FormField
+                        
+                        <FormField
+                            control={form.control}
+                            name="projectType"
+                            render={({ field }) => (
+                                <FormItem className="space-y-3">
+                                <FormLabel>Project Type</FormLabel>
+                                <FormControl>
+                                    <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="flex flex-col space-y-1 md:flex-row md:space-y-0 md:space-x-4"
+                                    >
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                        <RadioGroupItem value="website" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                        Website
+                                        </FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                        <RadioGroupItem value="mobile" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                        Mobile App
+                                        </FormLabel>
+                                    </FormItem>
+                                    </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {projectType === 'website' && (
+                            <FormField
                                 control={form.control}
                                 name="projectUrl"
                                 render={({ field }) => (
-                                    <FormItem className="md:col-span-1">
+                                    <FormItem>
                                         <FormLabel>Website URL</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="https://..." {...field} />
+                                            <Input placeholder="https://www.example.com" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                             <FormField
-                                control={form.control}
-                                name="appStoreUrl"
-                                render={({ field }) => (
-                                    <FormItem className="md:col-span-1">
-                                        <FormLabel>App Store URL (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="https://apps.apple.com/..." {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="playStoreUrl"
-                                render={({ field }) => (
-                                    <FormItem className="md:col-span-1">
-                                        <FormLabel>Play Store URL (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="https://play.google.com/..." {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                        )}
+
+                        {projectType === 'mobile' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="appStoreUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>App Store URL (Optional)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="https://apps.apple.com/..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="playStoreUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Play Store URL (Optional)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="https://play.google.com/..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        )}
+                        
                         <div className="flex justify-end">
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting ? (
