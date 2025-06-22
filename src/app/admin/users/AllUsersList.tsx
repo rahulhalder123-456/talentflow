@@ -7,6 +7,7 @@ import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 type UserProfile = {
     id: string;
@@ -18,6 +19,7 @@ type UserProfile = {
 export function AllUsersList() {
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -25,11 +27,17 @@ export function AllUsersList() {
             const result = await getAllUsers();
             if (result.success) {
                 setUsers(result.users as UserProfile[]);
+            } else {
+                 toast({
+                    variant: "destructive",
+                    title: "Failed to load users",
+                    description: result.error || "An unknown error occurred. This is often due to Firestore security rules.",
+                });
             }
             setLoading(false);
         };
         fetchUsers();
-    }, []);
+    }, [toast]);
 
     if (loading) {
         return <Loader />;

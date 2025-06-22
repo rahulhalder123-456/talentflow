@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { format, formatDistanceToNow } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
 
 type Project = {
     id: string;
@@ -23,6 +24,7 @@ type Project = {
 export function AllProjectsList() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -31,11 +33,17 @@ export function AllProjectsList() {
             if (result.success) {
                 const sortedProjects = result.projects.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setProjects(sortedProjects as Project[]);
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Failed to load projects",
+                    description: result.error || "An unknown error occurred. This is often due to Firestore security rules.",
+                });
             }
             setLoading(false);
         };
         fetchProjects();
-    }, []);
+    }, [toast]);
 
     if (loading) {
         return <Loader />;
