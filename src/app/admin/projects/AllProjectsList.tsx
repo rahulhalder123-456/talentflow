@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { db, collection, query, onSnapshot } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
@@ -40,105 +40,117 @@ type GroupedProject = {
 
 export function AllProjectsList() {
     const { user: authUser } = useAuth();
-    const [groupedProjects, setGroupedProjects] = useState<GroupedProject[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [users, setUsers] = useState<UserProfile[]>([]);
+    const [loadingProjects, setLoadingProjects] = useState(true);
+    const [loadingUsers, setLoadingUsers] = useState(true);
     const { toast } = useToast();
 
+    // Effect for fetching projects
     useEffect(() => {
         if (!authUser) {
-            setLoading(false);
+            setLoadingProjects(false);
             return;
         }
+        const projectsQuery = query(collection(db, "projects"));
+        const unsubscribe = onSnapshot(projectsQuery, 
+            (snapshot) => {
+                const projectsData = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+                        deadline: data.deadline?.toDate().toISOString() || new Date().toISOString(),
+                    } as Project;
+                });
+                setProjects(projectsData);
+                setLoadingProjects(false);
+            },
+            (error) => {
+                console.error("Error fetching projects:", error);
+                toast({ variant: "destructive", title: "Failed to load projects", description: "This is likely a security rules issue." });
+                setLoadingProjects(false);
+            }
+        );
+        return () => unsubscribe();
+    }, [authUser, toast]);
 
-        setLoading(true);
-
-        const projectsRef = collection(db, "projects");
-        const projectsQuery = query(projectsRef);
-
-        const unsubscribeProjects = onSnapshot(projectsQuery, (projectsSnapshot) => {
-            const projectsData = projectsSnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    ...data,
-                    createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
-                    deadline: data.deadline?.toDate().toISOString() || new Date().toISOString(),
-                } as Project;
-            });
-
-            const usersRef = collection(db, "users");
-            const usersQuery = query(usersRef);
-
-            const unsubscribeUsers = onSnapshot(usersQuery, (usersSnapshot) => {
-                const usersData = usersSnapshot.docs.map(doc => ({
+    // Effect for fetching users
+    useEffect(() => {
+        if (!authUser) {
+            setLoadingUsers(false);
+            return;
+        }
+        const usersQuery = query(collection(db, "users"));
+        const unsubscribe = onSnapshot(usersQuery,
+            (snapshot) => {
+                const usersData = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
                 })) as UserProfile[];
-                
-                const userMap = new Map(usersData.map(u => [u.id, u]));
-                const projectsByUser: Record<string, { user: UserProfile; projects: Project[] }> = {};
-
-                for (const project of projectsData) {
-                    const projectUser = userMap.get(project.userId);
-                    if (projectUser) {
-                        if (!projectsByUser[project.userId]) {
-                            projectsByUser[project.userId] = { user: projectUser, projects: [] };
-                        }
-                        projectsByUser[project.userId].projects.push(project);
-                    }
-                }
-                
-                const groupedData = Object.values(projectsByUser).filter(group => group.projects.length > 0);
-                
-                groupedData.forEach(group => {
-                    group.projects.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                });
-
-                groupedData.sort((a, b) => {
-                    const lastA = new Date(a.projects[0].createdAt).getTime();
-                    const lastB = new Date(b.projects[0].createdAt).getTime();
-                    return lastB - lastA;
-                });
-
-                setGroupedProjects(groupedData);
-                setLoading(false);
-            }, (error) => {
+                setUsers(usersData);
+                setLoadingUsers(false);
+            },
+            (error) => {
                 console.error("Error fetching users:", error);
                 toast({ variant: "destructive", title: "Failed to load users", description: "This might be a permission issue." });
-                setLoading(false);
-            });
+                setLoadingUsers(false);
+            }
+        );
+        return () => unsubscribe();
+    }, [authUser, toast]);
+    
+    const groupedProjects = useMemo(() => {
+        if (loadingProjects || loadingUsers) return [];
+
+        const userMap = new Map(users.map(u => [u.id, u]));
+        const projectsByUser: Record<string, GroupedProject> = {};
+
+        for (const project of projects) {
+            const projectUser = userMap.get(project.userId) || {
+                id: project.userId,
+                firstName: 'Client Profile',
+                lastName: `Pending`,
+                email: 'No profile created yet'
+            };
             
-            return () => unsubscribeUsers(); // This should be handled in the main cleanup
-        }, (error) => {
-            console.error("Error fetching projects:", error);
-            toast({ variant: "destructive", title: "Failed to load projects", description: "This is likely a security rules issue." });
-            setLoading(false);
+            if (!projectsByUser[project.userId]) {
+                projectsByUser[project.userId] = { user: projectUser, projects: [] };
+            }
+            projectsByUser[project.userId].projects.push(project);
+        }
+        
+        const groupedData = Object.values(projectsByUser).filter(group => group.projects.length > 0);
+        
+        groupedData.forEach(group => {
+            group.projects.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         });
 
-        // The onSnapshot doesn't return a promise, so we can't chain .then on it.
-        // We'll manage the user subscription inside the project subscription.
-        // A more robust solution might use two separate useEffects, but this is fine for this case.
+        groupedData.sort((a, b) => {
+            const lastA = new Date(a.projects[0].createdAt).getTime();
+            const lastB = new Date(b.projects[0].createdAt).getTime();
+            return lastB - lastA;
+        });
 
-        return () => {
-            unsubscribeProjects();
-            // How to unsubscribe users? We can't access it here. A better pattern is needed for production.
-            // For now, it will re-subscribe on each project change, which is acceptable.
-        };
-    }, [authUser, toast]);
-
+        return groupedData;
+    }, [projects, users, loadingProjects, loadingUsers]);
+    
+    const loading = loadingProjects || loadingUsers;
 
     if (loading) {
         return <Loader />;
     }
 
-    const totalProjects = groupedProjects.reduce((acc, group) => acc + group.projects.length, 0);
+    const totalProjects = projects.length;
+    const totalClients = groupedProjects.length;
 
     return (
         <Card className="bg-secondary/20 border-border/50 shadow-lg">
             <CardHeader>
                 <CardTitle>Project Overview</CardTitle>
                 <CardDescription>
-                    {totalProjects} project(s) found across {groupedProjects.length} client(s).
+                    {totalProjects} project(s) found across {totalClients} client(s).
                 </CardDescription>
             </CardHeader>
             <CardContent>
