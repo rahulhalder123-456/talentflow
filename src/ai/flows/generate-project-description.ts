@@ -14,7 +14,7 @@ import { GenerateDescriptionInputSchema, GenerateDescriptionOutputSchema, type G
 // The prompt is defined once at the module level for efficiency.
 const descriptionGeneratorPrompt = ai.definePrompt({
     name: 'projectDescriptionGenerator',
-    model: 'googleai/gemini-pro',
+    model: 'gemini-1.5-flash-latest',
     input: { schema: GenerateDescriptionInputSchema },
     output: { schema: GenerateDescriptionOutputSchema },
     prompt: `You are an expert project manager and proposal writer. Based on the following project details, write a comprehensive and compelling project description that would be suitable for a freelance marketplace.

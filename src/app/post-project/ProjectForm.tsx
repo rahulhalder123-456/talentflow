@@ -101,16 +101,16 @@ export function ProjectForm() {
         description: "The project description has been filled in for you.",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating description:", error);
       let errorMessage = "An unexpected error occurred. Please check the server logs.";
-      if (error instanceof Error) {
-          if (error.message.includes('400 Bad Request') || error.message.includes('API key not valid')) {
-              errorMessage = "Your Google AI API key appears to be invalid or missing. Please check your .env.local file and restart the server.";
-          } else if (error.message.includes('404 Not Found') || error.message.includes('is not found for API version')) {
-              errorMessage = "The AI model was not found. This can happen if the model name is incorrect or your API key is restricted to a specific region.";
-          } else if (error.message.includes('NOT_FOUND')) {
-              errorMessage = "The specified AI model was not found by Genkit. Check the model name in the flow file."
+      if (error.message) {
+          if (error.message.includes('API key not valid') || error.message.includes('API_KEY_INVALID')) {
+              errorMessage = "Your Google AI API key is invalid or missing. Please check your .env.local file and restart the server.";
+          } else if (error.message.includes('404 Not Found') || error.message.includes('NOT_FOUND')) {
+              errorMessage = "The AI model was not found. This can happen if the model name is incorrect or not available in your region.";
+          } else {
+              errorMessage = error.message;
           }
       }
       toast({
@@ -302,6 +302,7 @@ export function ProjectForm() {
                       onClick={handleGenerateClick}
                       disabled={isGenerating}
                       variant="secondary"
+                      className="bg-accent/80 text-accent-foreground hover:bg-accent"
                     >
                       {isGenerating ? (
                         <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
