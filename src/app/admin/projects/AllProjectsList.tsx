@@ -178,7 +178,7 @@ export function AllProjectsList() {
                                                     <TableHead>Status</TableHead>
                                                     <TableHead>Budget</TableHead>
                                                     <TableHead>Deadline</TableHead>
-                                                    <TableHead className="text-right pr-6">Actions</TableHead>
+                                                    <TableHead className="text-right pr-9">Actions</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
