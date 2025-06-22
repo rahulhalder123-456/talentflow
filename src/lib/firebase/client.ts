@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, doc, getDoc, setDoc, deleteDoc, onSnapshot, orderBy } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
 // --- Firebase Configuration ---
@@ -56,6 +56,10 @@ export {
   auth,
   db,
   storage,
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
   analyticsPromise,
   googleProvider,
   githubProvider,

@@ -12,6 +12,17 @@ import { CtaSection } from '@/components/landing/CtaSection';
 import { db, collection, getDocs, query, orderBy } from "@/lib/firebase/client";
 import type { FeaturedProject } from '@/features/landing/types';
 
+// Server-side image URL sanitizer
+const getSanitizedImageUrl = (url: string | undefined) => {
+    const validStarts = ['https://placehold.co', 'https://storage.googleapis.com'];
+    if (url && validStarts.some(start => url.startsWith(start))) {
+        return url;
+    }
+    // Return a placeholder for any invalid or missing URL
+    return 'https://placehold.co/600x400.png';
+};
+
+
 async function getFeaturedProjects(): Promise<FeaturedProject[]> {
     try {
         const projectsRef = collection(db, "featuredProjects");
@@ -24,7 +35,7 @@ async function getFeaturedProjects(): Promise<FeaturedProject[]> {
                 id: doc.id,
                 title: data.title,
                 description: data.description,
-                imageUrl: data.imageUrl,
+                imageUrl: getSanitizedImageUrl(data.imageUrl),
                 projectType: data.projectType,
                 projectUrl: data.projectUrl,
                 appStoreUrl: data.appStoreUrl,

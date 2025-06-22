@@ -23,7 +23,7 @@ import { revalidateFeaturedWorkPaths } from "./actions";
 import { FeaturedProjectSchema, type FeaturedProjectFormValues } from "@/features/landing/types";
 import { useRouter } from "next/navigation";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { db, collection, addDoc, serverTimestamp } from '@/lib/firebase/client';
+import { db, collection, addDoc, serverTimestamp, getStorage, ref, uploadBytes, getDownloadURL } from '@/lib/firebase/client';
 
 
 export function FeaturedWorkForm() {
@@ -37,10 +37,10 @@ export function FeaturedWorkForm() {
             projectType: undefined,
             title: "",
             description: "",
-            imageUrl: "",
             projectUrl: "",
             appStoreUrl: "",
             playStoreUrl: "",
+            imageFile: undefined,
         },
     });
 
@@ -49,13 +49,25 @@ export function FeaturedWorkForm() {
     const onSubmit = async (values: FeaturedProjectFormValues) => {
         setIsSubmitting(true);
         try {
-            // Perform the database write on the client side to ensure auth context
+            // 1. Upload the image file to Firebase Storage
+            const storage = getStorage();
+            const file = values.imageFile;
+            // Use a unique name for the file to avoid collisions
+            const storageRef = ref(storage, `featured-work/${Date.now()}-${file.name}`);
+            const uploadSnapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(uploadSnapshot.ref);
+
+            // 2. Prepare data for Firestore (excluding the file object)
+            const { imageFile, ...firestoreData } = values;
+
+            // 3. Add the project to Firestore with the new image URL
             await addDoc(collection(db, 'featuredProjects'), {
-                ...values,
+                ...firestoreData,
+                imageUrl: downloadURL, // Use the URL from storage
                 createdAt: serverTimestamp(),
             });
             
-            // Trigger a server-side cache revalidation
+            // 4. Trigger a server-side cache revalidation
             await revalidateFeaturedWorkPaths();
 
             toast({
@@ -114,19 +126,28 @@ export function FeaturedWorkForm() {
                                 </FormItem>
                             )}
                         />
+
                         <FormField
                             control={form.control}
-                            name="imageUrl"
-                            render={({ field }) => (
+                            name="imageFile"
+                            render={({ field: { onChange, ...fieldProps } }) => (
                                 <FormItem>
-                                    <FormLabel>Image URL</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="https://..." {...field} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Provide a direct link to the project's showcase image (e.g., from a CDN or storage bucket).
-                                    </FormDescription>
-                                    <FormMessage />
+                                <FormLabel>Project Showcase Image</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...fieldProps}
+                                        type="file"
+                                        accept="image/png, image/jpeg, image/webp"
+                                        onChange={(event) => {
+                                            onChange(event.target.files && event.target.files[0]);
+                                        }}
+                                        className="pt-2 file:text-foreground"
+                                    />
+                                </FormControl>
+                                <FormDescription>
+                                    Upload a showcase image for the project (PNG, JPG, or WEBP, max 5MB).
+                                </FormDescription>
+                                <FormMessage />
                                 </FormItem>
                             )}
                         />

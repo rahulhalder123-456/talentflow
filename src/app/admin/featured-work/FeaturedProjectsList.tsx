@@ -5,7 +5,7 @@ import * as React from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Link as LinkIcon, AppWindow, Apple, Play } from 'lucide-react';
+import { Trash2, Link as LinkIcon, Apple, Play } from 'lucide-react';
 import type { FeaturedProject } from '@/features/landing/types';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';

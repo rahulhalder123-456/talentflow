@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -30,13 +31,6 @@ interface FeaturedWorkSectionProps {
 
 const MotionCard = motion(Card);
 
-const getSanitizedImageUrl = (url: string | undefined) => {
-    // If the URL is missing or points to a chatgpt conversation, use a placeholder.
-    if (!url || url.includes('chatgpt.com')) {
-      return 'https://placehold.co/600x400.png';
-    }
-    return url;
-};
 
 // A smaller card component for the grid
 const ProjectCard = ({ project }: { project: FeaturedProject }) => (
@@ -46,7 +40,7 @@ const ProjectCard = ({ project }: { project: FeaturedProject }) => (
     >
         <div className="relative overflow-hidden">
             <Image
-                src={getSanitizedImageUrl(project.imageUrl)}
+                src={project.imageUrl}
                 alt={project.title}
                 width={600}
                 height={400}
@@ -127,7 +121,7 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
                   <Card className="grid md:grid-cols-2 overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-xl transition-all duration-300 hover:shadow-primary/20">
                       <div className="relative overflow-hidden">
                           <Image
-                              src={getSanitizedImageUrl(heroProject.imageUrl)}
+                              src={heroProject.imageUrl}
                               alt={heroProject.title}
                               width={800}
                               height={600}
