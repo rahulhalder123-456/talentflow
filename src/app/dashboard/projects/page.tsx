@@ -4,7 +4,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
-import { getProjectsByUserId } from "@/app/projects/actions";
 import { Header } from "@/components/common/Header";
 import { Loader } from "@/components/common/Loader";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Briefcase, PlusCircle } from "lucide-react";
 import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from "@/components/ui/skeleton";
+import { db, collection, query, where, onSnapshot } from "@/lib/firebase/client";
 
 type Project = {
     id: string;
@@ -32,17 +32,29 @@ export default function ProjectsPage() {
 
     useEffect(() => {
         if (user) {
-            const fetchProjects = async () => {
-                setLoading(true);
-                const result = await getProjectsByUserId(user.uid);
-                if (result.success) {
-                    // Sort projects by creation date, newest first
-                    const sortedProjects = result.projects.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                    setProjects(sortedProjects as Project[]);
-                }
+            setLoading(true);
+            const q = query(collection(db, "projects"), where("userId", "==", user.uid));
+            
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const projectsData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+                        deadline: data.deadline?.toDate().toISOString() || new Date().toISOString(),
+                    } as Project;
+                });
+                
+                const sortedProjects = projectsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                setProjects(sortedProjects);
                 setLoading(false);
-            };
-            fetchProjects();
+            }, (error) => {
+                console.error("Error fetching real-time projects:", error);
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
         } else if (!authLoading) {
             setLoading(false);
         }
