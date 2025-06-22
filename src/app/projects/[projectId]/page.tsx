@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProjectDetailsPage() {
     const { user, loading: authLoading } = useAuth();
@@ -466,4 +467,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
