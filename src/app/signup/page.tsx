@@ -17,8 +17,8 @@ import { Header } from "@/components/common/Header";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createUserWithEmailAndPassword, type AuthProvider as FirebaseAuthProvider } from "firebase/auth";
-import { auth, googleProvider, githubProvider, microsoftProvider, socialSignIn } from "@/lib/firebase/client";
+import { createUserWithEmailAndPassword, updateProfile, type AuthProvider as FirebaseAuthProvider } from "firebase/auth";
+import { auth, googleProvider, githubProvider, microsoftProvider, socialSignIn, db, doc, setDoc, getDoc } from "@/lib/firebase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -63,7 +63,22 @@ export default function SignUpPage() {
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      // Update Firebase Auth profile
+      await updateProfile(user, {
+        displayName: `${data.firstName} ${data.lastName}`.trim()
+      });
+
+      // Create user document in Firestore
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, { 
+          firstName: data.firstName, 
+          lastName: data.lastName, 
+          email: user.email 
+      });
+
       toast({
         title: "Account Created!",
         description: "You have successfully signed up.",
@@ -83,7 +98,27 @@ export default function SignUpPage() {
   const handleSocialLogin = async (provider: FirebaseAuthProvider, providerName: string) => {
     setSocialLoading(providerName);
     try {
-      await socialSignIn(provider);
+      const userCredential = await socialSignIn(provider);
+      const user = userCredential.user;
+      const userRef = doc(db, 'users', user.uid);
+
+      // Check if the user document already exists
+      const docSnap = await getDoc(userRef);
+
+      if (!docSnap.exists()) {
+        // Create user document in Firestore from social provider info
+        const displayName = user.displayName || '';
+        const nameParts = displayName.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        await setDoc(userRef, {
+            firstName: firstName,
+            lastName: lastName,
+            email: user.email,
+        });
+      }
+
       toast({
         title: "Account Created!",
         description: "You have successfully signed up.",

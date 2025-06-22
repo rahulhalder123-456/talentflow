@@ -18,7 +18,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInWithEmailAndPassword, type AuthProvider as FirebaseAuthProvider } from "firebase/auth";
-import { auth, googleProvider, githubProvider, microsoftProvider, socialSignIn } from "@/lib/firebase/client";
+import { auth, googleProvider, githubProvider, microsoftProvider, socialSignIn, db, doc, setDoc, getDoc } from "@/lib/firebase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -81,7 +81,26 @@ export default function SignInPage() {
   const handleSocialLogin = async (provider: FirebaseAuthProvider, providerName: string) => {
     setSocialLoading(providerName);
     try {
-      await socialSignIn(provider);
+      const userCredential = await socialSignIn(provider);
+      const user = userCredential.user;
+      const userRef = doc(db, 'users', user.uid);
+
+      // Check if the user document already exists, if not, create it.
+      // This handles the case where a user authenticates but doesn't have a profile doc yet.
+      const docSnap = await getDoc(userRef);
+      if (!docSnap.exists()) {
+        const displayName = user.displayName || '';
+        const nameParts = displayName.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        await setDoc(userRef, {
+            firstName: firstName,
+            lastName: lastName,
+            email: user.email,
+        }, { merge: true });
+      }
+
       toast({
         title: "Success!",
         description: "You have successfully signed in.",
