@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { continueConversation, type ChatbotInput } from '@/ai/flows/chatbot-flow';
+import { continueConversation } from '@/ai/flows/chatbot-flow';
+import type { ChatbotInput } from '@/features/chatbot/types';
 
 type Message = {
     role: 'user' | 'ai';
@@ -48,13 +49,15 @@ export default function ChatbotPage() {
         if (!input.trim() || isLoading) return;
 
         const userMessage: Message = { role: 'user', text: input };
+        const currentHistory = [...messages]; // Capture history before adding new message
+
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
             const aiInput: ChatbotInput = {
-                history: messages,
+                history: currentHistory, // Use captured history
                 message: input,
             };
 
