@@ -5,86 +5,73 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // --- Helper Functions ---
-    // These functions make the rules easier to read and maintain.
-
-    // Is the user signed in?
-    function isAuth() {
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return request.auth.uid in get(/databases/$(database)/documents/config/admins).data.uids;
+    }
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    // Does the incoming request's user ID match the provided userId?
-    function isOwner(userId) {
-      return isAuth() && request.auth.uid == userId;
-    }
-
-    // Is the user an admin? Checks if their UID is in the admin list.
-    // This requires the /config/admins document to be readable.
-    function isAdmin() {
-      return isAuth() && get(/databases/$(database)/documents/config/admins).data.uids.hasAny([request.auth.uid]);
-    }
-
-    // --- Collection Rules ---
-
-    // User Profiles (`users/{userId}`)
-    // - Users can read and write to their own profile.
-    // - Admins can read any user's profile (to see names, etc.).
-    match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId);
-    }
-
-    // Projects (`projects/{projectId}`)
-    // - Users can create projects for themselves.
-    // - Users can read/update their own projects.
-    // - Admins can read/update any project.
+    // --- Projects Collection ---
     match /projects/{projectId} {
-      allow read, update: if isOwner(resource.data.userId) || isAdmin();
-      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn(); // Any signed-in user can view any project details.
+      allow create: if isSignedIn(); // Any signed-in user can post a project.
+      allow update: if isOwner(resource.data.userId) || isAdmin(); // Only owner or admin can update.
+      allow delete: if isAdmin(); // Only admin can delete.
 
-      // Time Entries (`projects/{projectId}/timeEntries/{entryId}`)
-      // - Only admins can manage time entries for a project.
+      // --- Time Entries Subcollection ---
       match /timeEntries/{entryId} {
-          allow read, write: if isAdmin();
+        // Allow read for the project owner or any admin.
+        allow read: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.userId) || isAdmin();
+        // Allow write only for admins.
+        allow write: if isAdmin();
       }
     }
 
-    // Reviews (`reviews/{reviewId}`)
-    // - Reviews are public to read (for testimonials).
-    // - Users can create reviews for projects they own.
-    // - Admins can manage all reviews.
-    match /reviews/{reviewId} {
-        allow read: if true;
-        allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
-        allow update, delete: if isAdmin();
-    }
-
-    // Featured Work (`featuredProjects/{projectId}`)
-    // - Featured projects are public to read (for the showcase).
-    // - Only admins can manage the showcase.
-    match /featuredProjects/{projectId} {
-      allow read: if true;
-      allow write: if isAdmin(); // create, update, delete
+    // --- Users Collection ---
+    match /users/{userId} {
+      // Users can read/write their own profile. Admins can read/write any profile.
+      allow read, write: if isOwner(userId) || isAdmin();
     }
     
-    // Support Chats (`chats/{chatId}`)
-    // - A user can access their own support chat.
-    // - Admins can access all support chats.
-    match /chats/{chatId} {
-      allow read, write: if (isAuth() && chatId == 'support_' + request.auth.uid) || isAdmin();
-
-      // Messages (`chats/{chatId}/messages/{messageId}`)
-      // - Same permissions as the parent chat room.
-      match /messages/{messageId} {
-        allow read, write: if (isAuth() && chatId == 'support_' + request.auth.uid) || isAdmin();
-      }
-    }
-    
-    // Admin Configuration (`config/admins`)
-    // - Any signed-in user can read this document to check their own admin status.
-    // - ONLY an existing admin can update the list of admins.
+    // --- Config Collection ---
     match /config/admins {
-        allow get: if isAuth();
-        allow update: if isAdmin();
+      // Any signed-in user can read the list of admins to check for admin UI.
+      allow get: if isSignedIn();
+      // Only an existing admin can modify the list of admins.
+      allow write: if isAdmin();
+    }
+    
+    // --- Featured Projects Collection ---
+    match /featuredProjects/{projectId} {
+        // Public can view, only admins can manage.
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+
+    // --- Reviews Collection ---
+    match /reviews/{reviewId} {
+        // Public can view reviews.
+        allow read: if true;
+        // Only the user who created the project can create a review for it.
+        allow create: if isOwner(request.resource.data.userId);
+        // Only an admin can delete a review.
+        allow delete: if isAdmin();
+    }
+
+    // --- Chats Collection ---
+    match /chats/{chatId} {
+      // Participants are the client user and the admin user ID.
+      // e.g. chatId is `support_CLIENT_UID`
+      // A user can access a chat if their UID is in the chatId.
+      allow read, write: if isSignedIn() && (request.auth.uid in string(chatId).split('_') || isAdmin());
+      
+      match /messages/{messageId} {
+          allow read, write: if isSignedIn() && (request.auth.uid in string(chatId).split('_') || isAdmin());
+      }
     }
   }
 }
