@@ -398,7 +398,7 @@ export default function ProjectDetailsPage() {
                             </CardFooter>
                         )}
 
-                        {isUserAdmin && project.status === 'In Progress' && (
+                        {isUserAdmin && project.status !== 'Closed' && (
                             <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">Admin Action:</p>
                                 <Button onClick={handleCloseProject} disabled={isClosing} variant="destructive">
