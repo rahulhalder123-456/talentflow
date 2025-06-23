@@ -4,78 +4,72 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Admin Config ---
-    // Anyone can read the list of admin UIDs.
-    // Only an existing admin can modify the list of admins.
+    // Helper function to check if the user is an admin.
+    // This requires that any authenticated user can `get` the `/config/admins` document.
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/config/admins).data.uids.hasAny([request.auth.uid]);
+    }
+    
+    // This document stores the list of admin UIDs.
     match /config/admins {
-      get: if true;
-      write: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/config/admins).data.uids;
+      // Any authenticated user can read this document. This is required for the `isAdmin()` function to work.
+      allow get: if request.auth != null;
+      // Only an existing admin can modify the list of admins.
+      allow write: if isAdmin();
     }
 
-    // --- Users ---
-    // Users can read their own profile.
-    // Users can create their own profile.
-    // Users can update their own profile.
-    // Admins can read any user's profile.
-    match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // --- Projects ---
-    // Users can read projects they own.
-    // Admins can read any project.
-    // Logged-in users can create projects.
-    // Project owners and admins can update projects.
-    match /projects/{projectId} {
-        allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
-        allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-        allow update: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-    
-    // Time entries can be read by project owner or admin
-    // Time entries can be created/updated by admin
-    match /projects/{projectId}/timeEntries/{entryId} {
-        allow read: if request.auth != null && (get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid || isAdmin());
-        allow write: if request.auth != null && isAdmin();
-    }
-    
-    // --- Featured Projects (Showcase) ---
-    // Anyone can read featured projects for the public homepage.
-    // Only admins can create, update, or delete them.
+    // Featured projects are public for the homepage showcase.
     match /featuredProjects/{projectId} {
-      allow read: if true;
-      allow write: if request.auth != null && isAdmin();
+      allow read: if true; // 'read' is a shorthand for 'get' and 'list'
+      allow write: if isAdmin();
     }
 
-    // --- Reviews ---
-    // Reviews are public to read.
-    // Logged-in users can create reviews for projects they own.
+    // User-specific data.
+    match /users/{userId} {
+      // A user can read/write their own data. Admins can read anyone's data.
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if request.auth.uid == userId;
+
+      // Sub-collection for payment methods.
+      match /paymentMethods/{methodId} {
+        allow read, write, delete: if request.auth.uid == userId;
+      }
+    }
+
+    // Projects data.
+    match /projects/{projectId} {
+      // Users can get their own project. Admins can get any project.
+      allow get: if (request.auth.uid == resource.data.userId || isAdmin());
+      // Authenticated users can list projects (e.g., for their dashboard).
+      // Note: Secure list queries require corresponding Firestore query constraints in the app.
+      allow list: if request.auth != null; 
+      // Any authenticated user can create a project for themselves.
+      allow create: if request.auth.uid == request.resource.data.userId;
+      // Users can update their own project. Admins can update any project.
+      allow update: if (request.auth.uid == resource.data.userId || isAdmin());
+
+      // Sub-collection for time tracking on projects.
+      match /timeEntries/{entryId} {
+        allow read, write: if isAdmin();
+      }
+    }
+    
+    // Reviews are public.
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-    
-    // --- Chats & Messages ---
-    // Chat participants and admins can access messages.
-    match /chats/{chatId} {
-        allow get: if request.auth != null && (request.auth.uid in resource.data.participants || isAdmin());
-        
-        // This covers creating the chat document when the first message is sent
-        allow list, write: if request.auth != null && (request.auth.uid == getChatClientUid(chatId) || isAdmin());
-        
-        match /messages/{messageId} {
-            allow read, write: if request.auth != null && (request.auth.uid == getChatClientUid(chatId) || isAdmin());
-        }
+      allow create: if request.auth != null;
     }
 
-    // --- Helper Functions ---
-    function isAdmin() {
-      return request.auth != null && request.auth.uid in get(/databases/$(database)/documents/config/admins).data.uids;
-    }
-    
-    function getChatClientUid(chatId) {
-        return chatId.replace('support_', '');
+    // Support chats between users and admins.
+    match /chats/{chatId} {
+      // A user can access a chat if their UID is in the chat document ID or if they are an admin.
+      allow read, write: if (request.auth.uid in string(chatId).split('_')) || isAdmin();
+        
+      // Messages are a sub-collection of chats.
+      match /messages/{messageId} {
+        allow read, write: if (request.auth.uid in string(chatId).split('_')) || isAdmin();
+      }
     }
   }
 }
