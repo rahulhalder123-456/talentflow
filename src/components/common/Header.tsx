@@ -19,11 +19,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect } from 'react';
 
 export function Header() {
   const { user } = useAuth();
   const router = useRouter();
-  const isUserAdmin = user ? isAdmin(user.uid) : false;
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+        isAdmin(user.uid).then(setIsUserAdmin);
+    } else {
+        setIsUserAdmin(false);
+    }
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut(auth);

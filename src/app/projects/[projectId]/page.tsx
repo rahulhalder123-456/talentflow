@@ -51,7 +51,7 @@ export default function ProjectDetailsPage() {
             return;
         }
 
-        setIsUserAdmin(isAdmin(user.uid));
+        isAdmin(user.uid).then(setIsUserAdmin);
 
         const fetchProject = async () => {
             if (!projectId) {

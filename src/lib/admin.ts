@@ -1,38 +1,50 @@
+
+import { db, doc, getDoc } from '@/lib/firebase/client';
+
+// Use a simple client-side cache to avoid repeated lookups within a short time.
+let adminUidsCache: string[] | null = null;
+let cacheTimestamp: number | null = null;
+const CACHE_DURATION_MS = 60 * 1000; // 1 minute
+
 /**
- * -----------------------------------------------------------------------------
- * 🔴 ADMIN MANAGEMENT 🔴
- * -----------------------------------------------------------------------------
- * This file controls which users have administrative privileges in the app.
- * To add a new admin, you need to do two things:
- *
- * 1.  Find the new admin's Firebase User ID (UID).
- *     - Go to your Firebase Project > Authentication > Users tab.
- *     - Copy the UID for the user you want to make an admin.
- *
- * 2.  Add the UID to the `ADMIN_UIDS` array below.
- *     - Paste the new UID into the array, separated by a comma.
- *     - Example: ['uid-of-first-admin', 'uid-of-second-admin']
- *
- * 3.  Add the same UID to your `firestore.rules` file.
- *     - This is a CRITICAL step for database security.
+ * Fetches the list of admin UIDs from the 'config/admins' document in Firestore.
+ * Caches the result for 1 minute to reduce reads.
  */
+export async function getAdminUids(): Promise<string[]> {
+    const now = Date.now();
+    if (adminUidsCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION_MS)) {
+        return adminUidsCache;
+    }
 
-const ADMIN_UIDS = [
-  'ToBDMq0KVIgnLQCEeFzxLzB4HUj1', // This is a placeholder for the initial admin
-  // 'ADD_YOUR_NEW_ADMIN_UID_HERE',
-];
+    try {
+        const adminDocRef = doc(db, 'config', 'admins');
+        const docSnap = await getDoc(adminDocRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            adminUidsCache = data.uids || [];
+            cacheTimestamp = now;
+            return adminUidsCache as string[];
+        }
+        console.warn("Admin config document not found in Firestore. See README for setup instructions. No users will have admin rights.");
+        return [];
+    } catch (error) {
+        console.error("Error fetching admin UIDs from Firestore:", error);
+        // In case of error, return empty to prevent accidental privilege grants
+        return [];
+    }
+}
 
 /**
- * Checks if a user is an administrator based on the `ADMIN_UIDS` list.
- * This function is used on the client-side to control UI elements,
- * like showing the "Admin Dashboard" link.
- *
+ * Asynchronously checks if a user is an admin by checking their UID against
+ * the list stored in Firestore.
  * @param userId The Firebase UID of the user to check.
- * @returns {boolean} True if the user is an admin, false otherwise.
+ * @returns Promise<boolean> True if the user is an admin, false otherwise.
  */
-export function isAdmin(userId: string | undefined): boolean {
+export async function isAdmin(userId: string | undefined): Promise<boolean> {
   if (!userId) {
     return false;
   }
-  return ADMIN_UIDS.includes(userId);
+  const adminUids = await getAdminUids();
+  return adminUids.includes(userId);
 }

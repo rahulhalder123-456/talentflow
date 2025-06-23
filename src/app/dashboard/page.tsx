@@ -29,7 +29,7 @@ export default function DashboardPage() {
     }
 
     if (user) {
-      setIsUserAdmin(isAdmin(user.uid));
+      isAdmin(user.uid).then(setIsUserAdmin);
 
       const q = query(collection(db, "projects"), where("userId", "==", user.uid));
       

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -21,12 +22,17 @@ export default function AdminLayout({
       if (!user) {
         // Not logged in, redirect to sign-in page
         router.replace('/signin');
-      } else if (!isAdmin(user.uid)) {
-        // Logged in but not an admin, redirect to client dashboard
-        router.replace('/dashboard');
       } else {
-        // User is an authenticated admin
-        setIsAuthorized(true);
+        // Asynchronously check if the user is an admin
+        isAdmin(user.uid).then(isUserAdmin => {
+          if (!isUserAdmin) {
+            // Logged in but not an admin, redirect to client dashboard
+            router.replace('/dashboard');
+          } else {
+            // User is an authenticated admin
+            setIsAuthorized(true);
+          }
+        });
       }
     }
   }, [user, authLoading, router]);
