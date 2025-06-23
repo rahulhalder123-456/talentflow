@@ -13,6 +13,7 @@ import { ArrowLeft, Briefcase, PlusCircle } from "lucide-react";
 import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from "@/components/ui/skeleton";
 import { db, collection, query, where, onSnapshot } from "@/lib/firebase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type Project = {
     id: string;
@@ -29,6 +30,7 @@ export default function ProjectsPage() {
     const { user, loading: authLoading } = useAuth();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         if (user) {
@@ -51,6 +53,11 @@ export default function ProjectsPage() {
                 setLoading(false);
             }, (error) => {
                 console.error("Error fetching real-time projects:", error);
+                toast({
+                    variant: "destructive",
+                    title: "Could Not Load Projects",
+                    description: "A permissions error occurred. Please ensure your Firestore security rules are up-to-date in the Firebase Console.",
+                });
                 setLoading(false);
             });
 
@@ -58,7 +65,7 @@ export default function ProjectsPage() {
         } else if (!authLoading) {
             setLoading(false);
         }
-    }, [user, authLoading]);
+    }, [user, authLoading, toast]);
 
     if (authLoading) {
         return <Loader />;
