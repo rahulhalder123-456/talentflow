@@ -58,7 +58,7 @@ export function AllUsersList() {
                 if (docSnap.exists()) {
                     setAdminUids(docSnap.data().uids || []);
                 } else {
-                    toast({ variant: "destructive", title: "Admin Config Missing", description: "The admin configuration document was not found in Firestore." });
+                    toast({ variant: "destructive", title: "Admin Config Missing", description: "The admin configuration document was not found. Please follow the setup instructions in README.md." });
                 }
                 setLoading(false);
             },
