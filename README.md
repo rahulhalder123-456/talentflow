@@ -1,6 +1,6 @@
 # Talent Flow
 
-## 🔴 ACTION REQUIRED: Configure API Keys, Database & Security Rules
+## 🔴 ACTION REQUIRED: Configure API Keys & Security Rules
 
 This app will not run correctly until you perform these **required manual steps**.
 
@@ -29,34 +29,9 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
 RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
 ```
 
-### 2. Set up Firestore Database & Security Rules
+### 2. Update Firestore Security Rules
 
 This is a **critical one-time setup** to make your app work correctly.
-
-#### Step 2a: Create the Admin Configuration
-
-The new user management system requires a special document in your database to store who is an admin. You must create this manually to give yourself the first admin account.
-
-1.  **Find Your User ID (UID):**
-    -   Go to the [Firebase Console](https://console.firebase.google.com/) and open your project.
-    -   Navigate to **Build > Authentication**.
-    -   In the "Users" tab, find your account (you may need to sign into your app once for it to appear).
-    -   Copy the **User UID** for your account. This is your unique ID.
-
-2.  **Create the `admins` Document:**
-    -   Navigate to **Build > Firestore Database**.
-    -   Click **+ Start collection**.
-    -   For **Collection ID**, enter `config`. Click **Next**.
-    -   For **Document ID**, enter `admins`.
-    -   Under **Fields**, add the following:
-        -   **Field name:** `uids`
-        -   **Field type:** `array`
-        -   **Field value:** Click "Add value", paste your **User UID** from step 1 into the `value` box, and press Enter.
-    -   Click **Save**.
-
-You have now made yourself the first admin! You can now add other admins from the "Manage Users" page inside your app.
-
-#### Step 2b: Update Firestore Security Rules
 
 1.  **Go to Firestore Rules**: In the Firestore Database section, click the **Rules** tab.
 2.  **Copy & Paste**: A file named `firestore.rules` exists in your project's root directory. Open this file, copy its **entire contents**, and paste them into the editor in the Firebase Console, replacing any existing rules.
