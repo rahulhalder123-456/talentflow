@@ -25,6 +25,7 @@ export type Project = {
     paymentType: string;
     desiredSkills: string;
     userId: string;
+    amountPaid?: number;
 };
 
 // --- Time Tracking ---
@@ -96,4 +97,3 @@ export const ProjectAnalysisOutputSchema = z.object({
   analysis: z.array(AnalyzedProjectSchema),
 });
 export type ProjectAnalysisOutput = z.infer<typeof ProjectAnalysisOutputSchema>;
-

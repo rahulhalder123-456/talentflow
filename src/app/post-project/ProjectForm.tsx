@@ -139,6 +139,7 @@ export function ProjectForm() {
             userId: user.uid,
             status: 'Open',
             createdAt: serverTimestamp(),
+            amountPaid: 0,
         });
         
         // After successful creation, revalidate the cache on the server
