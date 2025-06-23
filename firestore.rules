@@ -1,76 +1,98 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
     // --- Helper Functions ---
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
     function isAdmin() {
-      return request.auth.uid in get(/databases/$(database)/documents/config/admins).data.uids;
-    }
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // --- Projects Collection ---
-    match /projects/{projectId} {
-      allow read: if isSignedIn(); // Any signed-in user can view any project details.
-      allow create: if isSignedIn(); // Any signed-in user can post a project.
-      allow update: if isOwner(resource.data.userId) || isAdmin(); // Only owner or admin can update.
-      allow delete: if isAdmin(); // Only admin can delete.
-
-      // --- Time Entries Subcollection ---
-      match /timeEntries/{entryId} {
-        // Allow read for the project owner or any admin.
-        allow read: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.userId) || isAdmin();
-        // Allow write only for admins.
-        allow write: if isAdmin();
-      }
-    }
-
-    // --- Users Collection ---
-    match /users/{userId} {
-      // Users can read/write their own profile. Admins can read/write any profile.
-      allow read, write: if isOwner(userId) || isAdmin();
+      // An admin's UID must exist in the 'uids' array of the 'admins' document.
+      return request.auth != null && request.auth.uid in get(/databases/$(database)/documents/config/admins).data.uids;
     }
     
-    // --- Config Collection ---
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // --- Config ---
     match /config/admins {
-      // Any signed-in user can read the list of admins to check for admin UI.
-      allow get: if isSignedIn();
+      // Any authenticated user can read the list of admins to check for admin status on the client.
+      allow read: if request.auth != null;
       // Only an existing admin can modify the list of admins.
       allow write: if isAdmin();
     }
+
+    // --- Users ---
+    match /users/{userId} {
+      // A user can GET their own profile. Admins can GET any profile.
+      allow get: if isOwner(userId) || isAdmin();
+      // Admins can LIST all users (for the user management page).
+      allow list: if isAdmin();
+      // A user can CREATE or UPDATE their own profile.
+      allow write: if isOwner(userId);
+    }
     
-    // --- Featured Projects Collection ---
-    match /featuredProjects/{projectId} {
-        // Public can view, only admins can manage.
+    // --- Payment Methods (Subcollection) ---
+    match /users/{userId}/paymentMethods/{methodId} {
+        // A user can manage their own payment methods.
+        allow read, write, delete: if isOwner(userId);
+    }
+
+    // --- Projects ---
+    match /projects/{projectId} {
+      // Admins can GET any project. Owners can GET their own project.
+      allow get: if isAdmin() || isOwner(resource.data.userId);
+      // Admins can LIST all projects. Clients can list their own projects via queries.
+      allow list: if isAdmin() || (request.query.where.size() > 0 && request.query.where[0][0] == 'userId' && request.query.where[0][2] == request.auth.uid);
+      // A user can CREATE a project for themselves.
+      allow create: if isOwner(request.resource.data.userId);
+      // An admin can UPDATE any project. A user can update their own project if it's 'Open'.
+      allow update: if isAdmin() || (isOwner(resource.data.userId) && resource.data.status == 'Open');
+    }
+    
+    // --- Time Entries (Subcollection) ---
+    match /projects/{projectId}/timeEntries/{entryId} {
+      function projectOwnerId() {
+        return get(/databases/$(database)/documents/projects/$(projectId)).data.userId;
+      }
+      // An admin can read any time entry. The project owner can read entries for their project.
+      allow read: if isAdmin() || isOwner(projectOwnerId());
+      // Only an admin can write time entries.
+      allow write: if isAdmin();
+    }
+
+    // --- Reviews ---
+    match /reviews/{reviewId} {
+        // Anyone can read reviews (for testimonials).
         allow read: if true;
+        // Authenticated users can write a review for their own project.
+        allow create: if isOwner(request.resource.data.userId);
+    }
+    
+    // --- Featured Projects ---
+    match /featuredProjects/{projectId} {
+        // Anyone can read featured projects for the landing page.
+        allow read: if true;
+        // Only admins can add, update, or delete featured projects.
         allow write: if isAdmin();
     }
 
-    // --- Reviews Collection ---
-    match /reviews/{reviewId} {
-        // Public can view reviews.
-        allow read: if true;
-        // Only the user who created the project can create a review for it.
-        allow create: if isOwner(request.resource.data.userId);
-        // Only an admin can delete a review.
-        allow delete: if isAdmin();
-    }
-
-    // --- Chats Collection ---
+    // --- Chat ---
     match /chats/{chatId} {
-      // Participants are the client user and the admin user ID.
-      // e.g. chatId is `support_CLIENT_UID`
-      // A user can access a chat if their UID is in the chatId.
-      allow read, write: if isSignedIn() && (request.auth.uid in string(chatId).split('_') || isAdmin());
+      function chatUserId() {
+        // Extracts the user ID from a chatId like 'support_USERID'
+        return chatId.split('_')[1];
+      }
       
+      // An admin can get any chat. A user can get their own chat.
+      allow get: if isAdmin() || isOwner(chatUserId());
+      // Admins can list all chats. Users cannot list all chats.
+      allow list: if isAdmin();
+      // Admins and the user can create/update their chat document.
+      allow write: if isAdmin() || isOwner(chatUserId());
+
       match /messages/{messageId} {
-          allow read, write: if isSignedIn() && (request.auth.uid in string(chatId).split('_') || isAdmin());
+        // An admin can access messages in any chat. A user can access messages in their own chat.
+        allow read, write: if isAdmin() || isOwner(chatUserId());
       }
     }
   }
