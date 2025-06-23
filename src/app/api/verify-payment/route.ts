@@ -40,12 +40,18 @@ export async function POST(request: NextRequest) {
         const projectData = projectSnap.data();
         const currentAmountPaid = projectData.amountPaid || 0;
         const newAmountPaid = currentAmountPaid + paymentAmount;
+        const totalBudget = parseFloat(projectData.budget);
         
         const updates: { amountPaid: number, status?: string } = {
             amountPaid: newAmountPaid
         };
 
-        if (projectData.status === 'Open') {
+        // If the new amount paid meets or exceeds the budget, close the project.
+        if (newAmountPaid >= totalBudget) {
+            updates.status = 'Closed';
+        }
+        // Otherwise, if the project was just started, move it to "In Progress".
+        else if (projectData.status === 'Open') {
             updates.status = 'In Progress';
         }
 
