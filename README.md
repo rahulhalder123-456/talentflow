@@ -1,3 +1,4 @@
+
 # Talent Flow
 
 ## 🔴 ACTION REQUIRED: Configure API Keys & Security Rules
@@ -27,25 +28,47 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 # Razorpay API Keys
 NEXT_PUBLIC_RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
 RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
-
-# Bootstrap Admin User ID
-# This UID will have admin access by default to set up the first admin roles from the UI.
-# Find your UID from the Firebase Authentication console after you sign up.
-NEXT_PUBLIC_FALLBACK_ADMIN_UID=YOUR_FIREBASE_USER_ID_HERE
 ```
 
 ### 2. Update Firestore Security Rules
 
 This is a **critical one-time setup** to make your app work correctly.
 
-1.  **Go to Firestore Rules**: In the Firestore Database section, click the **Rules** tab.
+1.  **Go to Firestore Rules**: In the Firebase Console, go to the Firestore Database section and click the **Rules** tab.
 2.  **Copy & Paste**: A file named `firestore.rules` exists in your project's root directory. Open this file, copy its **entire contents**, and paste them into the editor in the Firebase Console, replacing any existing rules.
 3.  **Publish**: Click the **Publish** button.
 
-### 3. Restart the Server or Redeploy
+### 3. Set Up Your First Admin User (CRITICAL)
 
--   **Local Development:** After updating your `.env.local` file, you **must** stop the development server (Ctrl+C) and restart it (`npm run dev`).
--   **Vercel Deployment:** When you deploy your project to a hosting provider like Vercel, the `.env.local` file is **not** included. You must configure your environment variables directly in your Vercel project settings and **trigger a new deployment** to apply the changes.
+To use the admin features, you must manually grant admin rights to your own user account. **This is a required, one-time setup step.**
+
+1.  **Get Your User ID (UID):**
+    *   Sign up or sign in to your application.
+    *   Go to the [Firebase Authentication users page](https://console.firebase.google.com/u/0/project/_/authentication/users).
+    *   Find your account in the list and copy the value from the **User UID** column.
+
+2.  **Create the Admin Document in Firestore:**
+    *   Go to the [Firestore Database data page](https://console.firebase.google.com/u/0/project/_/firestore/data).
+    *   Click **+ Start collection**.
+    *   For **Collection ID**, enter `config`.
+    *   Click **Next**.
+    *   For **Document ID**, enter `admins`.
+    *   Under **Fields**, add the following field:
+        *   Field name: `uids`
+        *   Field type: `array`
+        *   Field value: Click **Add value**, paste your **User UID** from step 1, and click **Add**.
+    *   Click **Save**.
+
+Your app will now recognize you as an admin. You can grant admin rights to other users from the "Manage Users" page within the app's admin dashboard.
+
+### 4. Deploying to Vercel?
+
+When you deploy your project to a hosting provider like Vercel, you must configure your environment variables there as well.
+
+1.  **Go to Project Settings:** In your Vercel project, go to the **Settings** tab.
+2.  **Go to Environment Variables:** Select **Environment Variables** from the side menu.
+3.  **Add Your Keys:** Copy each key-value pair from your `.env.local` file and add them to Vercel.
+4.  **Redeploy:** After adding the variables, you **must trigger a new deployment** for the changes to take effect. Go to the "Deployments" tab and redeploy your latest commit.
 
 ---
 

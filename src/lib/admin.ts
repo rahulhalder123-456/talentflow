@@ -8,6 +8,7 @@ const CACHE_DURATION_MS = 60 * 1000; // 1 minute
 
 /**
  * Fetches the list of admin UIDs from the 'config/admins' document in Firestore.
+ * This is the single source of truth for admin privileges.
  * Caches the result for 1 minute to reduce reads.
  */
 export async function getAdminUids(): Promise<string[]> {
@@ -26,13 +27,10 @@ export async function getAdminUids(): Promise<string[]> {
             cacheTimestamp = now;
             return adminUidsCache as string[];
         } else {
-             // If the config doc doesn't exist, use the fallback UID from environment variables to bootstrap the first admin.
-             // This allows the first admin to see the UI needed to grant themselves permanent admin rights.
-            const fallbackUid = process.env.NEXT_PUBLIC_FALLBACK_ADMIN_UID;
-            if (fallbackUid) {
-                console.warn(`Admin config document not found. Using fallback UID from environment to bootstrap the first admin.`);
-                return [fallbackUid];
-            }
+            // If the config doc doesn't exist, no one is an admin.
+            // The first admin must be added manually in the Firestore console
+            // as per the instructions in README.md.
+            console.warn("Admin config document ('/config/admins') not found in Firestore.");
             return [];
         }
 
