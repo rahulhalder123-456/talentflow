@@ -1,7 +1,23 @@
+"use client";
+
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 export function Footer() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (user) {
+      router.push('/dashboard/messages');
+    } else {
+      router.push('/signin');
+    }
+  };
+
   return (
     <footer className="border-t border-white/10">
       <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
@@ -25,7 +41,15 @@ export function Footer() {
             <h4 className="font-headline font-semibold">Company</h4>
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link href="/#about-us" className="text-muted-foreground hover:text-primary">About Us</Link></li>
-              <li><Link href="/dashboard/messages" className="text-muted-foreground hover:text-primary">Contact Us</Link></li>
+              <li>
+                <a
+                  href="/dashboard/messages"
+                  onClick={handleContactClick}
+                  className="text-muted-foreground hover:text-primary cursor-pointer"
+                >
+                  Contact Us
+                </a>
+              </li>
             </ul>
           </div>
         </div>
