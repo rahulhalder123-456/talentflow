@@ -24,7 +24,7 @@ export function HeroSection() {
   const headlineWords = "Where Great Ideas Meet Great Talent".split(" ");
 
   return (
-    <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
+    <section className="relative py-20 md:py-28 overflow-hidden">
       {/* Subtle grid background */}
       <div className="absolute inset-0 z-0 opacity-10">
         <div
@@ -56,7 +56,7 @@ export function HeroSection() {
             </motion.div>
 
             {/* Sexy Animated Heading */}
-            <motion.h1 className="font-headline text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-balance bg-gradient-to-br from-white via-gray-200 to-zinc-300 bg-clip-text text-transparent leading-tight">
+            <motion.h1 className="font-headline text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-balance bg-gradient-to-br from-white via-gray-200 to-zinc-300 bg-clip-text text-transparent leading-tight">
               {headlineWords.map((word, i) => (
                 <span key={i} className="inline-block overflow-hidden px-[2px] py-1">
                   <motion.span
@@ -80,7 +80,7 @@ export function HeroSection() {
 
             {/* Elegant Subtitle */}
             <motion.p
-              className="max-w-3xl text-lg text-muted-foreground/80 md:text-xl tracking-normal leading-relaxed"
+              className="max-w-lg text-lg text-muted-foreground/80 md:max-w-2xl md:text-xl tracking-normal leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{
                 opacity: 1,
