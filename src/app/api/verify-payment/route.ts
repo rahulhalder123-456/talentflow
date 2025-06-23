@@ -1,14 +1,14 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import crypto from "crypto";
-import { db, doc, updateDoc } from '@/lib/firebase/client';
+import { db, doc, updateDoc, getDoc } from '@/lib/firebase/client';
 import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, projectId } =
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, projectId, paymentAmount } =
     await request.json();
     
-  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !projectId) {
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !projectId || !paymentAmount) {
       return NextResponse.json({ success: false, error: 'Missing payment details.' }, { status: 400 });
   }
 
@@ -31,16 +31,32 @@ export async function POST(request: NextRequest) {
     // Payment is authentic, update the database
     try {
         const projectRef = doc(db, 'projects', projectId);
-        await updateDoc(projectRef, {
-            status: 'In Progress',
-        });
+        const projectSnap = await getDoc(projectRef);
+
+        if (!projectSnap.exists()) {
+            return NextResponse.json({ success: false, error: 'Project not found.' }, { status: 404 });
+        }
+
+        const projectData = projectSnap.data();
+        const currentAmountPaid = projectData.amountPaid || 0;
+        const newAmountPaid = currentAmountPaid + paymentAmount;
+        
+        const updates: { amountPaid: number, status?: string } = {
+            amountPaid: newAmountPaid
+        };
+
+        if (projectData.status === 'Open') {
+            updates.status = 'In Progress';
+        }
+
+        await updateDoc(projectRef, updates);
 
         // Revalidate paths to show updated status
         revalidatePath('/dashboard/projects');
         revalidatePath(`/projects/${projectId}`);
         revalidatePath('/admin/projects');
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, newAmountPaid, newStatus: updates.status || projectData.status });
     } catch(error) {
         console.error("Error updating project status in DB:", error);
         return NextResponse.json({ success: false, error: 'Failed to update project status.' }, { status: 500 });

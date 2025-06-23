@@ -12,7 +12,7 @@ import { Loader } from '@/components/common/Loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle, CheckCircle, PlusCircle } from 'lucide-react';
+import { ArrowLeft, IndianRupee, Clock, User, Calendar, Briefcase, CreditCard, LoaderCircle, CheckCircle, PlusCircle, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
 import { isAdmin } from '@/lib/admin';
 import type { Project, TimeEntry } from '@/features/projects/types';
@@ -78,6 +78,7 @@ export default function ProjectDetailsPage() {
                         paymentType: data.paymentType,
                         desiredSkills: data.desiredSkills,
                         userId: data.userId,
+                        amountPaid: data.amountPaid || 0,
                     };
                     setProject(projectData);
                 } else {
@@ -137,7 +138,7 @@ export default function ProjectDetailsPage() {
         }
     };
 
-    const handleRazorpayPayment = async () => {
+    const handleRazorpayPayment = async (amountToPay: number) => {
         if (!project) return;
         setIsPaying(true);
 
@@ -145,7 +146,7 @@ export default function ProjectDetailsPage() {
             const response = await fetch('/api/create-razorpay-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: project.budget })
+                body: JSON.stringify({ amount: amountToPay })
             });
 
             const orderData = await response.json();
@@ -159,7 +160,7 @@ export default function ProjectDetailsPage() {
                 amount: orderData.amount,
                 currency: orderData.currency,
                 name: "Talent Flow",
-                description: `Funding for project: ${project.projectTitle}`,
+                description: `Payment for project: ${project.projectTitle}`,
                 order_id: orderData.id,
                 handler: async function (response: any) {
                     const verifyRes = await fetch('/api/verify-payment', {
@@ -170,6 +171,7 @@ export default function ProjectDetailsPage() {
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                             projectId: project.id,
+                            paymentAmount: orderData.amount / 100, // Pass amount in rupees
                         })
                     });
 
@@ -178,9 +180,9 @@ export default function ProjectDetailsPage() {
                     if (result.success) {
                         toast({
                             title: "Payment Successful!",
-                            description: "The project is now 'In Progress'.",
+                            description: "Your project has been updated.",
                         });
-                        setProject(prev => prev ? { ...prev, status: 'In Progress' } : null);
+                        setProject(prev => prev ? { ...prev, status: result.newStatus, amountPaid: result.newAmountPaid } : null);
                     } else {
                         toast({
                             variant: 'destructive',
@@ -294,6 +296,11 @@ export default function ProjectDetailsPage() {
     }
     
     const totalLoggedAmount = timeEntries.reduce((acc, entry) => acc + entry.amount, 0);
+    const amountPaid = project.amountPaid || 0;
+    const totalBudget = parseFloat(project.budget);
+    const amountRemaining = totalBudget - amountPaid;
+    const initialPayment = totalBudget * 0.20;
+
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
@@ -339,12 +346,22 @@ export default function ProjectDetailsPage() {
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-lg mb-2 border-b pb-2">Project Details</h3>
                                 <div className="space-y-3 text-sm">
-                                    <div className="flex items-center gap-3"><IndianRupee className="h-5 w-5 text-primary" /> <span>Budget: <span className="font-bold text-foreground">Rs. {project.budget}{project.paymentType !== 'fixed' ? ` / ${project.paymentType.replace('ly', '')}` : ''}</span></span></div>
-                                    <div className="flex items-center gap-3 capitalize"><Briefcase className="h-5 w-5 text-primary" /><span>Payment: <span className="font-bold text-foreground">{project.paymentType}</span></span></div>
+                                    <div className="flex items-center gap-3 capitalize"><Briefcase className="h-5 w-5 text-primary" /><span>Type: <span className="font-bold text-foreground">{project.paymentType}</span></span></div>
                                     <div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><span>Deadline: <span className="font-bold text-foreground">{project.deadline ? format(project.deadline, 'PPP') : ''}</span></span></div>
                                 </div>
+
+                                <Separator className="my-4"/>
+
+                                <h3 className="font-semibold text-lg mb-2 border-b pb-2">Payment Summary</h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex items-center gap-3"><IndianRupee className="h-5 w-5 text-primary" /><span>Total Budget: <span className="font-bold text-foreground">Rs. {totalBudget.toFixed(2)}</span></span></div>
+                                    <div className="flex items-center gap-3"><Wallet className="h-5 w-5 text-green-400" /><span>Amount Paid: <span className="font-bold text-foreground">Rs. {amountPaid.toFixed(2)}</span></span></div>
+                                    <div className="flex items-center gap-3"><CreditCard className="h-5 w-5 text-amber-400" /><span>Remaining: <span className="font-bold text-foreground">Rs. {amountRemaining.toFixed(2)}</span></span></div>
+                                </div>
+
                                 {isUserAdmin && (
                                     <>
+                                        <Separator className="my-4"/>
                                         <h3 className="font-semibold text-lg mb-2 border-b pb-2 pt-4">Admin Info</h3>
                                         <div className="flex items-center gap-3 text-sm"><User className="h-5 w-5 text-primary" /> <span>Client ID: <span className="font-mono text-xs text-foreground">{project.userId}</span></span></div>
                                     </>
@@ -356,38 +373,42 @@ export default function ProjectDetailsPage() {
                             <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
                                 {project.status === 'Open' ? (
                                     <>
-                                        <p className="text-sm text-muted-foreground">{project.paymentType === 'fixed' ? 'Ready to start?' : 'Make initial payment to begin.'}</p>
-                                        <Button onClick={handleRazorpayPayment} disabled={isPaying} size="lg">
-                                            {isPaying ? (
-                                                <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
-                                            ) : (
-                                                <CreditCard className="mr-2 h-5 w-5" />
-                                            )}
-                                            {isPaying ? 'Processing...' : project.paymentType === 'fixed' ? 'Fund & Start Project' : 'Fund First Milestone'}
+                                        <p className="text-sm text-muted-foreground">Pay 20% deposit to begin work.</p>
+                                        <Button onClick={() => handleRazorpayPayment(initialPayment)} disabled={isPaying} size="lg">
+                                            {isPaying ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+                                            {isPaying ? 'Processing...' : `Pay Rs. ${initialPayment.toFixed(2)} to Start`}
                                         </Button>
                                     </>
+                                ) : project.status === 'Closed' && amountRemaining > 0.01 ? (
+                                    <>
+                                         <p className="text-sm text-muted-foreground">Project is complete. Please pay the remaining balance.</p>
+                                         <Button onClick={() => handleRazorpayPayment(amountRemaining)} disabled={isPaying} size="lg">
+                                            {isPaying ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+                                            {isPaying ? 'Processing...' : `Pay Remaining Rs. ${amountRemaining.toFixed(2)}`}
+                                         </Button>
+                                    </>
+                                ) : amountRemaining < 0.01 ? (
+                                    <div className="w-full text-center flex items-center justify-center gap-2 text-green-400">
+                                       <CheckCircle className="h-5 w-5"/>
+                                       <p>This project is fully paid.</p>
+                                    </div>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">This project is currently {project.status}.</p>
                                 )}
                             </CardFooter>
                         )}
 
-                        {isUserAdmin && project.status !== 'Closed' && (
+                        {isUserAdmin && project.status === 'In Progress' && (
                             <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">Admin Action:</p>
                                 <Button onClick={handleCloseProject} disabled={isClosing} variant="destructive">
-                                    {isClosing ? (
-                                        <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <CheckCircle className="mr-2 h-5 w-5" />
-                                    )}
+                                    {isClosing ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
                                     {isClosing ? 'Closing...' : 'Mark as Complete & Close'}
                                 </Button>
                             </CardFooter>
                         )}
                     </Card>
 
-                    {/* Time Tracking Section - Visible to Admins for active, non-fixed projects */}
                     {isUserAdmin && project.status === 'In Progress' && project.paymentType !== 'fixed' && (
                         <Card className="bg-secondary/20 border-border/50 shadow-lg">
                             <CardHeader>
