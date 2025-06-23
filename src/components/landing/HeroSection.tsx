@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { CodeAnimation } from "@/components/common/CodeAnimation";
 
 const fadeInUp = {
   initial: { y: 20, opacity: 0 },
@@ -16,91 +16,66 @@ const staggerContainer = {
   animate: {
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.3,
+      delayChildren: 0.2,
     },
   },
 };
 
 export function HeroSection() {
-  const headlineWords = "Where Great Ideas Meet Great Talent".split(" ");
-
   return (
-    <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden text-center">
-      <CodeAnimation />
-      <div className="relative z-10 container mx-auto max-w-4xl px-4 md:px-6">
+    <section className="py-20 md:py-32">
+      <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <motion.div
-          className="flex flex-col items-center gap-6"
+          className="grid items-center gap-12 md:grid-cols-2"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
         >
-          <motion.div variants={fadeInUp}>
+          <motion.div
+            className="flex flex-col items-center text-center md:items-start md:text-left gap-6"
+            variants={fadeInUp}
+          >
             <Badge
               variant="secondary"
-              className="text-sm shadow-lg backdrop-blur-sm"
+              className="text-sm shadow-lg"
             >
               Your On-Demand Creative & Technical Team
             </Badge>
+            <h1 className="font-headline text-4xl font-extrabold tracking-tight text-balance md:text-5xl lg:text-6xl">
+              Where Great Ideas Meet Great Talent
+            </h1>
+            <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
+              We are your dedicated team of creative and technical experts,
+              ready to bring your vision to life with precision and passion.
+              From stunning designs to robust code, we deliver excellence on
+              demand.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <Button asChild size="lg">
+                <Link href="/post-project">
+                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="#">
+                  <Video className="mr-2 h-5 w-5" /> Watch Demo
+                </Link>
+              </Button>
+            </div>
           </motion.div>
-
-          <motion.h1 className="font-headline text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-balance bg-gradient-to-br from-white via-gray-200 to-zinc-300 bg-clip-text text-transparent leading-tight">
-            {headlineWords.map((word, i) => (
-              <span key={i} className="inline-block overflow-hidden px-[2px] py-1">
-                <motion.span
-                  className="inline-block"
-                  initial={{ y: "100%", opacity: 0 }}
-                  animate={{
-                    y: "0%",
-                    opacity: 1,
-                    transition: {
-                      duration: 0.8,
-                      ease: [0.25, 1, 0.5, 1],
-                      delay: i * 0.1,
-                    },
-                  }}
-                >
-                  {word}&nbsp;
-                </motion.span>
-              </span>
-            ))}
-          </motion.h1>
-
-          <motion.p
-            className="max-w-2xl text-lg text-muted-foreground/80 md:text-xl tracking-normal leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              transition: {
-                duration: 1,
-                ease: [0.22, 1, 0.36, 1],
-                delay: 0.6,
-              },
-            }}
-          >
-            We are your dedicated team of creative and technical experts,
-            ready to bring your vision to life with precision and passion.
-            From stunning designs to robust code, we deliver excellence on
-            demand.
-          </motion.p>
-
           <motion.div
-            className="mt-6 flex flex-col sm:flex-row items-center gap-4"
+            className="relative h-[300px] w-full max-w-lg mx-auto md:h-[400px] rounded-xl overflow-hidden shadow-2xl shadow-primary/20"
             variants={fadeInUp}
           >
-            <Link href="/post-project" className="group relative inline-block w-full sm:w-auto">
-              <div className="relative p-[2px] rounded-2xl bg-gradient-to-r from-primary via-primary/70 to-accent transition-transform duration-300 ease-out group-hover:scale-105 group-hover:-rotate-1 shadow-[0_10px_30px_hsl(var(--primary)/0.3)]">
-                <span className="absolute -top-3 -right-3 text-2xl animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                  ✨
-                </span>
-                <div className="flex items-center gap-3 px-8 py-4 bg-background/80 backdrop-blur-xl rounded-2xl text-base font-semibold text-white transition-all duration-300 shadow-inner hover:bg-background/60">
-                  <span className="whitespace-nowrap tracking-wide">
-                    Start Your Project
-                  </span>
-                  <ArrowRight className="ml-1 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
-              </div>
-            </Link>
+             <video 
+                className="absolute top-0 left-0 w-full h-full object-cover"
+                src="https://cdn.dribbble.com/uploads/48227/original/b9f84b1227315a60064f7833077a0641.mp4?1699632832" 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+            >
+            </video>
           </motion.div>
         </motion.div>
       </div>

@@ -39,7 +39,7 @@ export function CategoriesSection() {
   return (
     <motion.section
       id="categories"
-      className="py-16 md:py-24"
+      className="py-16 md:py-24 bg-secondary/20"
       variants={staggerContainer}
       initial="initial"
       whileInView="animate"
@@ -57,7 +57,7 @@ export function CategoriesSection() {
             <motion.div key={category.name} variants={fadeInUp}>
               <Link
                 href="#"
-                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-6 text-center shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:bg-white/10 hover:shadow-primary/20 hover:shadow-2xl"
+                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-background/30 p-6 text-center shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:bg-background/50 hover:shadow-primary/20 hover:shadow-2xl"
               >
                 {category.icon}
                 <h3 className="font-semibold text-foreground/90">{category.name}</h3>
