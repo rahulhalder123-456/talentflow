@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import {
   CodeXml,
   Palette,
-  Type,
-  Clapperboard,
-  Megaphone,
-  Music,
+  Smartphone,
+  BrainCircuit,
+  Cloud,
+  Shield,
 } from 'lucide-react';
 
 const fadeInUp = {
@@ -28,11 +28,11 @@ const staggerContainer = {
 
 const categories = [
   { name: 'Web Development', icon: <CodeXml className="h-8 w-8 text-primary" /> },
-  { name: 'Graphic Design', icon: <Palette className="h-8 w-8 text-primary" /> },
-  { name: 'Writing', icon: <Type className="h-8 w-8 text-primary" /> },
-  { name: 'Video & Animation', icon: <Clapperboard className="h-8 w-8 text-primary" /> },
-  { name: 'Digital Marketing', icon: <Megaphone className="h-8 w-8 text-primary" /> },
-  { name: 'Music & Audio', icon: <Music className="h-8 w-8 text-primary" /> },
+  { name: 'Mobile Apps', icon: <Smartphone className="h-8 w-8 text-primary" /> },
+  { name: 'UI/UX Design', icon: <Palette className="h-8 w-8 text-primary" /> },
+  { name: 'AI & ML', icon: <BrainCircuit className="h-8 w-8 text-primary" /> },
+  { name: 'Cloud & DevOps', icon: <Cloud className="h-8 w-8 text-primary" /> },
+  { name: 'Cybersecurity', icon: <Shield className="h-8 w-8 text-primary" /> },
 ];
 
 export function CategoriesSection() {
