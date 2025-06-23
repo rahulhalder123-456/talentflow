@@ -3,14 +3,14 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { db, collection, query, onSnapshot, doc, getDoc } from "@/lib/firebase/client";
+import { db, collection, query, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { updateAdminStatus } from "./actions";
+import { revalidateUsersPage } from "./actions";
 
 type UserProfile = {
     id: string;
@@ -84,21 +84,35 @@ export function AllUsersList() {
             setAdminUids(prev => prev.filter(uid => uid !== userId));
         }
 
-        const result = await updateAdminStatus(userId, makeAdmin);
-        if (!result.success) {
-            // Revert on failure
+        try {
+            const adminDocRef = doc(db, 'config', 'admins');
+            if (makeAdmin) {
+              await updateDoc(adminDocRef, {
+                uids: arrayUnion(userId)
+              });
+            } else {
+              await updateDoc(adminDocRef, {
+                uids: arrayRemove(userId)
+              });
+            }
+
+            // Revalidate path on the server after successful client-side write
+            await revalidateUsersPage();
+
+            toast({
+                title: 'Success!',
+                description: `User's admin status has been updated.`,
+            });
+
+        } catch (error: any) {
+            // Revert UI on failure
             setAdminUids(originalAdminUids);
             toast({
                 variant: 'destructive',
                 title: 'Update Failed',
-                description: result.error?.includes('permission-denied') 
-                    ? 'Permission Denied. You might not have the rights to perform this action.'
-                    : result.error
-            });
-        } else {
-            toast({
-                title: 'Success!',
-                description: `User's admin status has been updated.`,
+                description: error.message?.includes('permission') 
+                    ? 'Permission Denied. Your security rules might be blocking this action.'
+                    : error.message || 'An unknown error occurred.',
             });
         }
     };
