@@ -27,6 +27,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 # Razorpay API Keys
 NEXT_PUBLIC_RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
 RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
+
+# Bootstrap Admin User ID
+# This UID will have admin access by default to set up the first admin roles from the UI.
+# Find your UID from the Firebase Authentication console after you sign up.
+NEXT_PUBLIC_FALLBACK_ADMIN_UID=YOUR_FIREBASE_USER_ID_HERE
 ```
 
 ### 2. Update Firestore Security Rules
