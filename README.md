@@ -11,7 +11,7 @@ This app will not run correctly until you perform these **required manual steps*
 - Open your new `.env.local` file and add the following lines, pasting your keys after the `=`.
 - Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to generate a free **Google AI API key**.
 - Go to your [Firebase Project Settings](https://console.firebase.google.com/) to find your web app's **Firebase credentials**.
-- Go to your [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys) to get your API keys.
+- Go to your [Razorpay Dashboard](https://dashboard.razorpay.com/app/keys) to get your API keys.
 
 ```
 # Google AI API Key
@@ -25,9 +25,9 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 
-# Stripe API Keys (use your test keys for development)
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=YOUR_STRIPE_PUBLISHABLE_KEY
-STRIPE_SECRET_KEY=YOUR_STRIPE_SECRET_KEY
+# Razorpay API Keys
+NEXT_PUBLIC_RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
+RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
 ```
 
 ### 2. Update Firestore Security Rules
@@ -61,4 +61,5 @@ Once you have configured your credentials and security rules as described above,
 npm install
 npm run dev
 ```
+
 

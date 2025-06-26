@@ -1,31 +1,27 @@
 
 import { NextResponse, type NextRequest } from "next/server";
-import Stripe from "stripe";
+import crypto from 'crypto';
 import { db, doc, updateDoc, getDoc } from '@/lib/firebase/client';
 import { revalidatePath } from "next/cache";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-});
-
 export async function POST(request: NextRequest) {
-    const { session_id } = await request.json();
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, projectId, paymentAmount } = await request.json();
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    if (!session_id) {
-        return NextResponse.json({ success: false, error: 'Session ID is required.' }, { status: 400 });
+    if (!keySecret) {
+        return NextResponse.json({ success: false, error: 'Razorpay secret is not configured.' }, { status: 500 });
+    }
+    
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !projectId || isNaN(paymentAmount)) {
+        return NextResponse.json({ success: false, error: 'Missing required payment data.' }, { status: 400 });
     }
 
     try {
-        const session = await stripe.checkout.sessions.retrieve(session_id);
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto.createHmac('sha256', keySecret).update(body.toString()).digest('hex');
 
-        if (session.payment_status === 'paid') {
-            const projectId = session.metadata?.projectId;
-            const paymentAmount = Number(session.metadata?.paymentAmount);
-
-            if (!projectId || isNaN(paymentAmount)) {
-                 return NextResponse.json({ success: false, error: 'Session metadata is missing or invalid.' }, { status: 400 });
-            }
-            
+        if (expectedSignature === razorpay_signature) {
+            // Signature is valid, update the project in Firestore
             const projectRef = doc(db, 'projects', projectId);
             const projectSnap = await getDoc(projectRef);
 
@@ -50,18 +46,19 @@ export async function POST(request: NextRequest) {
 
             await updateDoc(projectRef, updates);
 
+            // Revalidate paths to show updated status immediately
             revalidatePath('/dashboard/projects');
             revalidatePath(`/projects/${projectId}`);
             revalidatePath('/admin/projects');
 
             return NextResponse.json({ success: true, message: 'Payment verified and project updated.' });
         } else {
-            return NextResponse.json({ success: false, error: 'Payment not successful.' });
+             return NextResponse.json({ success: false, error: 'Invalid signature.' }, { status: 400 });
         }
 
     } catch (error) {
-        console.error("Error verifying Stripe session:", error);
-        const errorMessage = error instanceof Error ? error.message : "Could not verify session";
+        console.error("Error verifying Razorpay payment:", error);
+        const errorMessage = error instanceof Error ? error.message : "Could not verify payment";
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
