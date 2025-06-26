@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -42,7 +41,7 @@ const MicrosoftIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
   lastName: z.string().min(1, "Last name is required."),
-  email: z.string().email("Invalid email address."),
+  email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
@@ -150,9 +149,9 @@ export default function SignUpPage() {
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="mx-auto w-full max-w-sm bg-secondary/20 border-border/50 shadow-lg opacity-0 animate-fade-in-up">
           <CardHeader>
-            <CardTitle className="font-headline text-3xl">Create an Account</CardTitle>
+            <CardTitle className="font-headline text-3xl">Let's get you to the right place</CardTitle>
             <CardDescription>
-              Enter your information to get started.
+              We just need a few quick details.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -191,7 +190,7 @@ export default function SignUpPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <Label>Email</Label>
+                      <Label>Work email</Label>
                       <FormControl>
                         <Input type="email" placeholder="m@example.com" {...field} disabled={!!socialLoading} />
                       </FormControl>
@@ -214,7 +213,7 @@ export default function SignUpPage() {
                 />
                 <Button type="submit" className="w-full" disabled={loading || !!socialLoading}>
                   {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Create an account
+                  Continue
                 </Button>
               </form>
             </Form>
