@@ -149,9 +149,9 @@ export default function SignUpPage() {
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="mx-auto w-full max-w-sm bg-secondary/20 border-border/50 shadow-lg opacity-0 animate-fade-in-up">
           <CardHeader>
-            <CardTitle className="font-headline text-3xl">Let's get you to the right place</CardTitle>
+            <CardTitle className="font-headline text-3xl">Create an account</CardTitle>
             <CardDescription>
-              We just need a few quick details.
+              Enter your information to get started.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -190,7 +190,7 @@ export default function SignUpPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <Label>Work email</Label>
+                      <Label>Email</Label>
                       <FormControl>
                         <Input type="email" placeholder="m@example.com" {...field} disabled={!!socialLoading} />
                       </FormControl>
@@ -213,7 +213,7 @@ export default function SignUpPage() {
                 />
                 <Button type="submit" className="w-full" disabled={loading || !!socialLoading}>
                   {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Continue
+                  Create account
                 </Button>
               </form>
             </Form>
