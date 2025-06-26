@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { doc, getDoc, updateDoc, collection, addDoc, serverTimestamp, query, onSnapshot, orderBy } from 'firebase/firestore';
@@ -23,11 +23,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Initialize Stripe.js
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function ProjectDetailsPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
     const projectId = params.projectId as string;
     const { toast } = useToast();
 
@@ -37,13 +42,54 @@ export default function ProjectDetailsPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+
 
     // State for time tracking
     const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
     const [isLoggingTime, setIsLoggingTime] = useState(false);
     const [logAmount, setLogAmount] = useState('');
     const [logDescription, setLogDescription] = useState('');
+    
+    const fetchProject = async () => {
+        if (!projectId) {
+            setError("Project ID is missing.");
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        try {
+            const projectRef = doc(db, 'projects', projectId);
+            const docSnap = await getDoc(projectRef);
 
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const projectData: Project = {
+                    id: docSnap.id,
+                    projectTitle: data.projectTitle,
+                    projectDescription: data.projectDescription,
+                    projectBrief: data.projectBrief,
+                    budget: data.budget,
+                    status: data.status,
+                    createdAt: data.createdAt?.toDate(),
+                    deadline: data.deadline?.toDate(),
+                    paymentType: data.paymentType,
+                    desiredSkills: data.desiredSkills,
+                    userId: data.userId,
+                    amountPaid: data.amountPaid || 0,
+                };
+                setProject(projectData);
+            } else {
+                setError('Project not found.');
+            }
+        } catch (err) {
+            console.error("Error fetching project:", err);
+            setError("Failed to fetch project data. This might be a network or permissions issue.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    
     useEffect(() => {
         if (authLoading) return;
         if (!user) {
@@ -52,45 +98,6 @@ export default function ProjectDetailsPage() {
         }
 
         isAdmin(user.uid).then(setIsUserAdmin);
-
-        const fetchProject = async () => {
-            if (!projectId) {
-                 setError("Project ID is missing.");
-                 setLoading(false);
-                 return;
-            }
-            setLoading(true);
-            try {
-                const projectRef = doc(db, 'projects', projectId);
-                const docSnap = await getDoc(projectRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const projectData: Project = {
-                        id: docSnap.id,
-                        projectTitle: data.projectTitle,
-                        projectDescription: data.projectDescription,
-                        projectBrief: data.projectBrief,
-                        budget: data.budget,
-                        status: data.status,
-                        createdAt: data.createdAt?.toDate(),
-                        deadline: data.deadline?.toDate(),
-                        paymentType: data.paymentType,
-                        desiredSkills: data.desiredSkills,
-                        userId: data.userId,
-                        amountPaid: data.amountPaid || 0,
-                    };
-                    setProject(projectData);
-                } else {
-                    setError('Project not found.');
-                }
-            } catch (err) {
-                console.error("Error fetching project:", err);
-                setError("Failed to fetch project data. This might be a network or permissions issue.");
-            } finally {
-                setLoading(false);
-            }
-        };
         
         fetchProject();
         
@@ -108,8 +115,53 @@ export default function ProjectDetailsPage() {
         });
 
         return () => unsubscribe();
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId, user, authLoading, router]);
+    
+    // Check for payment verification on page load
+    useEffect(() => {
+        const sessionId = searchParams.get('session_id');
+
+        if (sessionId) {
+            setIsVerifying(true);
+            fetch('/api/verify-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    toast({
+                        title: "Payment Successful!",
+                        description: "Your payment has been verified and the project updated.",
+                    });
+                    // Refresh project data to show new status
+                    fetchProject();
+                } else if (data.error) {
+                     toast({
+                        variant: 'destructive',
+                        title: "Payment Verification Failed",
+                        description: data.error,
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Verification error:", err);
+                toast({
+                    variant: 'destructive',
+                    title: "Verification Error",
+                    description: "Something went wrong while verifying your payment.",
+                });
+            })
+            .finally(() => {
+                setIsVerifying(false);
+                // Clean the URL
+                router.replace(`/projects/${projectId}`, { scroll: false });
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams, projectId, router, toast]);
 
     const handleLogTime = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,78 +189,48 @@ export default function ProjectDetailsPage() {
             setIsLoggingTime(false);
         }
     };
-
-    const handleRazorpayPayment = async (amountToPay: number) => {
-        if (!project) return;
+    
+    const handleStripePayment = async (amountToPay: number) => {
+        if (!project || !user) return;
         setIsPaying(true);
 
         try {
-            const response = await fetch('/api/create-razorpay-order', {
+            const response = await fetch('/api/create-checkout-session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amountToPay })
+                body: JSON.stringify({ 
+                    amount: amountToPay,
+                    projectName: project.projectTitle,
+                    projectId: project.id,
+                    userId: user.uid,
+                 })
             });
 
-            const orderData = await response.json();
+            const session = await response.json();
 
             if (!response.ok) {
-                throw new Error(orderData.error || 'Failed to create Razorpay order');
+                throw new Error(session.error || 'Failed to create Stripe Checkout session');
             }
 
-            const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-                amount: orderData.amount,
-                currency: orderData.currency,
-                name: "Talent Flow",
-                description: `Payment for project: ${project.projectTitle}`,
-                order_id: orderData.id,
-                handler: async function (response: any) {
-                    const verifyRes = await fetch('/api/verify-payment', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            projectId: project.id,
-                            paymentAmount: orderData.amount / 100, // Pass amount in rupees
-                        })
-                    });
+            const stripe = await stripePromise;
+            if (!stripe) {
+                toast({ variant: 'destructive', title: 'Error', description: 'Stripe.js has not loaded yet.' });
+                setIsPaying(false);
+                return;
+            }
 
-                    const result = await verifyRes.json();
+            const { error } = await stripe.redirectToCheckout({
+                sessionId: session.sessionId,
+            });
 
-                    if (result.success) {
-                        toast({
-                            title: "Payment Successful!",
-                            description: "Your project has been updated.",
-                        });
-                        setProject(prev => prev ? { ...prev, status: result.newStatus, amountPaid: result.newAmountPaid } : null);
-                    } else {
-                        toast({
-                            variant: 'destructive',
-                            title: "Payment Verification Failed",
-                            description: result.error || 'Invalid payment signature.',
-                        });
-                    }
-                },
-                prefill: {
-                    name: user?.displayName || '',
-                    email: user?.email || '',
-                },
-                theme: {
-                    color: "#6666FF"
-                }
-            };
-            
-            const rzp = new (window as any).Razorpay(options);
-            rzp.on('payment.failed', function (response: any){
+            if (error) {
+                console.error("Stripe redirect error:", error);
                 toast({
                     variant: 'destructive',
-                    title: 'Payment Failed',
-                    description: response.error.description,
+                    title: 'Payment Error',
+                    description: error.message,
                 });
-            });
-            rzp.open();
+            }
 
         } catch (err) {
             console.error("Payment initiation failed:", err);
@@ -226,13 +248,11 @@ export default function ProjectDetailsPage() {
         if (!project) return;
         setIsClosing(true);
         try {
-            // Perform the database write on the client-side to ensure auth context
             const projectRef = doc(db, 'projects', project.id);
             await updateDoc(projectRef, {
                 status: 'Closed',
             });
 
-            // Trigger server-side revalidation
             const result = await revalidateOnStatusUpdate(project.id);
             if (!result.success) {
                  throw new Error(result.error || 'Failed to revalidate paths.');
@@ -257,7 +277,7 @@ export default function ProjectDetailsPage() {
         }
     };
 
-    if (loading || authLoading) {
+    if (loading || authLoading || isVerifying) {
         return <Loader />;
     }
     
@@ -374,7 +394,7 @@ export default function ProjectDetailsPage() {
                                 {project.status === 'Open' ? (
                                     <>
                                         <p className="text-sm text-muted-foreground">Pay 20% deposit to begin work.</p>
-                                        <Button onClick={() => handleRazorpayPayment(initialPayment)} disabled={isPaying} size="lg">
+                                        <Button onClick={() => handleStripePayment(initialPayment)} disabled={isPaying} size="lg">
                                             {isPaying ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
                                             {isPaying ? 'Processing...' : `Pay Rs. ${initialPayment.toFixed(2)} to Start`}
                                         </Button>
@@ -382,7 +402,7 @@ export default function ProjectDetailsPage() {
                                 ) : project.status === 'Closed' && amountRemaining > 0.01 ? (
                                     <>
                                          <p className="text-sm text-muted-foreground">Project is complete. Please pay the remaining balance.</p>
-                                         <Button onClick={() => handleRazorpayPayment(amountRemaining)} disabled={isPaying} size="lg">
+                                         <Button onClick={() => handleStripePayment(amountRemaining)} disabled={isPaying} size="lg">
                                             {isPaying ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
                                             {isPaying ? 'Processing...' : `Pay Remaining Rs. ${amountRemaining.toFixed(2)}`}
                                          </Button>
@@ -401,7 +421,7 @@ export default function ProjectDetailsPage() {
                         {isUserAdmin && project.status !== 'Closed' && (
                             <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">Admin Action:</p>
-                                <Button onClick={handleCloseProject} disabled={isClosing} variant="destructive">
+                                <Button onClick={handleCloseProject} disabled={isClosing || project.status !== 'In Progress'} variant="destructive">
                                     {isClosing ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
                                     {isClosing ? 'Closing...' : 'Mark as Complete & Close'}
                                 </Button>
