@@ -174,10 +174,14 @@ export default function ProjectDetailsPage() {
             }
 
             const { orderId } = orderData;
+            
+            const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!;
+            // --- DEBUG: Log the key being used ---
+            console.log("Using Razorpay Key ID:", razorpayKey);
 
             // 2. Open Razorpay Checkout
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+                key: razorpayKey,
                 amount: Math.round(amountToPay * 100),
                 currency: 'INR',
                 name: 'Talent Flow',
