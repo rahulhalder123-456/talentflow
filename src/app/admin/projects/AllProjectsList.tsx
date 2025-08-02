@@ -7,7 +7,7 @@ import { db, collection, query, onSnapshot } from "@/lib/firebase/client";
 import { Loader } from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
