@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Video } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const fadeInUp = {
@@ -63,13 +63,13 @@ export function HeroSection() {
 
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <motion.div
-          className="grid items-center gap-12 md:grid-cols-2"
+          className="mx-auto max-w-3xl text-center"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
         >
           <motion.div
-            className="flex flex-col items-center text-center md:items-start md:text-left gap-6"
+            className="flex flex-col items-center gap-6"
             variants={fadeInUp}
           >
             <Badge
@@ -93,27 +93,7 @@ export function HeroSection() {
                   Get Started <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="#">
-                  <Video className="mr-2 h-5 w-5" /> Watch Demo
-                </Link>
-              </Button>
             </div>
-          </motion.div>
-          <motion.div
-            className="relative h-[300px] w-full max-w-lg mx-auto md:h-[400px] rounded-xl overflow-hidden shadow-2xl shadow-primary/20"
-            variants={fadeInUp}
-          >
-             <video 
-                className="absolute top-0 left-0 w-full h-full object-cover"
-                src="https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4" 
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-            >
-            </video>
-             <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent"></div>
           </motion.div>
         </motion.div>
       </div>
