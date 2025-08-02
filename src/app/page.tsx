@@ -8,7 +8,7 @@ import { WhyUsSection } from '@/components/landing/WhyUsSection';
 import { FeaturedWorkSection } from '@/components/landing/FeaturedWorkSection';
 import { AboutUsSection } from '@/components/landing/AboutUsSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { CtaSection } from '@/components/landing/CtaSection';
+import { ContactSection } from '@/components/landing/ContactSection';
 import { getFeaturedProjects } from '@/features/landing/actions';
 import type { FeaturedProject } from '@/features/landing/types';
 
@@ -27,7 +27,7 @@ export default async function Home() {
         <FeaturedWorkSection projects={featuredProjects} />
         <AboutUsSection />
         <TestimonialsSection />
-        <CtaSection />
+        <ContactSection />
       </main>
       <Footer />
     </div>
