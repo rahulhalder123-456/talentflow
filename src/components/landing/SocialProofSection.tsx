@@ -2,20 +2,21 @@
 "use client";
 
 import { motion } from 'framer-motion';
+import { Twitter, Instagram, Linkedin, Github } from 'lucide-react';
+import Link from 'next/link';
 
-const logos = [
-  { name: 'Quantum', src: '/images/logos/quantum.svg' },
-  { name: 'Echo', src: '/images/logos/echo.svg' },
-  { name: 'Celestial', src: '/images/logos/celestial.svg' },
-  { name: 'Pulse', src: '/images/logos/pulse.svg' },
-  { name: 'Apex', src: '/images/logos/apex.svg' },
+const socials = [
+  { name: 'Twitter', icon: <Twitter className="h-6 w-6" />, href: '#' },
+  { name: 'LinkedIn', icon: <Linkedin className="h-6 w-6" />, href: '#' },
+  { name: 'Instagram', icon: <Instagram className="h-6 w-6" />, href: '#' },
+  { name: 'GitHub', icon: <Github className="h-6 w-6" />, href: '#' },
 ];
 
 const staggerContainer = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.1,
       delayChildren: 0.2,
     },
   },
@@ -38,19 +39,17 @@ export function SocialProofSection() {
           className="text-center"
         >
           <motion.p variants={fadeIn} className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            Trusted by the world's most innovative companies
+            Follow us on social media
           </motion.p>
           <motion.div 
             variants={fadeIn}
             className="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-8"
           >
-            {logos.map((logo) => (
-              <img
-                key={logo.name}
-                src={logo.src}
-                alt={`${logo.name} logo`}
-                className="h-8 w-auto text-muted-foreground fill-current"
-              />
+            {socials.map((social) => (
+              <Link key={social.name} href={social.href} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors duration-300">
+                {social.icon}
+                <span className="sr-only">{social.name}</span>
+              </Link>
             ))}
           </motion.div>
         </motion.div>
