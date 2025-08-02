@@ -4,6 +4,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
 import { LenisProvider } from '@/components/common/LenisProvider';
 import { Inter, Space_Grotesk } from 'next/font/google';
+import { Suspense } from 'react';
+import Loading from './loading';
+
 
 const inter = Inter({
   subsets: ['latin'],
@@ -37,7 +40,9 @@ export default function RootLayout({
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-body antialiased`}>
         <LenisProvider>
           <AuthProvider>
-              {children}
+              <Suspense fallback={<Loading />}>
+                {children}
+              </Suspense>
               <Toaster />
           </AuthProvider>
         </LenisProvider>
