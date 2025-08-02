@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -69,7 +70,7 @@ export function HeroSection() {
           >
              <video 
                 className="absolute top-0 left-0 w-full h-full object-cover"
-                src="https://cdn.dribbble.com/uploads/48227/original/b9f84b1227315a60064f7833077a0641.mp4?1699632832" 
+                src="https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4" 
                 autoPlay 
                 loop 
                 muted 
