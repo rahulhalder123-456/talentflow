@@ -44,16 +44,17 @@ export default function ProjectDetailsPage() {
     const [logAmount, setLogAmount] = useState('');
     const [logDescription, setLogDescription] = useState('');
     
-    const fetchProject = async () => {
-        if (!projectId) {
-            setError("Project ID is missing.");
-            setLoading(false);
-            return;
-        }
-        setLoading(true);
-        try {
-            const projectRef = doc(db, 'projects', projectId);
-            const docSnap = await getDoc(projectRef);
+    useEffect(() => {
+        const fetchProject = async () => {
+            if (!projectId) {
+                setError("Project ID is missing.");
+                setLoading(false);
+                return;
+            }
+            setLoading(true);
+            try {
+                const projectRef = doc(db, 'projects', projectId);
+                const docSnap = await getDoc(projectRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -69,6 +70,7 @@ export default function ProjectDetailsPage() {
                         paymentType: data.paymentType,
                         desiredSkills: data.desiredSkills,
                         userId: data.userId,
+                        amountPaid: data.amountPaid || 0,
                     };
                     setProject(projectData);
                 } else {
@@ -81,25 +83,30 @@ export default function ProjectDetailsPage() {
                 setLoading(false);
             }
         };
+
+        if (user) {
+            isAdmin(user.uid).then(setIsUserAdmin);
+        }
         
         fetchProject();
         
         // Subscribe to time entries
-        const timeEntriesRef = collection(db, 'projects', projectId, 'timeEntries');
-        const q = query(timeEntriesRef, orderBy('loggedAt', 'desc'));
+        if (projectId) {
+            const timeEntriesRef = collection(db, 'projects', projectId, 'timeEntries');
+            const q = query(timeEntriesRef, orderBy('loggedAt', 'desc'));
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const entries = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                loggedAt: doc.data().loggedAt?.toDate(),
-            })) as TimeEntry[];
-            setTimeEntries(entries);
-        });
-
-        return () => unsubscribe();
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const entries = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    loggedAt: doc.data().loggedAt?.toDate(),
+                })) as TimeEntry[];
+                setTimeEntries(entries);
+            });
+            return () => unsubscribe();
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [projectId, user, authLoading, router]);
+    }, [projectId, user]);
     
 
     const handleLogTime = async (e: React.FormEvent) => {
@@ -129,8 +136,8 @@ export default function ProjectDetailsPage() {
         }
     };
 
-    const handleRazorpayPayment = async () => {
-        if (!project) return;
+    const handleRazorpayPayment = async (amountToPay: number) => {
+        if (!project || !user) return;
         setIsPaying(true);
 
         try {
@@ -138,7 +145,7 @@ export default function ProjectDetailsPage() {
             const orderResponse = await fetch('/api/create-checkout-session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: project.budget })
+                body: JSON.stringify({ amount: amountToPay })
             });
 
             const orderData = await orderResponse.json();
@@ -146,20 +153,14 @@ export default function ProjectDetailsPage() {
                 throw new Error(orderData.error || 'Failed to create Razorpay order');
             }
 
-            const { orderId } = orderData;
-            
-            const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!;
-            // --- DEBUG: Log the key being used ---
-            console.log("Using Razorpay Key ID:", razorpayKey);
-
             // 2. Open Razorpay Checkout
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 amount: orderData.amount,
-                currency: orderData.currency,
+                currency: 'INR',
                 name: "Talent Flow",
                 description: `Funding for project: ${project.projectTitle}`,
-                order_id: orderData.id,
+                order_id: orderData.orderId,
                 handler: async function (response: any) {
                     // 3. Verify Payment
                     const verificationResponse = await fetch('/api/verify-checkout-session', {
@@ -170,6 +171,7 @@ export default function ProjectDetailsPage() {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_signature: response.razorpay_signature,
                             projectId: project.id,
+                            paymentAmount: amountToPay,
                         })
                     });
 
@@ -177,9 +179,12 @@ export default function ProjectDetailsPage() {
                     if (verificationData.success) {
                         toast({
                             title: "Payment Successful!",
-                            description: "The project is now 'In Progress'.",
+                            description: "The project has been updated.",
                         });
-                        setProject(prev => prev ? { ...prev, status: 'In Progress' } : null);
+                        // Optimistically update project state or refetch
+                        const newAmountPaid = (project.amountPaid || 0) + amountToPay;
+                        const newStatus = newAmountPaid >= parseFloat(project.budget) ? 'Closed' : 'In Progress';
+                        setProject(prev => prev ? { ...prev, status: newStatus, amountPaid: newAmountPaid } : null);
                     } else {
                         toast({
                             variant: 'destructive',
@@ -285,7 +290,7 @@ export default function ProjectDetailsPage() {
                         <h1 className="font-headline text-4xl font-bold">Project Not Found</h1>
                         <p className="mt-4 text-muted-foreground">{error || "The project you are looking for does not exist or has been removed."}</p>
                         <Button asChild className="mt-8">
-                            <Link href={isUserAdmin ? "/admin/projects" : "/dashboard"}>Back to Dashboard</Link>
+                           <Link href={isUserAdmin ? "/admin/projects" : "/dashboard"}>Back to Dashboard</Link>
                         </Button>
                     </div>
                 </main>
@@ -385,6 +390,14 @@ export default function ProjectDetailsPage() {
                                             {isPaying ? 'Processing...' : `Pay Remaining Rs. ${amountRemaining.toFixed(2)}`}
                                          </Button>
                                     </>
+                                ) : project.status === 'In Progress' && amountRemaining > 0.01 ? (
+                                     <>
+                                         <p className="text-sm text-muted-foreground">This project is ongoing. Pay the final amount to close it.</p>
+                                         <Button onClick={() => handleRazorpayPayment(amountRemaining)} disabled={isPaying} size="lg">
+                                            {isPaying ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+                                            {isPaying ? 'Processing...' : `Pay Final Rs. ${amountRemaining.toFixed(2)}`}
+                                         </Button>
+                                     </>
                                 ) : amountRemaining < 0.01 ? (
                                     <div className="w-full text-center flex items-center justify-center gap-2 text-green-400">
                                        <CheckCircle className="h-5 w-5"/>
