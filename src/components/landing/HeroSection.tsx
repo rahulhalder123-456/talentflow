@@ -24,7 +24,43 @@ const staggerContainer = {
 
 export function HeroSection() {
   return (
-    <section className="py-20 md:py-32">
+    <section className="relative py-20 md:py-32 overflow-hidden">
+       {/* Animated background */}
+      <div className="absolute inset-0 z-[-1] overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-50"></div>
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"
+        />
+        <motion.div
+          className="absolute top-0 left-0 h-96 w-96 rounded-full bg-primary/10 blur-[100px]"
+          animate={{
+            x: [-100, 100, -100],
+            y: [-50, 50, -50],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/10 blur-[100px]"
+          animate={{
+            x: [100, -100, 100],
+            y: [50, -50, 50],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <motion.div
           className="grid items-center gap-12 md:grid-cols-2"
@@ -77,6 +113,7 @@ export function HeroSection() {
                 playsInline
             >
             </video>
+             <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent"></div>
           </motion.div>
         </motion.div>
       </div>
