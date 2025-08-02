@@ -56,6 +56,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(ellipse 80% 80% at 50% -20%, hsla(217, 91%, 60%, 0.15), hsla(0, 0%, 100%, 0));
   }
 }
