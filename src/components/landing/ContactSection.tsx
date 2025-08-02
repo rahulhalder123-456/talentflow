@@ -11,8 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { LoaderCircle, Mail } from "lucide-react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
+
 
 const contactFormSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters."),
@@ -38,16 +37,23 @@ export function ContactSection() {
     const onSubmit = async (values: ContactFormValues) => {
         setIsSubmitting(true);
         try {
-            await addDoc(collection(db, "contacts"), {
-                ...values,
-                createdAt: serverTimestamp(),
+            // IMPORTANT: Replace this with your own Formspree endpoint
+            const response = await fetch("https://formspree.io/f/YOUR_FORM_ID", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values)
             });
 
-            toast({
-                title: "Message Sent!",
-                description: "Thank you for reaching out. We'll get back to you shortly.",
-            });
-            form.reset();
+            if (response.ok) {
+                 toast({
+                    title: "Message Sent!",
+                    description: "Thank you for reaching out. We'll get back to you shortly.",
+                });
+                form.reset();
+            } else {
+                throw new Error("Failed to send message");
+            }
+           
         } catch (error) {
             console.error("Error submitting contact form:", error);
             toast({
@@ -80,6 +86,9 @@ export function ContactSection() {
                 </div>
 
                 <div className="rounded-xl bg-gradient-to-br from-secondary/30 via-secondary/20 to-secondary/30 p-8 md:p-12 shadow-lg border border-border/50">
+                    <div className="text-center mb-6 bg-yellow-900/50 text-yellow-200 border border-yellow-700 p-3 rounded-md text-sm">
+                        <strong>Action Required:</strong> To receive emails, create a new form at <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-100">formspree.io</a> and replace the placeholder URL in this file with your own.
+                    </div>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
