@@ -2,7 +2,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from 'next/image';
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -26,15 +25,15 @@ const staggerContainer = {
 export function HeroSection() {
   return (
     <section className="relative py-20 md:py-32 overflow-hidden min-h-[600px] flex items-center justify-center">
-      {/* Background Image */}
+      {/* Background Video */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src="https://placehold.co/1920x1080.png"
-          alt="Creative workspace background"
-          layout="fill"
-          objectFit="cover"
-          className="opacity-20"
-          data-ai-hint="creative workspace"
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
+          src="https://cdn.dribbble.com/users/1068771/screenshots/5416733/media/4d35b99118534f479133a85473769963.mp4"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
       </div>
