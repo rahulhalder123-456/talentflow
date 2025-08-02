@@ -29,15 +29,31 @@ export function HeroSection() {
       <div className="absolute inset-0 z-0">
          <div className="absolute inset-0 bg-grid-pattern opacity-30" />
          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
+         {/* Light-colored 3D-style blobs */}
          <motion.div
-            className="absolute -top-1/4 left-0 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[100px]"
-            animate={{ y: [0, -20, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-pink-500/10 blur-[120px]"
+            animate={{ 
+              y: [0, -20, 0],
+              x: [0, 15, 0],
+              rotate: [0, 10, 0],
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
          />
          <motion.div
-             className="absolute -bottom-1/4 right-0 h-[500px] w-[500px] rounded-full bg-accent/10 blur-[100px]"
-             animate={{ y: [0, 20, 0] }}
-             transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+             className="absolute -bottom-1/4 right-1/4 h-[400px] w-[600px] rounded-full bg-blue-500/10 blur-[120px]"
+             animate={{ 
+               y: [0, 20, 0],
+               x: [0, -10, 0],
+               rotate: [0, -5, 0],
+             }}
+             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+         />
+          <motion.div
+             className="absolute top-1/2 left-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-500/5 blur-[100px]"
+             animate={{ 
+               scale: [1, 1.1, 1]
+             }}
+             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
          />
       </div>
       
@@ -49,7 +65,7 @@ export function HeroSection() {
           animate="animate"
           variants={staggerContainer}
         >
-          <motion.div
+          <div
             className="flex flex-col items-center gap-6"
           >
             <motion.div variants={fadeInUp}>
@@ -79,7 +95,7 @@ export function HeroSection() {
                 </Link>
               </Button>
             </motion.div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </section>
