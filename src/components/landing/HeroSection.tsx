@@ -33,7 +33,7 @@ export function HeroSection() {
           muted
           playsInline
           className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
-          src="https://cdn.dribbble.com/users/1068771/screenshots/5416733/media/4d35b99118534f479133a85473769963.mp4"
+          src="https://cdn.coverr.co/videos/coverr-a-lot-of-bubbles-floating-up-in-the-air-127/1080p.mp4"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
       </div>
