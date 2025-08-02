@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Link as LinkIcon, Apple, Play } from 'lucide-react';
+import { ArrowRight, Link as LinkIcon, Apple, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { FeaturedProject } from '@/features/landing/types';
 
@@ -36,8 +36,9 @@ const MotionCard = motion(Card);
 const ProjectCard = ({ project }: { project: FeaturedProject }) => (
     <MotionCard
         variants={fadeInUp}
-        className="flex h-full flex-col overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 group"
+        className="group flex h-full flex-col overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1"
     >
+      <Link href={`/showcase/${project.id}`}>
         <div className="relative overflow-hidden">
             <Image
                 src={project.imageUrl}
@@ -57,31 +58,12 @@ const ProjectCard = ({ project }: { project: FeaturedProject }) => (
                 <p className="text-muted-foreground line-clamp-2 text-sm">{project.description}</p>
             </CardContent>
             <CardFooter className="p-0 pt-4 mt-auto">
-                <div className="flex flex-wrap gap-2 w-full">
-                    {project.projectUrl && (
-                       <Button asChild variant="outline" size="sm">
-                         <Link href={project.projectUrl} target="_blank">
-                           <LinkIcon className="mr-2 h-4 w-4" /> Website
-                         </Link>
-                       </Button>
-                    )}
-                    {project.appStoreUrl && (
-                       <Button asChild variant="outline" size="sm">
-                         <Link href={project.appStoreUrl} target="_blank">
-                           <Apple className="mr-2 h-4 w-4" /> App Store
-                         </Link>
-                       </Button>
-                    )}
-                    {project.playStoreUrl && (
-                       <Button asChild variant="outline" size="sm">
-                         <Link href={project.playStoreUrl} target="_blank">
-                           <Play className="mr-2 h-4 w-4" /> Play Store
-                         </Link>
-                       </Button>
-                    )}
-                </div>
+              <p className="text-sm text-primary group-hover:underline flex items-center">
+                View Details <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </p>
             </CardFooter>
         </div>
+      </Link>
     </MotionCard>
 );
 
@@ -118,6 +100,7 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
             {/* Hero Project (only if there are enough projects) */}
             {heroProject && (
               <motion.div variants={fadeInUp} className="group">
+                <Link href={`/showcase/${heroProject.id}`}>
                   <Card className="grid md:grid-cols-2 overflow-hidden rounded-xl bg-secondary/50 border-white/10 shadow-xl transition-all duration-300 hover:shadow-primary/20">
                       <div className="relative overflow-hidden">
                           <Image
@@ -135,30 +118,13 @@ export function FeaturedWorkSection({ projects }: FeaturedWorkSectionProps) {
                           <h3 className="font-headline text-3xl font-bold">{heroProject.title}</h3>
                           <p className="mt-4 text-muted-foreground flex-grow line-clamp-4">{heroProject.description}</p>
                           <div className="flex flex-wrap gap-3 mt-6">
-                              {heroProject.projectUrl && (
-                                 <Button asChild variant="outline">
-                                   <Link href={heroProject.projectUrl} target="_blank">
-                                     <LinkIcon className="mr-2 h-4 w-4" /> View Website
-                                   </Link>
-                                 </Button>
-                              )}
-                              {heroProject.appStoreUrl && (
-                                 <Button asChild variant="outline">
-                                   <Link href={heroProject.appStoreUrl} target="_blank">
-                                     <Apple className="mr-2 h-4 w-4" /> App Store
-                                   </Link>
-                                 </Button>
-                              )}
-                              {heroProject.playStoreUrl && (
-                                 <Button asChild variant="outline">
-                                   <Link href={heroProject.playStoreUrl} target="_blank">
-                                     <Play className="mr-2 h-4 w-4" /> Play Store
-                                   </Link>
-                                 </Button>
-                              )}
+                              <p className="text-sm text-primary group-hover:underline flex items-center font-semibold">
+                                View Project Details <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                              </p>
                           </div>
                       </div>
                   </Card>
+                </Link>
               </motion.div>
             )}
 
