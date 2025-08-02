@@ -74,7 +74,7 @@ export function WhyUsSection() {
               <MotionCard key={benefit.title} variants={fadeInUp} className="bg-secondary/30 border-white/10 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 h-full backdrop-blur-sm">
                 <CardHeader className="items-center gap-4">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">{benefit.icon}</div>
-                    <CardTitle className="font-headline text-xl">{benefit.title}</CardTitle>
+                    <CardTitle>{benefit.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">
