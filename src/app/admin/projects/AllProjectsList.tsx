@@ -170,7 +170,31 @@ export function AllProjectsList() {
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="px-0 pt-0 pb-0">
-                                    <div className="overflow-x-auto">
+                                    {/* Responsive container for projects */}
+                                    <div className="md:hidden p-4 space-y-4 bg-background/20">
+                                        {/* Mobile Card View */}
+                                        {projects.map(project => (
+                                            <Card key={project.id} className="bg-secondary/50">
+                                                <CardHeader>
+                                                    <CardTitle>{project.projectTitle}</CardTitle>
+                                                    <Badge variant={project.status === 'Open' ? 'secondary' : 'default'} className="w-fit">{project.status}</Badge>
+                                                </CardHeader>
+                                                <CardContent className="space-y-2 text-sm">
+                                                    <div><span className="font-semibold text-muted-foreground">Budget:</span> Rs. {project.budget}{project.paymentType !== 'fixed' ? ` / ${project.paymentType.replace('ly', '')}` : ''}</div>
+                                                    <div><span className="font-semibold text-muted-foreground">Deadline:</span> {format(new Date(project.deadline), 'PP')}</div>
+                                                </CardContent>
+                                                <CardFooter>
+                                                    <Button asChild size="sm" className="w-full bg-primary/20 text-primary-foreground/90 hover:bg-primary/30">
+                                                        <Link href={`/projects/${project.id}`}>
+                                                            View Details
+                                                        </Link>
+                                                    </Button>
+                                                </CardFooter>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                    <div className="hidden md:block overflow-x-auto">
+                                        {/* Desktop Table View */}
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
