@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { CodeAnimation } from "@/components/common/CodeAnimation";
 
 const fadeInUp = {
   initial: { y: 20, opacity: 0 },
@@ -24,44 +25,12 @@ const staggerContainer = {
 
 export function HeroSection() {
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden">
-       {/* Animated background */}
-      <div className="absolute inset-0 z-[-1] overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-50"></div>
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"
-        />
-        <motion.div
-          className="absolute top-0 left-0 h-96 w-96 rounded-full bg-primary/10 blur-[100px]"
-          animate={{
-            x: [-100, 100, -100],
-            y: [-50, 50, -50],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            repeatType: 'reverse',
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/10 blur-[100px]"
-          animate={{
-            x: [100, -100, 100],
-            y: [50, -50, 50],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            repeatType: 'reverse',
-            ease: 'easeInOut',
-          }}
-        />
-      </div>
+    <section className="relative py-20 md:py-32 overflow-hidden h-[600px] flex items-center justify-center">
+      <CodeAnimation />
+       {/* Overlay */}
+       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10"/>
 
-      <div className="container mx-auto max-w-7xl px-4 md:px-6">
+      <div className="container mx-auto max-w-7xl px-4 md:px-6 relative z-20">
         <motion.div
           className="mx-auto max-w-3xl text-center"
           initial="initial"
@@ -84,8 +53,6 @@ export function HeroSection() {
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
               We are your dedicated team of creative and technical experts,
               ready to bring your vision to life with precision and passion.
-              From stunning designs to robust code, we deliver excellence on
-              demand.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Button asChild size="lg">
