@@ -12,6 +12,7 @@ import { ContactSection } from '@/components/landing/ContactSection';
 import { getFeaturedProjects } from '@/features/landing/actions';
 import type { FeaturedProject } from '@/features/landing/types';
 import { SocialProofSection } from '@/components/landing/SocialProofSection';
+import { CtaSection } from '@/components/landing/CtaSection';
 
 
 export default async function Home() {
@@ -30,6 +31,7 @@ export default async function Home() {
         <AboutUsSection />
         <TestimonialsSection />
         <ContactSection />
+        <CtaSection />
       </main>
       <Footer />
     </div>
