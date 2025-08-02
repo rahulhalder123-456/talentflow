@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -39,8 +38,6 @@ export function ContactSection() {
     const onSubmit = async (values: ContactFormValues) => {
         setIsSubmitting(true);
         try {
-            // In a real app, you'd likely want this to trigger an email
-            // For this example, we'll save it to a "contacts" collection in Firestore
             await addDoc(collection(db, "contacts"), {
                 ...values,
                 createdAt: serverTimestamp(),
@@ -82,7 +79,7 @@ export function ContactSection() {
                     </p>
                 </div>
 
-                <div className="rounded-xl bg-secondary/30 p-8 md:p-12 shadow-lg border border-border/50">
+                <div className="rounded-xl bg-gradient-to-br from-secondary/30 via-secondary/20 to-secondary/30 p-8 md:p-12 shadow-lg border border-border/50">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
