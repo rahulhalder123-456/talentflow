@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -37,8 +38,7 @@ export function ContactSection() {
     const onSubmit = async (values: ContactFormValues) => {
         setIsSubmitting(true);
         try {
-            // IMPORTANT: Replace this with your own Formspree endpoint
-            const response = await fetch("https://formspree.io/f/YOUR_FORM_ID", {
+            const response = await fetch("https://formspree.io/f/xqaldbgl", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(values)
@@ -86,9 +86,6 @@ export function ContactSection() {
                 </div>
 
                 <div className="rounded-xl bg-gradient-to-br from-secondary/30 via-secondary/20 to-secondary/30 p-8 md:p-12 shadow-lg border border-border/50">
-                    <div className="text-center mb-6 bg-yellow-900/50 text-yellow-200 border border-yellow-700 p-3 rounded-md text-sm">
-                        <strong>Action Required:</strong> To receive emails, create a new form at <a href="https://formspree.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-100">formspree.io</a> and replace the placeholder URL in this file with your own.
-                    </div>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
