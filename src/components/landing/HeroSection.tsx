@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -30,7 +31,7 @@ export function HeroSection() {
          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
          {/* Light-colored 3D-style blobs */}
          <motion.div
-            className="absolute -top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-pink-500/10 blur-[120px]"
+            className="absolute -top-1/4 left-1/4 h-[500px] w-[500px] lg:h-[700px] lg:w-[700px] rounded-full bg-pink-500/10 blur-[120px]"
             animate={{ 
               y: [0, -20, 0],
               x: [0, 15, 0],
@@ -39,7 +40,7 @@ export function HeroSection() {
             transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
          />
          <motion.div
-             className="absolute -bottom-1/4 right-1/4 h-[400px] w-[600px] rounded-full bg-blue-500/10 blur-[120px]"
+             className="absolute -bottom-1/4 right-1/4 h-[400px] w-[600px] lg:h-[600px] lg:w-[800px] rounded-full bg-blue-500/10 blur-[120px]"
              animate={{ 
                y: [0, 20, 0],
                x: [0, -10, 0],
@@ -59,7 +60,7 @@ export function HeroSection() {
 
       <div className="container mx-auto max-w-7xl px-4 md:px-6 relative z-10">
         <motion.div
-          className="mx-auto max-w-4xl text-center"
+          className="mx-auto max-w-5xl text-center"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
@@ -83,12 +84,12 @@ export function HeroSection() {
             </motion.h1>
             <motion.p 
               variants={fadeInUp}
-              className="max-w-2xl text-lg text-muted-foreground md:text-xl"
+              className="max-w-3xl text-lg text-muted-foreground md:text-xl"
             >
               Stop searching. Start building. We are your dedicated team of creative and technical experts, ready to bring your vision to life with precision and passion.
             </motion.p>
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center gap-4">
-              <Button asChild size="lg" className="text-base px-8 py-6">
+              <Button asChild size="lg" className="text-base lg:text-lg px-8 py-6 lg:px-10 lg:py-8">
                 <Link href="/post-project">
                   Launch Your Project <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
