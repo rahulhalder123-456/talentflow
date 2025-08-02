@@ -38,14 +38,10 @@ This is a **critical one-time setup** to make your app work correctly.
 2.  **Copy & Paste**: A file named `firestore.rules` exists in your project's root directory. Open this file, copy its **entire contents**, and paste them into the editor in the Firebase Console, replacing any existing rules.
 3.  **Publish**: Click the **Publish** button.
 
-### 3. Deploying to Vercel?
+### 3. Restart the Server or Redeploy
 
-When you deploy your project to a hosting provider like Vercel, you must configure your environment variables there as well.
-
-1.  **Go to Project Settings:** In your Vercel project, go to the **Settings** tab.
-2.  **Go to Environment Variables:** Select **Environment Variables** from the side menu.
-3.  **Add Your Keys:** Copy each key-value pair from your `.env.local` file and add them to Vercel.
-4.  **Redeploy:** After adding the variables, you **must trigger a new deployment** for the changes to take effect. Go to the "Deployments" tab and redeploy your latest commit.
+-   **Local Development:** After updating your `.env.local` file, you **must** stop the development server (Ctrl+C) and restart it (`npm run dev`).
+-   **Vercel Deployment:** When you deploy your project to a hosting provider like Vercel, the `.env.local` file is **not** included. You must configure your environment variables directly in your Vercel project settings and **trigger a new deployment** to apply the changes.
 
 ---
 

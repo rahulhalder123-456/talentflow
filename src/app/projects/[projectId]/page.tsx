@@ -55,56 +55,32 @@ export default function ProjectDetailsPage() {
             const projectRef = doc(db, 'projects', projectId);
             const docSnap = await getDoc(projectRef);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const projectData: Project = {
-                    id: docSnap.id,
-                    projectTitle: data.projectTitle,
-                    projectDescription: data.projectDescription,
-                    projectBrief: data.projectBrief,
-                    budget: data.budget,
-                    status: data.status,
-                    createdAt: data.createdAt?.toDate(),
-                    deadline: data.deadline?.toDate(),
-                    paymentType: data.paymentType,
-                    desiredSkills: data.desiredSkills,
-                    userId: data.userId,
-                    amountPaid: data.amountPaid || 0,
-                };
-                setProject(projectData);
-            } else {
-                setError('Project not found.');
-            }
-        } catch (err) {
-            console.error("Error fetching project:", err);
-            setError("Failed to fetch project data. This might be a network or permissions issue.");
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    // Load Razorpay script
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
-
-        return () => {
-            if (document.body.contains(script)) {
-                 document.body.removeChild(script);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const projectData: Project = {
+                        id: docSnap.id,
+                        projectTitle: data.projectTitle,
+                        projectDescription: data.projectDescription,
+                        projectBrief: data.projectBrief,
+                        budget: data.budget,
+                        status: data.status,
+                        createdAt: data.createdAt?.toDate(),
+                        deadline: data.deadline?.toDate(),
+                        paymentType: data.paymentType,
+                        desiredSkills: data.desiredSkills,
+                        userId: data.userId,
+                    };
+                    setProject(projectData);
+                } else {
+                    setError('Project not found.');
+                }
+            } catch (err) {
+                console.error("Error fetching project:", err);
+                setError("Failed to fetch project data. This might be a network or permissions issue.");
+            } finally {
+                setLoading(false);
             }
         };
-    }, []);
-
-    useEffect(() => {
-        if (authLoading) return;
-        if (!user) {
-            router.push('/signin');
-            return;
-        }
-
-        isAdmin(user.uid).then(setIsUserAdmin);
         
         fetchProject();
         
@@ -152,9 +128,9 @@ export default function ProjectDetailsPage() {
             setIsLoggingTime(false);
         }
     };
-    
-   const handleRazorpayPayment = async (amountToPay: number) => {
-        if (!project || !user) return;
+
+    const handleRazorpayPayment = async () => {
+        if (!project) return;
         setIsPaying(true);
 
         try {
@@ -162,10 +138,7 @@ export default function ProjectDetailsPage() {
             const orderResponse = await fetch('/api/create-checkout-session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: amountToPay,
-                    currency: 'INR',
-                }),
+                body: JSON.stringify({ amount: project.budget })
             });
 
             const orderData = await orderResponse.json();
@@ -181,12 +154,12 @@ export default function ProjectDetailsPage() {
 
             // 2. Open Razorpay Checkout
             const options = {
-                key: razorpayKey,
-                amount: Math.round(amountToPay * 100),
-                currency: 'INR',
-                name: 'Talent Flow',
-                description: `Payment for: ${project.projectTitle}`,
-                order_id: orderId,
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: "Talent Flow",
+                description: `Funding for project: ${project.projectTitle}`,
+                order_id: orderData.id,
                 handler: async function (response: any) {
                     // 3. Verify Payment
                     const verificationResponse = await fetch('/api/verify-checkout-session', {
@@ -197,17 +170,16 @@ export default function ProjectDetailsPage() {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_signature: response.razorpay_signature,
                             projectId: project.id,
-                            paymentAmount: amountToPay,
-                        }),
+                        })
                     });
 
                     const verificationData = await verificationResponse.json();
                     if (verificationData.success) {
                         toast({
                             title: "Payment Successful!",
-                            description: "Your payment has been verified and the project updated.",
+                            description: "The project is now 'In Progress'.",
                         });
-                        await fetchProject(); // Refresh project data
+                        setProject(prev => prev ? { ...prev, status: 'In Progress' } : null);
                     } else {
                         toast({
                             variant: 'destructive',
@@ -427,8 +399,12 @@ export default function ProjectDetailsPage() {
                         {isUserAdmin && project.status !== 'Closed' && (
                             <CardFooter className="p-6 border-t border-border/50 bg-background/30 flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">Admin Action:</p>
-                                <Button onClick={handleCloseProject} disabled={isClosing || project.status === 'Closed'} variant="destructive">
-                                    {isClosing ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+                                <Button onClick={handleCloseProject} disabled={isClosing} variant="destructive">
+                                    {isClosing ? (
+                                        <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <CheckCircle className="mr-2 h-5 w-5" />
+                                    )}
                                     {isClosing ? 'Closing...' : 'Mark as Complete & Close'}
                                 </Button>
                             </CardFooter>
