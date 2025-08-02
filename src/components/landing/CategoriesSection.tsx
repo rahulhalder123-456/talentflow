@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -58,7 +57,7 @@ export function CategoriesSection() {
             <motion.div key={category.name} variants={fadeInUp}>
               <Link
                 href="#"
-                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-background/30 p-6 text-center shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:bg-background/50 hover:shadow-primary/20 hover:shadow-2xl"
+                className="group flex flex-col items-center gap-4 rounded-xl border border-border/50 bg-secondary/50 p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:bg-secondary/80 hover:shadow-primary/10 hover:shadow-xl"
               >
                 {category.icon}
                 <h3 className="font-semibold text-foreground/90">{category.name}</h3>
