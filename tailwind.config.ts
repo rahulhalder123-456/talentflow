@@ -14,8 +14,8 @@ export default {
         'grid-pattern': "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='hsl(var(--border)/0.1)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e\")",
       },
       fontFamily: {
-        body: ['Manrope', 'sans-serif'],
-        headline: ['Sora', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+        headline: ['Space Grotesk', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

@@ -3,6 +3,18 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
 import { LenisProvider } from '@/components/common/LenisProvider';
+import { Inter, Space_Grotesk } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+});
+
 
 // This metadata will be applied to the page but can be overridden
 // export const metadata: Metadata = {
@@ -21,11 +33,8 @@ export default function RootLayout({
       <head>
         <title>Talent Flow</title>
         <meta name="description" content="A freelance service marketplace." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-body antialiased`}>
         <LenisProvider>
           <AuthProvider>
               {children}

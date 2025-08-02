@@ -24,52 +24,61 @@ const staggerContainer = {
 
 export function HeroSection() {
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden min-h-[600px] flex items-center justify-center">
-      {/* Background Video */}
+    <section className="relative py-20 md:py-32 overflow-hidden min-h-[700px] flex items-center justify-center">
+      {/* Background Visuals */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
-          src="https://cdn.coverr.co/videos/coverr-a-lot-of-bubbles-floating-up-in-the-air-127/1080p.mp4"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
+         <div className="absolute inset-0 bg-grid-pattern opacity-30" />
+         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
+         <motion.div
+            className="absolute -top-1/4 left-0 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[100px]"
+            animate={{ y: [0, -20, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+         />
+         <motion.div
+             className="absolute -bottom-1/4 right-0 h-[500px] w-[500px] rounded-full bg-accent/10 blur-[100px]"
+             animate={{ y: [0, 20, 0] }}
+             transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+         />
       </div>
       
 
-      <div className="container mx-auto max-w-7xl px-4 md:px-6 relative z-20">
+      <div className="container mx-auto max-w-7xl px-4 md:px-6 relative z-10">
         <motion.div
-          className="mx-auto max-w-3xl text-center"
+          className="mx-auto max-w-4xl text-center"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
         >
           <motion.div
             className="flex flex-col items-center gap-6"
-            variants={fadeInUp}
           >
-            <Badge
-              variant="secondary"
-              className="text-sm shadow-lg"
+            <motion.div variants={fadeInUp}>
+              <Badge
+                variant="secondary"
+                className="text-sm shadow-lg py-1 px-4"
+              >
+                Your On-Demand Creative & Technical Team
+              </Badge>
+            </motion.div>
+            <motion.h1 
+              variants={fadeInUp}
+              className="font-headline text-5xl font-extrabold tracking-tight text-balance md:text-6xl lg:text-7xl"
             >
-              Your On-Demand Creative & Technical Team
-            </Badge>
-            <h1 className="font-headline text-4xl font-extrabold tracking-tight text-balance md:text-5xl lg:text-6xl">
               Where Great Ideas Meet Great Talent
-            </h1>
-            <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              We are your dedicated team of creative and technical experts,
-              ready to bring your vision to life with precision and passion.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Button asChild size="lg">
+            </motion.h1>
+            <motion.p 
+              variants={fadeInUp}
+              className="max-w-2xl text-lg text-muted-foreground md:text-xl"
+            >
+              Stop searching. Start building. We are your dedicated team of creative and technical experts, ready to bring your vision to life with precision and passion.
+            </motion.p>
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center gap-4">
+              <Button asChild size="lg" className="text-base px-8 py-6">
                 <Link href="/post-project">
-                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                  Launch Your Project <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>
