@@ -24,6 +24,8 @@ export type Project = {
     paymentType: string;
     desiredSkills: string;
     userId: string;
+    projectBrief: string;
+    amountPaid?: number;
 };
 
 
